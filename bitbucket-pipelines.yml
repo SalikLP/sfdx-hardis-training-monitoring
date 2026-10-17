@@ -1,0 +1,94 @@
+# You may:
+# - Update manifest/package-skip-items.xml to filter elements to retrieve
+
+# Doc & support: https://sfdx-hardis.cloudity.com/salesforce-monitoring-home/
+
+# Steps run in sfdx-hardis docker image, that includes Salesforce CLI and all required plugins & dependencies.
+# You can use latest, beta or a version number (ex: v7.23.0), and pin a version if you need reproducible runs.
+# Images are also mirrored on Docker Hub, if your infrastructure can only pull from docker.io: hardisgroupcom/sfdx-hardis-ubuntu:latest
+image: ghcr.io/hardisgroupcom/sfdx-hardis-ubuntu:latest
+definitions:
+  services:
+    docker:
+      memory: 3072 # If you have crashes, play with this number
+
+pipelines:
+  default:
+    ##############################################
+    ### Sfdx Sources Backup + Push new commit ####
+    ##############################################
+    - step:
+        name: Backup sfdx-hardis
+        clone:
+          depth: full
+        script:
+          - export BRANCH_NAME=$(echo "$BITBUCKET_BRANCH" | sed 's/refs\/heads\///')
+          - export CI_COMMIT_REF_NAME=$BRANCH_NAME
+          - export CONFIG_BRANCH=$BRANCH_NAME
+          - export ORG_ALIAS=$BRANCH_NAME
+          - export FORCE_COLOR=1
+          # Login
+          - sf hardis:auth:login
+          # Backup
+          - sf hardis:org:monitor:backup
+          # Commit & push
+          - git status
+          - git add --all
+          - 'git commit -m "chore(monitoring): org state on $(date -u +''%Y-%m-%d %H:%M'') for $BRANCH_NAME [skip ci]" || echo "No changes to commit"'
+          - git push --set-upstream origin "$BRANCH_NAME"
+        artifacts:
+          - hardis-report/**
+
+    - parallel:
+        ######################
+        ### Run Apex Tests ###
+        ######################
+        - step:
+            name: Apex Tests sfdx-hardis
+            script:
+              - export BRANCH_NAME=$(echo "$BITBUCKET_BRANCH" | sed 's/refs\/heads\///')
+              - export CI_COMMIT_REF_NAME=$BRANCH_NAME
+              - export CONFIG_BRANCH=$BRANCH_NAME
+              - export ORG_ALIAS=$BRANCH_NAME
+              - export FORCE_COLOR=1
+              # Get latest commit of the branch
+              - git pull origin "${BRANCH_NAME}" || echo "Issue when pulling latest branch state, but that should be ok"
+              # Login
+              - sf hardis:auth:login
+              # Apex tests
+              - sf hardis:org:test:apex
+            artifacts:
+              - hardis-report/**
+
+        ############################################################
+        ### Run MegaLinter to detect quality and security issues ###
+        ############################################################
+        - step:
+            name: Run MegaLinter
+            image: ghcr.io/oxsecurity/megalinter-salesforce:latest
+
+            script:
+              # Get latest commit of the branch
+              - export BRANCH_NAME=$(echo "$BITBUCKET_BRANCH" | sed 's/refs\/heads\///')
+              - git pull origin "${BRANCH_NAME}" || echo "Issue when pulling latest branch state, but that should be ok"
+              - export DEFAULT_WORKSPACE=$BITBUCKET_CLONE_DIR && bash /entrypoint.sh
+            artifacts:
+              - megalinter-reports/**
+
+        # Other monitoring tools
+        - step:
+            name: Other Monitoring checks sfdx-hardis
+            script:
+              - export BRANCH_NAME=$(echo "$BITBUCKET_BRANCH" | sed 's/refs\/heads\///')
+              - export CI_COMMIT_REF_NAME=$BRANCH_NAME
+              - export CONFIG_BRANCH=$BRANCH_NAME
+              - export ORG_ALIAS=$BRANCH_NAME
+              - export FORCE_COLOR=1
+              # Get latest commit of the branch
+              - git pull origin "${BRANCH_NAME}" || echo "Issue when pulling latest branch state, but that should be ok"
+              # Login
+              - sf hardis:auth:login
+              # Other monitoring tools
+              - sf hardis:org:monitor:all
+            artifacts:
+              - hardis-report/**

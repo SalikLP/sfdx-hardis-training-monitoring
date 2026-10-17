@@ -1,0 +1,4 @@
+instanceUrl: https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com
+targetUsername: saliklp.2d9238027487@agentforce.com
+msTeamsWebhookUrl:
+deploymentRepository: https://github.com/SalikLP/sfdx-hardis-training-monitoring.git
