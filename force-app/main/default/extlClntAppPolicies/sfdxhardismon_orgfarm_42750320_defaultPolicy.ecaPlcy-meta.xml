@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtlClntAppConfigurablePolicies xmlns="http://soap.sforce.com/2006/04/metadata">
+    <externalClientApplication>sfdxhardismon_orgfarm_42750320</externalClientApplication>
+    <isEnabled>true</isEnabled>
+    <isOauthPluginEnabled>true</isOauthPluginEnabled>
+    <label>sfdxhardismon_orgfarm_42750320_defaultPolicy</label>
+    <startPage>None</startPage>
+</ExtlClntAppConfigurablePolicies>

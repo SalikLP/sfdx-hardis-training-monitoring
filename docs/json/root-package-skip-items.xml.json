@@ -1,0 +1,74 @@
+[
+  {
+    "text": "Auth Provider (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  },
+  {
+    "text": "Certificate (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  },
+  {
+    "text": "Connected App (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  },
+  {
+    "text": "Custom Object Translation (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  },
+  {
+    "text": "Document (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  },
+  {
+    "text": "Lightning Message Channel (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  },
+  {
+    "text": "List View (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  },
+  {
+    "text": "Saml Sso Config (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  },
+  {
+    "text": "Ui View Definition (all)",
+    "icon": "fa-solid fa-folder icon-warning",
+    "a_attr": {
+      "href": null
+    },
+    "children": []
+  }
+]

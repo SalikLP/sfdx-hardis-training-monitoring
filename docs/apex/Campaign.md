@@ -1,0 +1,4 @@
+# Campaign
+
+## API Name
+`Campaign`

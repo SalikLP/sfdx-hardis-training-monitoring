@@ -1,0 +1,1252 @@
+File,ChangeType,FileHuman,WorkingDir,PrevName,severity,severityIcon
+config/user/.sfdx-hardis.root.yml,A,config/user/.sfdx-hardis.root.yml,,,log,📰
+apexEmailNotifications/apexEmailNotifications.notifications-meta.xml,A,ApexEmailNotifications apexEmailNotifications,,,log,📰
+appMenus/AppSwitcher.appMenu-meta.xml,A,AppMenu AppSwitcher,,,log,📰
+appMenus/Salesforce1.appMenu-meta.xml,A,AppMenu Salesforce1,,,log,📰
+applications/Helios_Delivery.app-meta.xml,A,CustomApplication Helios_Delivery,,,log,📰
+appointmentSchedulingPolicies/default_appointment_scheduling_policy.policy-meta.xml,A,AppointmentSchedulingPolicy default_appointment_scheduling_policy,,,log,📰
+assignmentRules/Case.assignmentRules-meta.xml,A,AssignmentRule Cases-meta.xml,,,log,📰
+assignmentRules/Lead.assignmentRules-meta.xml,A,AssignmentRule Leads-meta.xml,,,log,📰
+autoResponseRules/Case.autoResponseRules-meta.xml,A,AutoResponseRule Cases-meta.xml,,,log,📰
+autoResponseRules/Lead.autoResponseRules-meta.xml,A,AutoResponseRule Leads-meta.xml,,,log,📰
+classes/CrewCapacityBatch.cls,A,ApexClass CrewCapacityBatch,,,log,📰
+classes/CrewCapacityBatch.cls-meta.xml,A,ApexClass CrewCapacityBatch,,,log,📰
+classes/CrewCapacityBatchTest.cls,A,ApexClass CrewCapacityBatchTest,,,log,📰
+classes/CrewCapacityBatchTest.cls-meta.xml,A,ApexClass CrewCapacityBatchTest,,,log,📰
+classes/CrewSizeBackfillBatch.cls,A,ApexClass CrewSizeBackfillBatch,,,log,📰
+classes/CrewSizeBackfillBatch.cls-meta.xml,A,ApexClass CrewSizeBackfillBatch,,,log,📰
+classes/CrewSizeBackfillBatchTest.cls,A,ApexClass CrewSizeBackfillBatchTest,,,log,📰
+classes/CrewSizeBackfillBatchTest.cls-meta.xml,A,ApexClass CrewSizeBackfillBatchTest,,,log,📰
+classes/InstallationScheduler.cls,A,ApexClass InstallationScheduler,,,log,📰
+classes/InstallationScheduler.cls-meta.xml,A,ApexClass InstallationScheduler,,,log,📰
+classes/InstallationSchedulerTest.cls,A,ApexClass InstallationSchedulerTest,,,log,📰
+classes/InstallationSchedulerTest.cls-meta.xml,A,ApexClass InstallationSchedulerTest,,,log,📰
+cleanDataServices/DataCloudGeoLocation.cleanDataService-meta.xml,A,CleanDataService DataCloudGeoLocation,,,log,📰
+communities/Internal Zone.community-meta.xml,A,Community Internal Zone,,,log,📰
+cspTrustedSites/Slack.cspTrustedSite-meta.xml,A,CspTrustedSite Slack,,,log,📰
+dashboards/Enablement_sfdcSESv60.dashboardFolder-meta.xml,A,DashboardFolder Enablement_sfdcSESv60,,,log,📰
+dashboards/Enablement_sfdcSESv61.dashboardFolder-meta.xml,A,DashboardFolder Enablement_sfdcSESv61,,,log,📰
+digitalExperiences/enablement/sfdcEnablement_EnablementWorkspace/sfdcEnablement_EnablementWorkspace.digitalExperience-meta.xml,A,DigitalExperience enablement/sfdcEnablement_EnablementWorkspace/sfdcEnablement_EnablementWorkspace,,,log,📰
+digitalExperiences/enablement/sfdcEnablement_EnablementWorkspace/sfdc_cms__languageSettings/languages/_meta.json,A,DigitalExperience enablement/sfdcEnablement_EnablementWorkspace/sfdc_cms__languageSettings/languages/_meta.json,,,log,📰
+digitalExperiences/enablement/sfdcEnablement_EnablementWorkspace/sfdc_cms__languageSettings/languages/content.json,A,DigitalExperience enablement/sfdcEnablement_EnablementWorkspace/sfdc_cms__languageSettings/languages/content.json,,,log,📰
+duplicateRules/Account.Standard_Account_Duplicate_Rule.duplicateRule-meta.xml,A,DuplicateRule Account.Standard_Account_Duplicate_Rule,,,log,📰
+duplicateRules/Contact.Standard_Contact_Duplicate_Rule.duplicateRule-meta.xml,A,DuplicateRule Contact.Standard_Contact_Duplicate_Rule,,,log,📰
+duplicateRules/Lead.Standard_Lead_Duplicate_Rule.duplicateRule-meta.xml,A,DuplicateRule Lead.Standard_Lead_Duplicate_Rule,,,log,📰
+email/unfiled$public/CommerceReorderPortalInvitation.email,A,EmailTemplateFolder unfiled$public/CommerceReorderPortalInvitation.email,,,log,📰
+email/unfiled$public/CommerceReorderPortalInvitation.email-meta.xml,A,EmailTemplateFolder unfiled$public/CommerceReorderPortalInvitation.email-meta.xml,,,log,📰
+email/unfiled$public/MarketingProductInquiryResponse.email,A,EmailTemplateFolder unfiled$public/MarketingProductInquiryResponse.email,,,log,📰
+email/unfiled$public/MarketingProductInquiryResponse.email-meta.xml,A,EmailTemplateFolder unfiled$public/MarketingProductInquiryResponse.email-meta.xml,,,log,📰
+email/unfiled$public/ModifyAppointmentEmailTemplateWithPaymentInfo.email,A,EmailTemplateFolder unfiled$public/ModifyAppointmentEmailTemplateWithPaymentInfo.email,,,log,📰
+email/unfiled$public/ModifyAppointmentEmailTemplateWithPaymentInfo.email-meta.xml,A,EmailTemplateFolder unfiled$public/ModifyAppointmentEmailTemplateWithPaymentInfo.email-meta.xml,,,log,📰
+email/unfiled$public/ModifyAppointmentEmailTemplateWithPaymentInfoForGuest.email,A,EmailTemplateFolder unfiled$public/ModifyAppointmentEmailTemplateWithPaymentInfoForGuest.email,,,log,📰
+email/unfiled$public/ModifyAppointmentEmailTemplateWithPaymentInfoForGuest.email-meta.xml,A,EmailTemplateFolder unfiled$public/ModifyAppointmentEmailTemplateWithPaymentInfoForGuest.email-meta.xml,,,log,📰
+email/unfiled$public/SUPPORTSelfServiceNewCommentNotificationSAMPLE.email,A,EmailTemplateFolder unfiled$public/SUPPORTSelfServiceNewCommentNotificationSAMPLE.email,,,log,📰
+email/unfiled$public/SUPPORTSelfServiceNewCommentNotificationSAMPLE.email-meta.xml,A,EmailTemplateFolder unfiled$public/SUPPORTSelfServiceNewCommentNotificationSAMPLE.email-meta.xml,,,log,📰
+email/unfiled$public/SUPPORTSelfServiceNewUserLoginInformationSAMPLE.email,A,EmailTemplateFolder unfiled$public/SUPPORTSelfServiceNewUserLoginInformationSAMPLE.email,,,log,📰
+email/unfiled$public/SUPPORTSelfServiceNewUserLoginInformationSAMPLE.email-meta.xml,A,EmailTemplateFolder unfiled$public/SUPPORTSelfServiceNewUserLoginInformationSAMPLE.email-meta.xml,,,log,📰
+email/unfiled$public/SUPPORTSelfServiceResetPasswordSAMPLE.email,A,EmailTemplateFolder unfiled$public/SUPPORTSelfServiceResetPasswordSAMPLE.email,,,log,📰
+email/unfiled$public/SUPPORTSelfServiceResetPasswordSAMPLE.email-meta.xml,A,EmailTemplateFolder unfiled$public/SUPPORTSelfServiceResetPasswordSAMPLE.email-meta.xml,,,log,📰
+email/unfiled$public/SalesNewCustomerEmail.email,A,EmailTemplateFolder unfiled$public/SalesNewCustomerEmail.email,,,log,📰
+email/unfiled$public/SalesNewCustomerEmail.email-meta.xml,A,EmailTemplateFolder unfiled$public/SalesNewCustomerEmail.email-meta.xml,,,log,📰
+email/unfiled$public/SalesforceSchedulerCancelApptEmailTemplate.email,A,EmailTemplateFolder unfiled$public/SalesforceSchedulerCancelApptEmailTemplate.email,,,log,📰
+email/unfiled$public/SalesforceSchedulerCancelApptEmailTemplate.email-meta.xml,A,EmailTemplateFolder unfiled$public/SalesforceSchedulerCancelApptEmailTemplate.email-meta.xml,,,log,📰
+email/unfiled$public/SalesforceSchedulerCreateApptEmailTemplate.email,A,EmailTemplateFolder unfiled$public/SalesforceSchedulerCreateApptEmailTemplate.email,,,log,📰
+email/unfiled$public/SalesforceSchedulerCreateApptEmailTemplate.email-meta.xml,A,EmailTemplateFolder unfiled$public/SalesforceSchedulerCreateApptEmailTemplate.email-meta.xml,,,log,📰
+email/unfiled$public/SalesforceSchedulerGroupApptEmailTemplate.email,A,EmailTemplateFolder unfiled$public/SalesforceSchedulerGroupApptEmailTemplate.email,,,log,📰
+email/unfiled$public/SalesforceSchedulerGroupApptEmailTemplate.email-meta.xml,A,EmailTemplateFolder unfiled$public/SalesforceSchedulerGroupApptEmailTemplate.email-meta.xml,,,log,📰
+email/unfiled$public/SalesforceSchedulerModifyApptEmailTemplate.email,A,EmailTemplateFolder unfiled$public/SalesforceSchedulerModifyApptEmailTemplate.email,,,log,📰
+email/unfiled$public/SalesforceSchedulerModifyApptEmailTemplate.email-meta.xml,A,EmailTemplateFolder unfiled$public/SalesforceSchedulerModifyApptEmailTemplate.email-meta.xml,,,log,📰
+email/unfiled$public/SchedulerPaymentApptCancellationEmailTemplate.email,A,EmailTemplateFolder unfiled$public/SchedulerPaymentApptCancellationEmailTemplate.email,,,log,📰
+email/unfiled$public/SchedulerPaymentApptCancellationEmailTemplate.email-meta.xml,A,EmailTemplateFolder unfiled$public/SchedulerPaymentApptCancellationEmailTemplate.email-meta.xml,,,log,📰
+email/unfiled$public/SchedulerPaymentApptConfirmationEmailTemplate.email,A,EmailTemplateFolder unfiled$public/SchedulerPaymentApptConfirmationEmailTemplate.email,,,log,📰
+email/unfiled$public/SchedulerPaymentApptConfirmationEmailTemplate.email-meta.xml,A,EmailTemplateFolder unfiled$public/SchedulerPaymentApptConfirmationEmailTemplate.email-meta.xml,,,log,📰
+email/unfiled$public/SchedulerPaymentApptConfirmationEmailTemplateForGuest.email,A,EmailTemplateFolder unfiled$public/SchedulerPaymentApptConfirmationEmailTemplateForGuest.email,,,log,📰
+email/unfiled$public/SchedulerPaymentApptConfirmationEmailTemplateForGuest.email-meta.xml,A,EmailTemplateFolder unfiled$public/SchedulerPaymentApptConfirmationEmailTemplateForGuest.email-meta.xml,,,log,📰
+email/unfiled$public/SchedulerPaymentReminderEmailTemplate.email,A,EmailTemplateFolder unfiled$public/SchedulerPaymentReminderEmailTemplate.email,,,log,📰
+email/unfiled$public/SchedulerPaymentReminderEmailTemplate.email-meta.xml,A,EmailTemplateFolder unfiled$public/SchedulerPaymentReminderEmailTemplate.email-meta.xml,,,log,📰
+email/unfiled$public/SchedulerUnauthenticatedUserAppointmentTypeEmailTemplateForAmazonChime.email,A,EmailTemplateFolder unfiled$public/SchedulerUnauthenticatedUserAppointmentTypeEmailTemplateForAmazonChime.email,,,log,📰
+email/unfiled$public/SchedulerUnauthenticatedUserAppointmentTypeEmailTemplateForAmazonChime.email-meta.xml,A,EmailTemplateFolder unfiled$public/SchedulerUnauthenticatedUserAppointmentTypeEmailTemplateForAmazonChime.email-meta.xml,,,log,📰
+email/unfiled$public/SchedulerUnauthenticatedUserAppointmentTypeEmailTemplateForThirdParty.email,A,EmailTemplateFolder unfiled$public/SchedulerUnauthenticatedUserAppointmentTypeEmailTemplateForThirdParty.email,,,log,📰
+email/unfiled$public/SchedulerUnauthenticatedUserAppointmentTypeEmailTemplateForThirdParty.email-meta.xml,A,EmailTemplateFolder unfiled$public/SchedulerUnauthenticatedUserAppointmentTypeEmailTemplateForThirdParty.email-meta.xml,,,log,📰
+email/unfiled$public/SchedulerUnauthenticatedUserEngagementChannelEmailTemplateForAmazonChime.email,A,EmailTemplateFolder unfiled$public/SchedulerUnauthenticatedUserEngagementChannelEmailTemplateForAmazonChime.email,,,log,📰
+email/unfiled$public/SchedulerUnauthenticatedUserEngagementChannelEmailTemplateForAmazonChime.email-meta.xml,A,EmailTemplateFolder unfiled$public/SchedulerUnauthenticatedUserEngagementChannelEmailTemplateForAmazonChime.email-meta.xml,,,log,📰
+email/unfiled$public/SchedulerUnauthenticatedUserEngagementChannelEmailTemplateForThirdParty.email,A,EmailTemplateFolder unfiled$public/SchedulerUnauthenticatedUserEngagementChannelEmailTemplateForThirdParty.email,,,log,📰
+email/unfiled$public/SchedulerUnauthenticatedUserEngagementChannelEmailTemplateForThirdParty.email-meta.xml,A,EmailTemplateFolder unfiled$public/SchedulerUnauthenticatedUserEngagementChannelEmailTemplateForThirdParty.email-meta.xml,,,log,📰
+email/unfiled$public/SupportCaseAssignmentNotification.email,A,EmailTemplateFolder unfiled$public/SupportCaseAssignmentNotification.email,,,log,📰
+email/unfiled$public/SupportCaseAssignmentNotification.email-meta.xml,A,EmailTemplateFolder unfiled$public/SupportCaseAssignmentNotification.email-meta.xml,,,log,📰
+email/unfiled$public/SupportCaseCreatedPhoneInquiries.email,A,EmailTemplateFolder unfiled$public/SupportCaseCreatedPhoneInquiries.email,,,log,📰
+email/unfiled$public/SupportCaseCreatedPhoneInquiries.email-meta.xml,A,EmailTemplateFolder unfiled$public/SupportCaseCreatedPhoneInquiries.email-meta.xml,,,log,📰
+email/unfiled$public/SupportCaseCreatedWebInquiries.email,A,EmailTemplateFolder unfiled$public/SupportCaseCreatedWebInquiries.email,,,log,📰
+email/unfiled$public/SupportCaseCreatedWebInquiries.email-meta.xml,A,EmailTemplateFolder unfiled$public/SupportCaseCreatedWebInquiries.email-meta.xml,,,log,📰
+email/unfiled$public/SupportCaseResponse.email,A,EmailTemplateFolder unfiled$public/SupportCaseResponse.email,,,log,📰
+email/unfiled$public/SupportCaseResponse.email-meta.xml,A,EmailTemplateFolder unfiled$public/SupportCaseResponse.email-meta.xml,,,log,📰
+email/unfiled$public/SupportEscalatedCaseNotification.email,A,EmailTemplateFolder unfiled$public/SupportEscalatedCaseNotification.email,,,log,📰
+email/unfiled$public/SupportEscalatedCaseNotification.email-meta.xml,A,EmailTemplateFolder unfiled$public/SupportEscalatedCaseNotification.email-meta.xml,,,log,📰
+email/unfiled$public/SupportEscalatedCaseReassignment.email,A,EmailTemplateFolder unfiled$public/SupportEscalatedCaseReassignment.email,,,log,📰
+email/unfiled$public/SupportEscalatedCaseReassignment.email-meta.xml,A,EmailTemplateFolder unfiled$public/SupportEscalatedCaseReassignment.email-meta.xml,,,log,📰
+email/unfiled$public/SupportSelfServiceNewLoginandPassword.email,A,EmailTemplateFolder unfiled$public/SupportSelfServiceNewLoginandPassword.email,,,log,📰
+email/unfiled$public/SupportSelfServiceNewLoginandPassword.email-meta.xml,A,EmailTemplateFolder unfiled$public/SupportSelfServiceNewLoginandPassword.email-meta.xml,,,log,📰
+email/unfiled$public/SupportSelfServiceResetPassword.email,A,EmailTemplateFolder unfiled$public/SupportSelfServiceResetPassword.email,,,log,📰
+email/unfiled$public/SupportSelfServiceResetPassword.email-meta.xml,A,EmailTemplateFolder unfiled$public/SupportSelfServiceResetPassword.email-meta.xml,,,log,📰
+entitlementProcesses/standard case.entitlementProcess-meta.xml,A,EntitlementProcess standard case,,,log,📰
+escalationRules/Case.escalationRules-meta.xml,A,EscalationRule Cases-meta.xml,,,log,📰
+externalClientApps/sfdxhardismain.eca-meta.xml,A,ExternalClientApplication sfdxhardismain,,,log,📰
+externalClientApps/sfdxhardismon_orgfarm_42750320.eca-meta.xml,A,ExternalClientApplication sfdxhardismon_orgfarm_42750320,,,log,📰
+extlClntAppGlobalOauthSets/sfdxhardismainGlblOAuth.ecaGlblOauth-meta.xml,A,ExtlClntAppGlobalOauthSettings sfdxhardismainGlblOAuth,,,log,📰
+extlClntAppGlobalOauthSets/sfdxhardismon_orgfarm_42750320GlblOAuth.ecaGlblOauth-meta.xml,A,ExtlClntAppGlobalOauthSettings sfdxhardismon_orgfarm_42750320GlblOAuth,,,log,📰
+extlClntAppOauthPolicies/sfdxhardismainOAuthSettings_defaultPolicy.ecaOauthPlcy-meta.xml,A,ExtlClntAppOauthConfigurablePolicies sfdxhardismainOAuthSettings_defaultPolicy,,,log,📰
+extlClntAppOauthPolicies/sfdxhardismon_orgfarm_42750320OAuthSettings_defaultPolicy.ecaOauthPlcy-meta.xml,A,ExtlClntAppOauthConfigurablePolicies sfdxhardismon_orgfarm_42750320OAuthSettings_defaultPolicy,,,log,📰
+extlClntAppOauthSettings/sfdxhardismainOAuthSettings.ecaOauth-meta.xml,A,ExtlClntAppOauthSettings sfdxhardismainOAuthSettings,,,log,📰
+extlClntAppOauthSettings/sfdxhardismon_orgfarm_42750320OAuthSettings.ecaOauth-meta.xml,A,ExtlClntAppOauthSettings sfdxhardismon_orgfarm_42750320OAuthSettings,,,log,📰
+extlClntAppPolicies/sfdxhardismain_defaultPolicy.ecaPlcy-meta.xml,A,ExtlClntAppConfigurablePolicies sfdxhardismain_defaultPolicy,,,log,📰
+extlClntAppPolicies/sfdxhardismon_orgfarm_42750320_defaultPolicy.ecaPlcy-meta.xml,A,ExtlClntAppConfigurablePolicies sfdxhardismon_orgfarm_42750320_defaultPolicy,,,log,📰
+flexipages/AcademicOperations_UtilityBar.flexipage-meta.xml,A,FlexiPage AcademicOperations_UtilityBar,,,log,📰
+flexipages/AdvertisingInventoryCalendar_UtilityBar.flexipage-meta.xml,A,FlexiPage AdvertisingInventoryCalendar_UtilityBar,,,log,📰
+flexipages/CommandCenterApp_UtilityBar.flexipage-meta.xml,A,FlexiPage CommandCenterApp_UtilityBar,,,log,📰
+flexipages/ContactCenter_UtilityBar.flexipage-meta.xml,A,FlexiPage ContactCenter_UtilityBar,,,log,📰
+flexipages/CrisisCenter_UtilityBar.flexipage-meta.xml,A,FlexiPage CrisisCenter_UtilityBar,,,log,📰
+flexipages/DataGovernanceConsole_UtilityBar.flexipage-meta.xml,A,FlexiPage DataGovernanceConsole_UtilityBar,,,log,📰
+flexipages/ExpressionSetConsole_UtilityBar.flexipage-meta.xml,A,FlexiPage ExpressionSetConsole_UtilityBar,,,log,📰
+flexipages/FlowsApp_UtilityBar.flexipage-meta.xml,A,FlexiPage FlowsApp_UtilityBar,,,log,📰
+flexipages/Installation_Record_Page.flexipage-meta.xml,A,FlexiPage Installation_Record_Page,,,log,📰
+flexipages/LightningSalesConsole_UtilityBar.flexipage-meta.xml,A,FlexiPage LightningSalesConsole_UtilityBar,,,log,📰
+flexipages/LightningSales_UtilityBar.flexipage-meta.xml,A,FlexiPage LightningSales_UtilityBar,,,log,📰
+flexipages/LightningService_UtilityBar.flexipage-meta.xml,A,FlexiPage LightningService_UtilityBar,,,log,📰
+flexipages/MediaAdSalesManagement_UtilityBar.flexipage-meta.xml,A,FlexiPage MediaAdSalesManagement_UtilityBar,,,log,📰
+flexipages/RevenueCloudConsole_UtilityBar.flexipage-meta.xml,A,FlexiPage RevenueCloudConsole_UtilityBar,,,log,📰
+flexipages/SalesCloudMobile_UtilityBar.flexipage-meta.xml,A,FlexiPage SalesCloudMobile_UtilityBar,,,log,📰
+flowDefinitions/Installation_Assign_Crew.flowDefinition-meta.xml,A,FlowDefinition Installation_Assign_Crew,,,log,📰
+flowDefinitions/Installation_Close_Check.flowDefinition-meta.xml,A,FlowDefinition Installation_Close_Check,,,log,📰
+flowDefinitions/Installation_Crew_Warning.flowDefinition-meta.xml,A,FlowDefinition Installation_Crew_Warning,,,log,📰
+flowDefinitions/sfdc_default_ReportExport_Protection_Flow.flowDefinition-meta.xml,A,FlowDefinition sfdc_default_ReportExport_Protection_Flow,,,log,📰
+flows/Installation_Assign_Crew.flow-meta.xml,A,Flow Installation_Assign_Crew,,,log,📰
+flows/Installation_Close_Check.flow-meta.xml,A,Flow Installation_Close_Check,,,log,📰
+flows/Installation_Crew_Warning.flow-meta.xml,A,Flow Installation_Crew_Warning,,,log,📰
+flows/sfdc_default_ReportExport_Protection_Flow.flow-meta.xml,A,Flow sfdc_default_ReportExport_Protection_Flow,,,log,📰
+groups/Helios_Crew_Leads.group-meta.xml,A,Group Helios_Crew_Leads,,,log,📰
+homePageLayouts/DE Default.homePageLayout-meta.xml,A,HomePageLayout DE Default,,,log,📰
+iframeWhiteListUrlSettings/IframeWhiteListUrlSettings.iframeWhiteListUrlSettings-meta.xml,A,IframeWhiteListUrlSettings IframeWhiteListUrlSettings,,,log,📰
+layouts/Account-Account %28Marketing%29 Layout.layout-meta.xml,A,Layout Account-Account %28Marketing%29 Layout,,,log,📰
+layouts/Account-Account %28Sales%29 Layout.layout-meta.xml,A,Layout Account-Account %28Sales%29 Layout,,,log,📰
+layouts/Account-Account %28Support%29 Layout.layout-meta.xml,A,Layout Account-Account %28Support%29 Layout,,,log,📰
+layouts/Account-Account Layout.layout-meta.xml,A,Layout Account-Account Layout,,,log,📰
+layouts/AlternativePaymentMethod-Alternative Payment Method Layout.layout-meta.xml,A,Layout AlternativePaymentMethod-Alternative Payment Method Layout,,,log,📰
+layouts/ApiAnomalyEventStore-API Anomaly Event Store Layout.layout-meta.xml,A,Layout ApiAnomalyEventStore-API Anomaly Event Store Layout,,,log,📰
+layouts/AppointmentInvitation-Appointment Invitation Layout.layout-meta.xml,A,Layout AppointmentInvitation-Appointment Invitation Layout,,,log,📰
+layouts/Asset-Asset Layout.layout-meta.xml,A,Layout Asset-Asset Layout,,,log,📰
+layouts/AssetAction-Asset Action Layout.layout-meta.xml,A,Layout AssetAction-Asset Action Layout,,,log,📰
+layouts/AssetActionSource-Asset Action Source Layout.layout-meta.xml,A,Layout AssetActionSource-Asset Action Source Layout,,,log,📰
+layouts/AssetRelationship-Asset Relationship Layout.layout-meta.xml,A,Layout AssetRelationship-Asset Relationship Layout,,,log,📰
+layouts/AssetStatePeriod-Asset State Period Layout.layout-meta.xml,A,Layout AssetStatePeriod-Asset State Period Layout,,,log,📰
+layouts/AssignedResource-Assigned Resource Layout.layout-meta.xml,A,Layout AssignedResource-Assigned Resource Layout,,,log,📰
+layouts/AssociatedLocation-Associated Location Layout.layout-meta.xml,A,Layout AssociatedLocation-Associated Location Layout,,,log,📰
+layouts/AsyncOperationLog-Async Operation Log Layout.layout-meta.xml,A,Layout AsyncOperationLog-Async Operation Log Layout,,,log,📰
+layouts/AuthorizationForm-Authorization Form Layout.layout-meta.xml,A,Layout AuthorizationForm-Authorization Form Layout,,,log,📰
+layouts/AuthorizationFormConsent-Authorization Form Consent Layout.layout-meta.xml,A,Layout AuthorizationFormConsent-Authorization Form Consent Layout,,,log,📰
+layouts/AuthorizationFormDataUse-Authorization Form Data Use Layout.layout-meta.xml,A,Layout AuthorizationFormDataUse-Authorization Form Data Use Layout,,,log,📰
+layouts/AuthorizationFormText-Authorization Form Text Layout.layout-meta.xml,A,Layout AuthorizationFormText-Authorization Form Text Layout,,,log,📰
+layouts/BusinessBrand-Business Brand Layout.layout-meta.xml,A,Layout BusinessBrand-Business Brand Layout,,,log,📰
+layouts/Campaign-Campaign Layout.layout-meta.xml,A,Layout Campaign-Campaign Layout,,,log,📰
+layouts/CampaignMember-Campaign Member Page Layout.layout-meta.xml,A,Layout CampaignMember-Campaign Member Page Layout,,,log,📰
+layouts/CardPaymentMethod-Card Payment Method Layout.layout-meta.xml,A,Layout CardPaymentMethod-Card Payment Method Layout,,,log,📰
+layouts/CartCheckoutSession-Cart Checkout Session Layout.layout-meta.xml,A,Layout CartCheckoutSession-Cart Checkout Session Layout,,,log,📰
+layouts/CartDeliveryGroup-Cart Delivery Group Layout.layout-meta.xml,A,Layout CartDeliveryGroup-Cart Delivery Group Layout,,,log,📰
+layouts/CartDeliveryGroupMethod-Cart Delivery Group Method Layout.layout-meta.xml,A,Layout CartDeliveryGroupMethod-Cart Delivery Group Method Layout,,,log,📰
+layouts/CartItem-Cart Item Layout.layout-meta.xml,A,Layout CartItem-Cart Item Layout,,,log,📰
+layouts/CartTax-Cart Tax Layout.layout-meta.xml,A,Layout CartTax-Cart Tax Layout,,,log,📰
+layouts/CartValidationOutput-Cart Validation Output Layout.layout-meta.xml,A,Layout CartValidationOutput-Cart Validation Output Layout,,,log,📰
+layouts/Case-Case %28Marketing%29 Layout.layout-meta.xml,A,Layout Case-Case %28Marketing%29 Layout,,,log,📰
+layouts/Case-Case %28Sales%29 Layout.layout-meta.xml,A,Layout Case-Case %28Sales%29 Layout,,,log,📰
+layouts/Case-Case %28Support%29 Layout.layout-meta.xml,A,Layout Case-Case %28Support%29 Layout,,,log,📰
+layouts/Case-Case Layout.layout-meta.xml,A,Layout Case-Case Layout,,,log,📰
+layouts/CaseClose-Close Case Layout.layout-meta.xml,A,Layout CaseClose-Close Case Layout,,,log,📰
+layouts/CaseMilestone-Case Milestone Layout.layout-meta.xml,A,Layout CaseMilestone-Case Milestone Layout,,,log,📰
+layouts/CommunityMemberLayout-Community Member Layout.layout-meta.xml,A,Layout CommunityMemberLayout-Community Member Layout,,,log,📰
+layouts/ConsumptionRate-Consumption Rate Layout.layout-meta.xml,A,Layout ConsumptionRate-Consumption Rate Layout,,,log,📰
+layouts/ConsumptionSchedule-Consumption Schedule Layout.layout-meta.xml,A,Layout ConsumptionSchedule-Consumption Schedule Layout,,,log,📰
+layouts/Contact-Contact %28Marketing%29 Layout.layout-meta.xml,A,Layout Contact-Contact %28Marketing%29 Layout,,,log,📰
+layouts/Contact-Contact %28Sales%29 Layout.layout-meta.xml,A,Layout Contact-Contact %28Sales%29 Layout,,,log,📰
+layouts/Contact-Contact %28Support%29 Layout.layout-meta.xml,A,Layout Contact-Contact %28Support%29 Layout,,,log,📰
+layouts/Contact-Contact Layout.layout-meta.xml,A,Layout Contact-Contact Layout,,,log,📰
+layouts/ContactPointAddress-Contact Point Address Layout.layout-meta.xml,A,Layout ContactPointAddress-Contact Point Address Layout,,,log,📰
+layouts/ContactPointEmail-Contact Point Email Layout.layout-meta.xml,A,Layout ContactPointEmail-Contact Point Email Layout,,,log,📰
+layouts/ContactPointOttSvc-Contact Point OTT Service Layout.layout-meta.xml,A,Layout ContactPointOttSvc-Contact Point OTT Service Layout,,,log,📰
+layouts/ContactPointPhone-Contact Point Phone Layout.layout-meta.xml,A,Layout ContactPointPhone-Contact Point Phone Layout,,,log,📰
+layouts/ContactPointTypeConsent-Contact Point Type Consent Layout.layout-meta.xml,A,Layout ContactPointTypeConsent-Contact Point Type Consent Layout,,,log,📰
+layouts/ContentVersion-Content Version Layout.layout-meta.xml,A,Layout ContentVersion-Content Version Layout,,,log,📰
+layouts/Contract-Contract Layout.layout-meta.xml,A,Layout Contract-Contract Layout,,,log,📰
+layouts/ContractLineItem-Contract Line Item Layout.layout-meta.xml,A,Layout ContractLineItem-Contract Line Item Layout,,,log,📰
+layouts/CredentialStuffingEventStore-Credential Stuffing Event Store Layout.layout-meta.xml,A,Layout CredentialStuffingEventStore-Credential Stuffing Event Store Layout,,,log,📰
+layouts/CreditMemo-Credit Memo Layout.layout-meta.xml,A,Layout CreditMemo-Credit Memo Layout,,,log,📰
+layouts/CreditMemoInvApplication-Credit Memo Invoice Application Layout.layout-meta.xml,A,Layout CreditMemoInvApplication-Credit Memo Invoice Application Layout,,,log,📰
+layouts/CreditMemoLine-Credit Memo Line Layout.layout-meta.xml,A,Layout CreditMemoLine-Credit Memo Line Layout,,,log,📰
+layouts/Crew_Capacity__c-Crew Capacity Layout.layout-meta.xml,A,Layout Crew_Capacity__c-Crew Capacity Layout,,,log,📰
+layouts/Customer-Customer Layout.layout-meta.xml,A,Layout Customer-Customer Layout,,,log,📰
+layouts/DandBCompany-D%26B Company Layout.layout-meta.xml,A,Layout DandBCompany-D%26B Company Layout,,,log,📰
+layouts/DataUseLegalBasis-Data Use Legal Basis Layout.layout-meta.xml,A,Layout DataUseLegalBasis-Data Use Legal Basis Layout,,,log,📰
+layouts/DataUsePurpose-Data Use Purpose Layout.layout-meta.xml,A,Layout DataUsePurpose-Data Use Purpose Layout,,,log,📰
+layouts/DigitalWallet-Digital Wallet Layout.layout-meta.xml,A,Layout DigitalWallet-Digital Wallet Layout,,,log,📰
+layouts/DuplicateRecordSet-Duplicate Record Set Layout.layout-meta.xml,A,Layout DuplicateRecordSet-Duplicate Record Set Layout,,,log,📰
+layouts/EmailMessage-Email Message Layout.layout-meta.xml,A,Layout EmailMessage-Email Message Layout,,,log,📰
+layouts/EngagementChannelType-Engagement Channel Type Layout.layout-meta.xml,A,Layout EngagementChannelType-Engagement Channel Type Layout,,,log,📰
+layouts/Entitlement-Entitlement Layout.layout-meta.xml,A,Layout Entitlement-Entitlement Layout,,,log,📰
+layouts/EntityMilestone-Object Milestone Layout.layout-meta.xml,A,Layout EntityMilestone-Object Milestone Layout,,,log,📰
+layouts/Event-Event Layout.layout-meta.xml,A,Layout Event-Event Layout,,,log,📰
+layouts/FeedItem-Feed Item Layout.layout-meta.xml,A,Layout FeedItem-Feed Item Layout,,,log,📰
+layouts/FinanceBalanceSnapshot-Finance Balance Snapshot Layout.layout-meta.xml,A,Layout FinanceBalanceSnapshot-Finance Balance Snapshot Layout,,,log,📰
+layouts/FinanceTransaction-Finance Transaction Layout.layout-meta.xml,A,Layout FinanceTransaction-Finance Transaction Layout,,,log,📰
+layouts/FulfillmentOrder-Fulfillment Order Layout.layout-meta.xml,A,Layout FulfillmentOrder-Fulfillment Order Layout,,,log,📰
+layouts/FulfillmentOrderItemAdjustment-Fulfillment Order Item Adjustment Layout.layout-meta.xml,A,Layout FulfillmentOrderItemAdjustment-Fulfillment Order Item Adjustment Layout,,,log,📰
+layouts/FulfillmentOrderItemTax-Fulfillment Order Item Tax Layout.layout-meta.xml,A,Layout FulfillmentOrderItemTax-Fulfillment Order Item Tax Layout,,,log,📰
+layouts/FulfillmentOrderLineItem-Fulfillment Order Product Layout.layout-meta.xml,A,Layout FulfillmentOrderLineItem-Fulfillment Order Product Layout,,,log,📰
+layouts/Global-Global Layout.layout-meta.xml,A,Layout Global-Global Layout,,,log,📰
+layouts/GuestUserAnomalyEventStore-Guest User Anomaly Event Store Layout.layout-meta.xml,A,Layout GuestUserAnomalyEventStore-Guest User Anomaly Event Store Layout,,,log,📰
+layouts/Handover_Item__c-Handover Item Layout.layout-meta.xml,A,Layout Handover_Item__c-Handover Item Layout,,,log,📰
+layouts/Idea-Idea Layout.layout-meta.xml,A,Layout Idea-Idea Layout,,,log,📰
+layouts/Individual-Individual Layout.layout-meta.xml,A,Layout Individual-Individual Layout,,,log,📰
+layouts/Installation__c-Installation Layout.layout-meta.xml,A,Layout Installation__c-Installation Layout,,,log,📰
+layouts/Invoice-Invoice Layout.layout-meta.xml,A,Layout Invoice-Invoice Layout,,,log,📰
+layouts/InvoiceLine-Invoice Line Layout.layout-meta.xml,A,Layout InvoiceLine-Invoice Line Layout,,,log,📰
+layouts/Lead-Lead %28Marketing%29 Layout.layout-meta.xml,A,Layout Lead-Lead %28Marketing%29 Layout,,,log,📰
+layouts/Lead-Lead %28Sales%29 Layout.layout-meta.xml,A,Layout Lead-Lead %28Sales%29 Layout,,,log,📰
+layouts/Lead-Lead %28Support%29 Layout.layout-meta.xml,A,Layout Lead-Lead %28Support%29 Layout,,,log,📰
+layouts/Lead-Lead Layout.layout-meta.xml,A,Layout Lead-Lead Layout,,,log,📰
+layouts/LegalEntity-Legal Entity Layout.layout-meta.xml,A,Layout LegalEntity-Legal Entity Layout,,,log,📰
+layouts/LiveChatTranscriptActive-Chat Transcript %28In Progress%29 Layout.layout-meta.xml,A,Layout LiveChatTranscriptActive-Chat Transcript %28In Progress%29 Layout,,,log,📰
+layouts/LiveChatTranscriptWaiting-Chat Transcript %28Waiting%29 Layout.layout-meta.xml,A,Layout LiveChatTranscriptWaiting-Chat Transcript %28Waiting%29 Layout,,,log,📰
+layouts/Location-Location Layout.layout-meta.xml,A,Layout Location-Location Layout,,,log,📰
+layouts/LocationGroup-Location Group Layout.layout-meta.xml,A,Layout LocationGroup-Location Group Layout,,,log,📰
+layouts/LocationGroupAssignment-Location Group Assignment Layout.layout-meta.xml,A,Layout LocationGroupAssignment-Location Group Assignment Layout,,,log,📰
+layouts/LoginAnomalyEventStore-Login Anomaly Event Store Layout.layout-meta.xml,A,Layout LoginAnomalyEventStore-Login Anomaly Event Store Layout,,,log,📰
+layouts/Macro-Macro Layout.layout-meta.xml,A,Layout Macro-Macro Layout,,,log,📰
+layouts/OperatingHours-Operating Hours Layout.layout-meta.xml,A,Layout OperatingHours-Operating Hours Layout,,,log,📰
+layouts/Opportunity-Opportunity %28Marketing%29 Layout.layout-meta.xml,A,Layout Opportunity-Opportunity %28Marketing%29 Layout,,,log,📰
+layouts/Opportunity-Opportunity %28Sales%29 Layout.layout-meta.xml,A,Layout Opportunity-Opportunity %28Sales%29 Layout,,,log,📰
+layouts/Opportunity-Opportunity %28Support%29 Layout.layout-meta.xml,A,Layout Opportunity-Opportunity %28Support%29 Layout,,,log,📰
+layouts/Opportunity-Opportunity Layout.layout-meta.xml,A,Layout Opportunity-Opportunity Layout,,,log,📰
+layouts/OpportunityLineItem-Opportunity Product Layout.layout-meta.xml,A,Layout OpportunityLineItem-Opportunity Product Layout,,,log,📰
+layouts/Order-Order Layout.layout-meta.xml,A,Layout Order-Order Layout,,,log,📰
+layouts/OrderItem-Order Product Layout.layout-meta.xml,A,Layout OrderItem-Order Product Layout,,,log,📰
+layouts/Panel_Batch__c-Panel Batch Layout.layout-meta.xml,A,Layout Panel_Batch__c-Panel Batch Layout,,,log,📰
+layouts/Payment-Payment Layout.layout-meta.xml,A,Layout Payment-Payment Layout,,,log,📰
+layouts/PaymentAuthAdjustment-Payment Authorization Adjustment Layout.layout-meta.xml,A,Layout PaymentAuthAdjustment-Payment Authorization Adjustment Layout,,,log,📰
+layouts/PaymentAuthorization-Payment Authorization Layout.layout-meta.xml,A,Layout PaymentAuthorization-Payment Authorization Layout,,,log,📰
+layouts/PaymentGateway-Payment Gateway Layout.layout-meta.xml,A,Layout PaymentGateway-Payment Gateway Layout,,,log,📰
+layouts/PaymentGatewayLog-Payment Gateway Log Layout.layout-meta.xml,A,Layout PaymentGatewayLog-Payment Gateway Log Layout,,,log,📰
+layouts/PaymentGroup-Payment Group Layout.layout-meta.xml,A,Layout PaymentGroup-Payment Group Layout,,,log,📰
+layouts/PaymentLineInvoice-Payment Line Invoice Layout.layout-meta.xml,A,Layout PaymentLineInvoice-Payment Line Invoice Layout,,,log,📰
+layouts/Pricebook2-Price Book Layout.layout-meta.xml,A,Layout Pricebook2-Price Book Layout,,,log,📰
+layouts/PricebookEntry-Price Book Entry Layout.layout-meta.xml,A,Layout PricebookEntry-Price Book Entry Layout,,,log,📰
+layouts/ProcessException-Process Exception Layout.layout-meta.xml,A,Layout ProcessException-Process Exception Layout,,,log,📰
+layouts/Product2-Product Layout.layout-meta.xml,A,Layout Product2-Product Layout,,,log,📰
+layouts/ProductConsumptionSchedule-Product Consumption Schedule Layout.layout-meta.xml,A,Layout ProductConsumptionSchedule-Product Consumption Schedule Layout,,,log,📰
+layouts/QuickText-Quick Text Layout.layout-meta.xml,A,Layout QuickText-Quick Text Layout,,,log,📰
+layouts/Refund-Refund Layout.layout-meta.xml,A,Layout Refund-Refund Layout,,,log,📰
+layouts/RefundLinePayment-Refund Line Payment Layout.layout-meta.xml,A,Layout RefundLinePayment-Refund Line Payment Layout,,,log,📰
+layouts/ReportAnomalyEventStore-Report Anomaly Event Store Layout.layout-meta.xml,A,Layout ReportAnomalyEventStore-Report Anomaly Event Store Layout,,,log,📰
+layouts/ResourceAbsence-Resource Absence Layout.layout-meta.xml,A,Layout ResourceAbsence-Resource Absence Layout,,,log,📰
+layouts/ResourcePreference-Resource Preference Layout.layout-meta.xml,A,Layout ResourcePreference-Resource Preference Layout,,,log,📰
+layouts/ReturnOrder-Return Order Layout.layout-meta.xml,A,Layout ReturnOrder-Return Order Layout,,,log,📰
+layouts/ReturnOrderItemAdjustment-Return Order Item Adjustment Layout.layout-meta.xml,A,Layout ReturnOrderItemAdjustment-Return Order Item Adjustment Layout,,,log,📰
+layouts/ReturnOrderItemTax-Return Order Item Tax Layout.layout-meta.xml,A,Layout ReturnOrderItemTax-Return Order Item Tax Layout,,,log,📰
+layouts/ReturnOrderLineItem-Return Order Line Item Layout.layout-meta.xml,A,Layout ReturnOrderLineItem-Return Order Line Item Layout,,,log,📰
+layouts/Scorecard-Scorecard Layout.layout-meta.xml,A,Layout Scorecard-Scorecard Layout,,,log,📰
+layouts/ScorecardAssociation-Scorecard Association Layout.layout-meta.xml,A,Layout ScorecardAssociation-Scorecard Association Layout,,,log,📰
+layouts/ScorecardMetric-Scorecard Metric Layout.layout-meta.xml,A,Layout ScorecardMetric-Scorecard Metric Layout,,,log,📰
+layouts/SecurityDefenseActionEventStore-Security Defense Action Event Store Layout.layout-meta.xml,A,Layout SecurityDefenseActionEventStore-Security Defense Action Event Store Layout,,,log,📰
+layouts/Seller-Seller Layout.layout-meta.xml,A,Layout Seller-Seller Layout,,,log,📰
+layouts/ServiceAppointment-Service Appointment Layout.layout-meta.xml,A,Layout ServiceAppointment-Service Appointment Layout,,,log,📰
+layouts/ServiceContract-Service Contract Layout.layout-meta.xml,A,Layout ServiceContract-Service Contract Layout,,,log,📰
+layouts/ServiceResource-Service Resource Layout.layout-meta.xml,A,Layout ServiceResource-Service Resource Layout,,,log,📰
+layouts/ServiceResourceSkill-Service Resource Skill Layout.layout-meta.xml,A,Layout ServiceResourceSkill-Service Resource Skill Layout,,,log,📰
+layouts/ServiceTerritory-Service Territory Layout.layout-meta.xml,A,Layout ServiceTerritory-Service Territory Layout,,,log,📰
+layouts/ServiceTerritoryMember-Service Territory Member Layout.layout-meta.xml,A,Layout ServiceTerritoryMember-Service Territory Member Layout,,,log,📰
+layouts/SessionHijackingEventStore-Session Hijacking Event Store Layout.layout-meta.xml,A,Layout SessionHijackingEventStore-Session Hijacking Event Store Layout,,,log,📰
+layouts/Shift-Shift Layout.layout-meta.xml,A,Layout Shift-Shift Layout,,,log,📰
+layouts/ShiftWorkTopic-Shift Work Topic Layout.layout-meta.xml,A,Layout ShiftWorkTopic-Shift Work Topic Layout,,,log,📰
+layouts/ShippingConfigurationSet-Shipping Configuration Set Layout.layout-meta.xml,A,Layout ShippingConfigurationSet-Shipping Configuration Set Layout,,,log,📰
+layouts/ShippingRateArea-Shipping Rate Area Layout.layout-meta.xml,A,Layout ShippingRateArea-Shipping Rate Area Layout,,,log,📰
+layouts/ShippingRateGroup-Shipping Rate Group Layout.layout-meta.xml,A,Layout ShippingRateGroup-Shipping Rate Group Layout,,,log,📰
+layouts/SkillRequirement-Skill Requirement Layout.layout-meta.xml,A,Layout SkillRequirement-Skill Requirement Layout,,,log,📰
+layouts/SocialPersona-Social Persona Layout.layout-meta.xml,A,Layout SocialPersona-Social Persona Layout,,,log,📰
+layouts/Solution-Solution Layout.layout-meta.xml,A,Layout Solution-Solution Layout,,,log,📰
+layouts/StandardShippingRate-Standard Shipping Rate Layout.layout-meta.xml,A,Layout StandardShippingRate-Standard Shipping Rate Layout,,,log,📰
+layouts/Task-Task Layout.layout-meta.xml,A,Layout Task-Task Layout,,,log,📰
+layouts/ThreatDetectionFeedback-Threat Detection Feedback Layout.layout-meta.xml,A,Layout ThreatDetectionFeedback-Threat Detection Feedback Layout,,,log,📰
+layouts/TimeSlot-Time Slot Layout.layout-meta.xml,A,Layout TimeSlot-Time Slot Layout,,,log,📰
+layouts/UniversalAnomalyEventStore-Universal Anomaly Event Store Layout.layout-meta.xml,A,Layout UniversalAnomalyEventStore-Universal Anomaly Event Store Layout,,,log,📰
+layouts/User-User Layout.layout-meta.xml,A,Layout User-User Layout,,,log,📰
+layouts/UserProvAccount-User Provisioning Account Layout.layout-meta.xml,A,Layout UserProvAccount-User Provisioning Account Layout,,,log,📰
+layouts/UserProvisioningLog-User Provisioning Log Layout.layout-meta.xml,A,Layout UserProvisioningLog-User Provisioning Log Layout,,,log,📰
+layouts/UserProvisioningRequest-User Provisioning Request Layout.layout-meta.xml,A,Layout UserProvisioningRequest-User Provisioning Request Layout,,,log,📰
+layouts/Waitlist-%5F%5FMISSING LABEL%5F%5F PropertyFile - val Waitlist not found in section StandardLayouts.layout-meta.xml,A,Layout Waitlist-%5F%5FMISSING LABEL%5F%5F PropertyFile - val Waitlist not found in section StandardLayouts,,,log,📰
+layouts/WebCart-Cart Layout.layout-meta.xml,A,Layout WebCart-Cart Layout,,,log,📰
+layouts/WebCartAdjustmentBasis-Cart Adjustment Basis Layout.layout-meta.xml,A,Layout WebCartAdjustmentBasis-Cart Adjustment Basis Layout,,,log,📰
+layouts/WebCartAdjustmentGroup-Cart Adjustment Group Layout.layout-meta.xml,A,Layout WebCartAdjustmentGroup-Cart Adjustment Group Layout,,,log,📰
+layouts/WebStore-Store Layout.layout-meta.xml,A,Layout WebStore-Store Layout,,,log,📰
+layouts/WorkOrder-Work Order Layout.layout-meta.xml,A,Layout WorkOrder-Work Order Layout,,,log,📰
+layouts/WorkOrderLineItem-Work Order Line Item Layout.layout-meta.xml,A,Layout WorkOrderLineItem-Work Order Line Item Layout,,,log,📰
+layouts/WorkPlan-Work Plan Layout.layout-meta.xml,A,Layout WorkPlan-Work Plan Layout,,,log,📰
+layouts/WorkPlanTemplate-Work Plan Template Layout.layout-meta.xml,A,Layout WorkPlanTemplate-Work Plan Template Layout,,,log,📰
+layouts/WorkPlanTemplateEntry-Work Plan Template Entry Layout.layout-meta.xml,A,Layout WorkPlanTemplateEntry-Work Plan Template Entry Layout,,,log,📰
+layouts/WorkStep-Work Step Layout.layout-meta.xml,A,Layout WorkStep-Work Step Layout,,,log,📰
+layouts/WorkStepTemplate-Work Step Template Layout.layout-meta.xml,A,Layout WorkStepTemplate-Work Step Template Layout,,,log,📰
+layouts/WorkType-Work Type Layout.layout-meta.xml,A,Layout WorkType-Work Type Layout,,,log,📰
+layouts/WorkTypeGroup-Work Type Group Layout.layout-meta.xml,A,Layout WorkTypeGroup-Work Type Group Layout,,,log,📰
+layouts/WorkTypeGroupMember-Work Type Group Member Layout.layout-meta.xml,A,Layout WorkTypeGroupMember-Work Type Group Member Layout,,,log,📰
+lwc/installationTimeline/installationTimeline.html,A,LightningComponentBundle installationTimeline/installationTimeline.html,,,log,📰
+lwc/installationTimeline/installationTimeline.js,A,LightningComponentBundle installationTimeline/installationTimeline.js,,,log,📰
+lwc/installationTimeline/installationTimeline.js-meta.xml,A,LightningComponentBundle installationTimeline/installationTimeline.js-meta.xml,,,log,📰
+managedContentTypes/cms_document.managedContentType-meta.xml,A,ManagedContentType cms_document,,,log,📰
+managedContentTypes/cms_image.managedContentType-meta.xml,A,ManagedContentType cms_image,,,log,📰
+managedContentTypes/news.managedContentType-meta.xml,A,ManagedContentType news,,,log,📰
+matchingRules/Account.matchingRule-meta.xml,A,MatchingRule Account,,,log,📰
+matchingRules/Address.matchingRule-meta.xml,A,MatchingRule Address,,,log,📰
+matchingRules/Contact.matchingRule-meta.xml,A,MatchingRule Contact,,,log,📰
+matchingRules/ContactPointEmail.matchingRule-meta.xml,A,MatchingRule ContactPointEmail,,,log,📰
+matchingRules/ContactPointPhone.matchingRule-meta.xml,A,MatchingRule ContactPointPhone,,,log,📰
+matchingRules/Individual.matchingRule-meta.xml,A,MatchingRule Individual,,,log,📰
+matchingRules/Lead.matchingRule-meta.xml,A,MatchingRule Lead,,,log,📰
+milestoneTypes/Close Case.milestoneType-meta.xml,A,MilestoneType Close Case,,,log,📰
+milestoneTypes/Escalate Case.milestoneType-meta.xml,A,MilestoneType Escalate Case,,,log,📰
+milestoneTypes/First Response to Customer.milestoneType-meta.xml,A,MilestoneType First Response to Customer,,,log,📰
+notificationTypeConfig/NotificationTypeConfig.config-meta.xml,A,NotificationTypeConfig NotificationTypeConfig,,,log,📰
+notificationtypes/enablement_coaching_feedback_ready.notiftype-meta.xml,A,CustomNotificationType enablement_coaching_feedback_ready,,,log,📰
+objects/Account/Account.object-meta.xml,A,CustomObject Account/Account,,,log,📰
+objects/Account/fields/AccountNumber.field-meta.xml,A,CustomFieldTranslation AccountNumber.field-meta.xml,,,log,📰
+objects/Account/fields/AccountSource.field-meta.xml,A,CustomFieldTranslation AccountSource.field-meta.xml,,,log,📰
+objects/Account/fields/Active__c.field-meta.xml,A,CustomFieldTranslation Active__c.field-meta.xml,,,log,📰
+objects/Account/fields/AnnualRevenue.field-meta.xml,A,CustomFieldTranslation AnnualRevenue.field-meta.xml,,,log,📰
+objects/Account/fields/BillingAddress.field-meta.xml,A,CustomFieldTranslation BillingAddress.field-meta.xml,,,log,📰
+objects/Account/fields/CleanStatus.field-meta.xml,A,CustomFieldTranslation CleanStatus.field-meta.xml,,,log,📰
+objects/Account/fields/CustomerPriority__c.field-meta.xml,A,CustomFieldTranslation CustomerPriority__c.field-meta.xml,,,log,📰
+objects/Account/fields/DandbCompanyId.field-meta.xml,A,CustomFieldTranslation DandbCompanyId.field-meta.xml,,,log,📰
+objects/Account/fields/Description.field-meta.xml,A,CustomFieldTranslation Description.field-meta.xml,,,log,📰
+objects/Account/fields/DunsNumber.field-meta.xml,A,CustomFieldTranslation DunsNumber.field-meta.xml,,,log,📰
+objects/Account/fields/Fax.field-meta.xml,A,CustomFieldTranslation Fax.field-meta.xml,,,log,📰
+objects/Account/fields/Industry.field-meta.xml,A,CustomFieldTranslation Industry.field-meta.xml,,,log,📰
+objects/Account/fields/Jigsaw.field-meta.xml,A,CustomFieldTranslation Jigsaw.field-meta.xml,,,log,📰
+objects/Account/fields/NaicsCode.field-meta.xml,A,CustomFieldTranslation NaicsCode.field-meta.xml,,,log,📰
+objects/Account/fields/NaicsDesc.field-meta.xml,A,CustomFieldTranslation NaicsDesc.field-meta.xml,,,log,📰
+objects/Account/fields/Name.field-meta.xml,A,CustomFieldTranslation Name.field-meta.xml,,,log,📰
+objects/Account/fields/NumberOfEmployees.field-meta.xml,A,CustomFieldTranslation NumberOfEmployees.field-meta.xml,,,log,📰
+objects/Account/fields/NumberofLocations__c.field-meta.xml,A,CustomFieldTranslation NumberofLocations__c.field-meta.xml,,,log,📰
+objects/Account/fields/OperatingHoursId.field-meta.xml,A,CustomFieldTranslation OperatingHoursId.field-meta.xml,,,log,📰
+objects/Account/fields/OwnerId.field-meta.xml,A,CustomFieldTranslation OwnerId.field-meta.xml,,,log,📰
+objects/Account/fields/Ownership.field-meta.xml,A,CustomFieldTranslation Ownership.field-meta.xml,,,log,📰
+objects/Account/fields/ParentId.field-meta.xml,A,CustomFieldTranslation ParentId.field-meta.xml,,,log,📰
+objects/Account/fields/Phone.field-meta.xml,A,CustomFieldTranslation Phone.field-meta.xml,,,log,📰
+objects/Account/fields/Rating.field-meta.xml,A,CustomFieldTranslation Rating.field-meta.xml,,,log,📰
+objects/Account/fields/SLAExpirationDate__c.field-meta.xml,A,CustomFieldTranslation SLAExpirationDate__c.field-meta.xml,,,log,📰
+objects/Account/fields/SLASerialNumber__c.field-meta.xml,A,CustomFieldTranslation SLASerialNumber__c.field-meta.xml,,,log,📰
+objects/Account/fields/SLA__c.field-meta.xml,A,CustomFieldTranslation SLA__c.field-meta.xml,,,log,📰
+objects/Account/fields/ShippingAddress.field-meta.xml,A,CustomFieldTranslation ShippingAddress.field-meta.xml,,,log,📰
+objects/Account/fields/Sic.field-meta.xml,A,CustomFieldTranslation Sic.field-meta.xml,,,log,📰
+objects/Account/fields/SicDesc.field-meta.xml,A,CustomFieldTranslation SicDesc.field-meta.xml,,,log,📰
+objects/Account/fields/Site.field-meta.xml,A,CustomFieldTranslation Site.field-meta.xml,,,log,📰
+objects/Account/fields/TickerSymbol.field-meta.xml,A,CustomFieldTranslation TickerSymbol.field-meta.xml,,,log,📰
+objects/Account/fields/Tier.field-meta.xml,A,CustomFieldTranslation Tier.field-meta.xml,,,log,📰
+objects/Account/fields/Tradestyle.field-meta.xml,A,CustomFieldTranslation Tradestyle.field-meta.xml,,,log,📰
+objects/Account/fields/Type.field-meta.xml,A,CustomFieldTranslation Type.field-meta.xml,,,log,📰
+objects/Account/fields/UpsellOpportunity__c.field-meta.xml,A,CustomFieldTranslation UpsellOpportunity__c.field-meta.xml,,,log,📰
+objects/Account/fields/Website.field-meta.xml,A,CustomFieldTranslation Website.field-meta.xml,,,log,📰
+objects/Account/fields/YearStarted.field-meta.xml,A,CustomFieldTranslation YearStarted.field-meta.xml,,,log,📰
+objects/Account/listViews/AllAccounts.listView-meta.xml,A,ListView AllAccounts,,,log,📰
+objects/Account/listViews/MyAccounts.listView-meta.xml,A,ListView MyAccounts,,,log,📰
+objects/Account/listViews/NewLastWeek.listView-meta.xml,A,ListView NewLastWeek,,,log,📰
+objects/Account/listViews/NewThisWeek.listView-meta.xml,A,ListView NewThisWeek,,,log,📰
+objects/Account/listViews/PlatinumandGoldSLACustomers.listView-meta.xml,A,ListView PlatinumandGoldSLACustomers,,,log,📰
+objects/Account/webLinks/Billing.webLink-meta.xml,A,WebLink Billing,,,log,📰
+objects/Campaign/Campaign.object-meta.xml,A,CustomObject Campaign/Campaign,,,log,📰
+objects/Campaign/webLinks/ViewCampaignInfluenceReport.webLink-meta.xml,A,WebLink ViewCampaignInfluenceReport,,,log,📰
+objects/Case/Case.object-meta.xml,A,CustomObject Case/Case,,,log,📰
+objects/Case/fields/AccountId.field-meta.xml,A,CustomFieldTranslation AccountId.field-meta.xml,,,log,📰
+objects/Case/fields/AssetId.field-meta.xml,A,CustomFieldTranslation AssetId.field-meta.xml,,,log,📰
+objects/Case/fields/BusinessHoursId.field-meta.xml,A,CustomFieldTranslation BusinessHoursId.field-meta.xml,,,log,📰
+objects/Case/fields/ClosedDate.field-meta.xml,A,CustomFieldTranslation ClosedDate.field-meta.xml,,,log,📰
+objects/Case/fields/Comments.field-meta.xml,A,CustomFieldTranslation Comments.field-meta.xml,,,log,📰
+objects/Case/fields/ContactEmail.field-meta.xml,A,CustomFieldTranslation ContactEmail.field-meta.xml,,,log,📰
+objects/Case/fields/ContactFax.field-meta.xml,A,CustomFieldTranslation ContactFax.field-meta.xml,,,log,📰
+objects/Case/fields/ContactId.field-meta.xml,A,CustomFieldTranslation ContactId.field-meta.xml,,,log,📰
+objects/Case/fields/ContactMobile.field-meta.xml,A,CustomFieldTranslation ContactMobile.field-meta.xml,,,log,📰
+objects/Case/fields/ContactPhone.field-meta.xml,A,CustomFieldTranslation ContactPhone.field-meta.xml,,,log,📰
+objects/Case/fields/Description.field-meta.xml,A,CustomFieldTranslation Description.field-meta.xml,,,log,📰
+objects/Case/fields/EngineeringReqNumber__c.field-meta.xml,A,CustomFieldTranslation EngineeringReqNumber__c.field-meta.xml,,,log,📰
+objects/Case/fields/EntitlementId.field-meta.xml,A,CustomFieldTranslation EntitlementId.field-meta.xml,,,log,📰
+objects/Case/fields/IsClosedOnCreate.field-meta.xml,A,CustomFieldTranslation IsClosedOnCreate.field-meta.xml,,,log,📰
+objects/Case/fields/IsEscalated.field-meta.xml,A,CustomFieldTranslation IsEscalated.field-meta.xml,,,log,📰
+objects/Case/fields/IsStopped.field-meta.xml,A,CustomFieldTranslation IsStopped.field-meta.xml,,,log,📰
+objects/Case/fields/MilestoneStatus.field-meta.xml,A,CustomFieldTranslation MilestoneStatus.field-meta.xml,,,log,📰
+objects/Case/fields/MilestoneStatusIcon.field-meta.xml,A,CustomFieldTranslation MilestoneStatusIcon.field-meta.xml,,,log,📰
+objects/Case/fields/Origin.field-meta.xml,A,CustomFieldTranslation Origin.field-meta.xml,,,log,📰
+objects/Case/fields/OwnerId.field-meta.xml,A,CustomFieldTranslation OwnerId.field-meta.xml,,,log,📰
+objects/Case/fields/ParentId.field-meta.xml,A,CustomFieldTranslation ParentId.field-meta.xml,,,log,📰
+objects/Case/fields/PotentialLiability__c.field-meta.xml,A,CustomFieldTranslation PotentialLiability__c.field-meta.xml,,,log,📰
+objects/Case/fields/Priority.field-meta.xml,A,CustomFieldTranslation Priority.field-meta.xml,,,log,📰
+objects/Case/fields/ProductId.field-meta.xml,A,CustomFieldTranslation ProductId.field-meta.xml,,,log,📰
+objects/Case/fields/Product__c.field-meta.xml,A,CustomFieldTranslation Product__c.field-meta.xml,,,log,📰
+objects/Case/fields/Reason.field-meta.xml,A,CustomFieldTranslation Reason.field-meta.xml,,,log,📰
+objects/Case/fields/SLAViolation__c.field-meta.xml,A,CustomFieldTranslation SLAViolation__c.field-meta.xml,,,log,📰
+objects/Case/fields/ServiceContractId.field-meta.xml,A,CustomFieldTranslation ServiceContractId.field-meta.xml,,,log,📰
+objects/Case/fields/SlaExitDate.field-meta.xml,A,CustomFieldTranslation SlaExitDate.field-meta.xml,,,log,📰
+objects/Case/fields/SlaStartDate.field-meta.xml,A,CustomFieldTranslation SlaStartDate.field-meta.xml,,,log,📰
+objects/Case/fields/SourceId.field-meta.xml,A,CustomFieldTranslation SourceId.field-meta.xml,,,log,📰
+objects/Case/fields/Status.field-meta.xml,A,CustomFieldTranslation Status.field-meta.xml,,,log,📰
+objects/Case/fields/StopStartDate.field-meta.xml,A,CustomFieldTranslation StopStartDate.field-meta.xml,,,log,📰
+objects/Case/fields/Subject.field-meta.xml,A,CustomFieldTranslation Subject.field-meta.xml,,,log,📰
+objects/Case/fields/SuppliedCompany.field-meta.xml,A,CustomFieldTranslation SuppliedCompany.field-meta.xml,,,log,📰
+objects/Case/fields/SuppliedEmail.field-meta.xml,A,CustomFieldTranslation SuppliedEmail.field-meta.xml,,,log,📰
+objects/Case/fields/SuppliedName.field-meta.xml,A,CustomFieldTranslation SuppliedName.field-meta.xml,,,log,📰
+objects/Case/fields/SuppliedPhone.field-meta.xml,A,CustomFieldTranslation SuppliedPhone.field-meta.xml,,,log,📰
+objects/Case/fields/Type.field-meta.xml,A,CustomFieldTranslation Type.field-meta.xml,,,log,📰
+objects/Case/listViews/AllClosedCases.listView-meta.xml,A,ListView AllClosedCases,,,log,📰
+objects/Case/listViews/AllOpenCases.listView-meta.xml,A,ListView AllOpenCases,,,log,📰
+objects/Case/listViews/MyCases.listView-meta.xml,A,ListView MyCases,,,log,📰
+objects/Case/listViews/MyOpenCases.listView-meta.xml,A,ListView MyOpenCases,,,log,📰
+objects/Case/webLinks/UpsellCrosssellOpportunity.webLink-meta.xml,A,WebLink UpsellCrosssellOpportunity,,,log,📰
+objects/Contact/Contact.object-meta.xml,A,CustomObject Contact/Contact,,,log,📰
+objects/Contact/fields/AccountId.field-meta.xml,A,CustomFieldTranslation AccountId.field-meta.xml,,,log,📰
+objects/Contact/fields/AssistantName.field-meta.xml,A,CustomFieldTranslation AssistantName.field-meta.xml,,,log,📰
+objects/Contact/fields/AssistantPhone.field-meta.xml,A,CustomFieldTranslation AssistantPhone.field-meta.xml,,,log,📰
+objects/Contact/fields/Birthdate.field-meta.xml,A,CustomFieldTranslation Birthdate.field-meta.xml,,,log,📰
+objects/Contact/fields/BuyerAttributes.field-meta.xml,A,CustomFieldTranslation BuyerAttributes.field-meta.xml,,,log,📰
+objects/Contact/fields/CleanStatus.field-meta.xml,A,CustomFieldTranslation CleanStatus.field-meta.xml,,,log,📰
+objects/Contact/fields/ContactSource.field-meta.xml,A,CustomFieldTranslation ContactSource.field-meta.xml,,,log,📰
+objects/Contact/fields/Department.field-meta.xml,A,CustomFieldTranslation Department.field-meta.xml,,,log,📰
+objects/Contact/fields/Description.field-meta.xml,A,CustomFieldTranslation Description.field-meta.xml,,,log,📰
+objects/Contact/fields/DoNotCall.field-meta.xml,A,CustomFieldTranslation DoNotCall.field-meta.xml,,,log,📰
+objects/Contact/fields/Email.field-meta.xml,A,CustomFieldTranslation Email.field-meta.xml,,,log,📰
+objects/Contact/fields/Fax.field-meta.xml,A,CustomFieldTranslation Fax.field-meta.xml,,,log,📰
+objects/Contact/fields/GenderIdentity.field-meta.xml,A,CustomFieldTranslation GenderIdentity.field-meta.xml,,,log,📰
+objects/Contact/fields/HasOptedOutOfEmail.field-meta.xml,A,CustomFieldTranslation HasOptedOutOfEmail.field-meta.xml,,,log,📰
+objects/Contact/fields/HasOptedOutOfFax.field-meta.xml,A,CustomFieldTranslation HasOptedOutOfFax.field-meta.xml,,,log,📰
+objects/Contact/fields/HomePhone.field-meta.xml,A,CustomFieldTranslation HomePhone.field-meta.xml,,,log,📰
+objects/Contact/fields/IndividualId.field-meta.xml,A,CustomFieldTranslation IndividualId.field-meta.xml,,,log,📰
+objects/Contact/fields/Jigsaw.field-meta.xml,A,CustomFieldTranslation Jigsaw.field-meta.xml,,,log,📰
+objects/Contact/fields/Languages__c.field-meta.xml,A,CustomFieldTranslation Languages__c.field-meta.xml,,,log,📰
+objects/Contact/fields/LastCURequestDate.field-meta.xml,A,CustomFieldTranslation LastCURequestDate.field-meta.xml,,,log,📰
+objects/Contact/fields/LastCUUpdateDate.field-meta.xml,A,CustomFieldTranslation LastCUUpdateDate.field-meta.xml,,,log,📰
+objects/Contact/fields/LeadSource.field-meta.xml,A,CustomFieldTranslation LeadSource.field-meta.xml,,,log,📰
+objects/Contact/fields/Level__c.field-meta.xml,A,CustomFieldTranslation Level__c.field-meta.xml,,,log,📰
+objects/Contact/fields/MailingAddress.field-meta.xml,A,CustomFieldTranslation MailingAddress.field-meta.xml,,,log,📰
+objects/Contact/fields/MobilePhone.field-meta.xml,A,CustomFieldTranslation MobilePhone.field-meta.xml,,,log,📰
+objects/Contact/fields/Name.field-meta.xml,A,CustomFieldTranslation Name.field-meta.xml,,,log,📰
+objects/Contact/fields/OtherAddress.field-meta.xml,A,CustomFieldTranslation OtherAddress.field-meta.xml,,,log,📰
+objects/Contact/fields/OtherPhone.field-meta.xml,A,CustomFieldTranslation OtherPhone.field-meta.xml,,,log,📰
+objects/Contact/fields/OwnerId.field-meta.xml,A,CustomFieldTranslation OwnerId.field-meta.xml,,,log,📰
+objects/Contact/fields/Phone.field-meta.xml,A,CustomFieldTranslation Phone.field-meta.xml,,,log,📰
+objects/Contact/fields/Pronouns.field-meta.xml,A,CustomFieldTranslation Pronouns.field-meta.xml,,,log,📰
+objects/Contact/fields/ReportsToId.field-meta.xml,A,CustomFieldTranslation ReportsToId.field-meta.xml,,,log,📰
+objects/Contact/fields/Title.field-meta.xml,A,CustomFieldTranslation Title.field-meta.xml,,,log,📰
+objects/Contact/listViews/AllContacts.listView-meta.xml,A,ListView AllContacts,,,log,📰
+objects/Contact/listViews/BirthdaysThisMonth.listView-meta.xml,A,ListView BirthdaysThisMonth,,,log,📰
+objects/Contact/listViews/BulkMessageContacts.listView-meta.xml,A,ListView BulkMessageContacts,,,log,📰
+objects/Contact/listViews/MyContacts.listView-meta.xml,A,ListView MyContacts,,,log,📰
+objects/Contact/listViews/NewLastWeek.listView-meta.xml,A,ListView NewLastWeek,,,log,📰
+objects/Contact/listViews/NewThisWeek.listView-meta.xml,A,ListView NewThisWeek,,,log,📰
+objects/Crew_Capacity__c/Crew_Capacity__c.object-meta.xml,A,CustomObject Crew_Capacity__c/Crew_Capacity__c,,,log,📰
+objects/Crew_Capacity__c/fields/Crew_Type__c.field-meta.xml,A,CustomFieldTranslation Crew_Type__c.field-meta.xml,,,log,📰
+objects/Crew_Capacity__c/fields/External_Id__c.field-meta.xml,A,CustomFieldTranslation External_Id__c.field-meta.xml,,,log,📰
+objects/Crew_Capacity__c/fields/Panels_Per_Day__c.field-meta.xml,A,CustomFieldTranslation Panels_Per_Day__c.field-meta.xml,,,log,📰
+objects/Crew_Capacity__c/fields/Roof_Type__c.field-meta.xml,A,CustomFieldTranslation Roof_Type__c.field-meta.xml,,,log,📰
+objects/Crew_Capacity__c/listViews/All.listView-meta.xml,A,ListView All,,,log,📰
+objects/Handover_Item__c/Handover_Item__c.object-meta.xml,A,CustomObject Handover_Item__c/Handover_Item__c,,,log,📰
+objects/Handover_Item__c/fields/External_Id__c.field-meta.xml,A,CustomFieldTranslation External_Id__c.field-meta.xml,,,log,📰
+objects/Handover_Item__c/fields/Installation__c.field-meta.xml,A,CustomFieldTranslation Installation__c.field-meta.xml,,,log,📰
+objects/Handover_Item__c/fields/Is_Done__c.field-meta.xml,A,CustomFieldTranslation Is_Done__c.field-meta.xml,,,log,📰
+objects/Handover_Item__c/fields/Is_Template__c.field-meta.xml,A,CustomFieldTranslation Is_Template__c.field-meta.xml,,,log,📰
+objects/Handover_Item__c/fields/Label__c.field-meta.xml,A,CustomFieldTranslation Label__c.field-meta.xml,,,log,📰
+objects/Handover_Item__c/fields/Sequence__c.field-meta.xml,A,CustomFieldTranslation Sequence__c.field-meta.xml,,,log,📰
+objects/Incident/Incident.object-meta.xml,A,CustomObject Incident/Incident,,,log,📰
+objects/Incident/webLinks/IncidentSource.webLink-meta.xml,A,WebLink IncidentSource,,,log,📰
+objects/Installation__c/Installation__c.object-meta.xml,A,CustomObject Installation__c/Installation__c,,,log,📰
+objects/Installation__c/fields/Account__c.field-meta.xml,A,CustomFieldTranslation Account__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Crew_Capacity_Cap__c.field-meta.xml,A,CustomFieldTranslation Crew_Capacity_Cap__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Crew_Notes__c.field-meta.xml,A,CustomFieldTranslation Crew_Notes__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Crew_Size__c.field-meta.xml,A,CustomFieldTranslation Crew_Size__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Crew_Warning_Sent__c.field-meta.xml,A,CustomFieldTranslation Crew_Warning_Sent__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Crew_Workload__c.field-meta.xml,A,CustomFieldTranslation Crew_Workload__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/External_Id__c.field-meta.xml,A,CustomFieldTranslation External_Id__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Install_Date__c.field-meta.xml,A,CustomFieldTranslation Install_Date__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Panels_Required__c.field-meta.xml,A,CustomFieldTranslation Panels_Required__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Roof_Type__c.field-meta.xml,A,CustomFieldTranslation Roof_Type__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Signed_Off_By__c.field-meta.xml,A,CustomFieldTranslation Signed_Off_By__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Status__c.field-meta.xml,A,CustomFieldTranslation Status__c.field-meta.xml,,,log,📰
+objects/Installation__c/fields/Total_Capacity_kW__c.field-meta.xml,A,CustomFieldTranslation Total_Capacity_kW__c.field-meta.xml,,,log,📰
+objects/Installation__c/listViews/All_Installations.listView-meta.xml,A,ListView All_Installations,,,log,📰
+objects/Installation__c/listViews/Open_Installations.listView-meta.xml,A,ListView Open_Installations,,,log,📰
+objects/Installation__c/validationRules/Installation_Date_Not_Past.validationRule-meta.xml,A,ValidationRule Installation_Date_Not_Past,,,log,📰
+objects/Lead/Lead.object-meta.xml,A,CustomObject Lead/Lead,,,log,📰
+objects/Lead/fields/Address.field-meta.xml,A,CustomFieldTranslation Address.field-meta.xml,,,log,📰
+objects/Lead/fields/AnnualRevenue.field-meta.xml,A,CustomFieldTranslation AnnualRevenue.field-meta.xml,,,log,📰
+objects/Lead/fields/CampaignId.field-meta.xml,A,CustomFieldTranslation CampaignId.field-meta.xml,,,log,📰
+objects/Lead/fields/CleanStatus.field-meta.xml,A,CustomFieldTranslation CleanStatus.field-meta.xml,,,log,📰
+objects/Lead/fields/Company.field-meta.xml,A,CustomFieldTranslation Company.field-meta.xml,,,log,📰
+objects/Lead/fields/CompanyDunsNumber.field-meta.xml,A,CustomFieldTranslation CompanyDunsNumber.field-meta.xml,,,log,📰
+objects/Lead/fields/CurrentGenerators__c.field-meta.xml,A,CustomFieldTranslation CurrentGenerators__c.field-meta.xml,,,log,📰
+objects/Lead/fields/DandbCompanyId.field-meta.xml,A,CustomFieldTranslation DandbCompanyId.field-meta.xml,,,log,📰
+objects/Lead/fields/Description.field-meta.xml,A,CustomFieldTranslation Description.field-meta.xml,,,log,📰
+objects/Lead/fields/DoNotCall.field-meta.xml,A,CustomFieldTranslation DoNotCall.field-meta.xml,,,log,📰
+objects/Lead/fields/Email.field-meta.xml,A,CustomFieldTranslation Email.field-meta.xml,,,log,📰
+objects/Lead/fields/Fax.field-meta.xml,A,CustomFieldTranslation Fax.field-meta.xml,,,log,📰
+objects/Lead/fields/GenderIdentity.field-meta.xml,A,CustomFieldTranslation GenderIdentity.field-meta.xml,,,log,📰
+objects/Lead/fields/HasOptedOutOfEmail.field-meta.xml,A,CustomFieldTranslation HasOptedOutOfEmail.field-meta.xml,,,log,📰
+objects/Lead/fields/HasOptedOutOfFax.field-meta.xml,A,CustomFieldTranslation HasOptedOutOfFax.field-meta.xml,,,log,📰
+objects/Lead/fields/IndividualId.field-meta.xml,A,CustomFieldTranslation IndividualId.field-meta.xml,,,log,📰
+objects/Lead/fields/Industry.field-meta.xml,A,CustomFieldTranslation Industry.field-meta.xml,,,log,📰
+objects/Lead/fields/Jigsaw.field-meta.xml,A,CustomFieldTranslation Jigsaw.field-meta.xml,,,log,📰
+objects/Lead/fields/LastTransferDate.field-meta.xml,A,CustomFieldTranslation LastTransferDate.field-meta.xml,,,log,📰
+objects/Lead/fields/LeadSource.field-meta.xml,A,CustomFieldTranslation LeadSource.field-meta.xml,,,log,📰
+objects/Lead/fields/MobilePhone.field-meta.xml,A,CustomFieldTranslation MobilePhone.field-meta.xml,,,log,📰
+objects/Lead/fields/Name.field-meta.xml,A,CustomFieldTranslation Name.field-meta.xml,,,log,📰
+objects/Lead/fields/NumberOfEmployees.field-meta.xml,A,CustomFieldTranslation NumberOfEmployees.field-meta.xml,,,log,📰
+objects/Lead/fields/NumberofLocations__c.field-meta.xml,A,CustomFieldTranslation NumberofLocations__c.field-meta.xml,,,log,📰
+objects/Lead/fields/OwnerId.field-meta.xml,A,CustomFieldTranslation OwnerId.field-meta.xml,,,log,📰
+objects/Lead/fields/Phone.field-meta.xml,A,CustomFieldTranslation Phone.field-meta.xml,,,log,📰
+objects/Lead/fields/Primary__c.field-meta.xml,A,CustomFieldTranslation Primary__c.field-meta.xml,,,log,📰
+objects/Lead/fields/ProductInterest__c.field-meta.xml,A,CustomFieldTranslation ProductInterest__c.field-meta.xml,,,log,📰
+objects/Lead/fields/Pronouns.field-meta.xml,A,CustomFieldTranslation Pronouns.field-meta.xml,,,log,📰
+objects/Lead/fields/Rating.field-meta.xml,A,CustomFieldTranslation Rating.field-meta.xml,,,log,📰
+objects/Lead/fields/SICCode__c.field-meta.xml,A,CustomFieldTranslation SICCode__c.field-meta.xml,,,log,📰
+objects/Lead/fields/Status.field-meta.xml,A,CustomFieldTranslation Status.field-meta.xml,,,log,📰
+objects/Lead/fields/Title.field-meta.xml,A,CustomFieldTranslation Title.field-meta.xml,,,log,📰
+objects/Lead/fields/Website.field-meta.xml,A,CustomFieldTranslation Website.field-meta.xml,,,log,📰
+objects/Lead/listViews/AllOpenLeads.listView-meta.xml,A,ListView AllOpenLeads,,,log,📰
+objects/Lead/listViews/MyUnreadLeads.listView-meta.xml,A,ListView MyUnreadLeads,,,log,📰
+objects/Lead/listViews/TodaysLeads.listView-meta.xml,A,ListView TodaysLeads,,,log,📰
+objects/Lead/listViews/ViewCustom1.listView-meta.xml,A,ListView ViewCustom1,,,log,📰
+objects/Lead/listViews/ViewCustom2.listView-meta.xml,A,ListView ViewCustom2,,,log,📰
+objects/Opportunity/Opportunity.object-meta.xml,A,CustomObject Opportunity/Opportunity,,,log,📰
+objects/Opportunity/fields/AccountId.field-meta.xml,A,CustomFieldTranslation AccountId.field-meta.xml,,,log,📰
+objects/Opportunity/fields/Amount.field-meta.xml,A,CustomFieldTranslation Amount.field-meta.xml,,,log,📰
+objects/Opportunity/fields/CampaignId.field-meta.xml,A,CustomFieldTranslation CampaignId.field-meta.xml,,,log,📰
+objects/Opportunity/fields/CloseDate.field-meta.xml,A,CustomFieldTranslation CloseDate.field-meta.xml,,,log,📰
+objects/Opportunity/fields/ContractId.field-meta.xml,A,CustomFieldTranslation ContractId.field-meta.xml,,,log,📰
+objects/Opportunity/fields/CurrentGenerators__c.field-meta.xml,A,CustomFieldTranslation CurrentGenerators__c.field-meta.xml,,,log,📰
+objects/Opportunity/fields/DeliveryInstallationStatus__c.field-meta.xml,A,CustomFieldTranslation DeliveryInstallationStatus__c.field-meta.xml,,,log,📰
+objects/Opportunity/fields/Description.field-meta.xml,A,CustomFieldTranslation Description.field-meta.xml,,,log,📰
+objects/Opportunity/fields/ExpectedRevenue.field-meta.xml,A,CustomFieldTranslation ExpectedRevenue.field-meta.xml,,,log,📰
+objects/Opportunity/fields/IqScore.field-meta.xml,A,CustomFieldTranslation IqScore.field-meta.xml,,,log,📰
+objects/Opportunity/fields/IsPrivate.field-meta.xml,A,CustomFieldTranslation IsPrivate.field-meta.xml,,,log,📰
+objects/Opportunity/fields/LastSyncTime.field-meta.xml,A,CustomFieldTranslation LastSyncTime.field-meta.xml,,,log,📰
+objects/Opportunity/fields/LeadSource.field-meta.xml,A,CustomFieldTranslation LeadSource.field-meta.xml,,,log,📰
+objects/Opportunity/fields/MainCompetitors__c.field-meta.xml,A,CustomFieldTranslation MainCompetitors__c.field-meta.xml,,,log,📰
+objects/Opportunity/fields/Name.field-meta.xml,A,CustomFieldTranslation Name.field-meta.xml,,,log,📰
+objects/Opportunity/fields/NextStep.field-meta.xml,A,CustomFieldTranslation NextStep.field-meta.xml,,,log,📰
+objects/Opportunity/fields/OrderNumber__c.field-meta.xml,A,CustomFieldTranslation OrderNumber__c.field-meta.xml,,,log,📰
+objects/Opportunity/fields/OwnerId.field-meta.xml,A,CustomFieldTranslation OwnerId.field-meta.xml,,,log,📰
+objects/Opportunity/fields/Pricebook2Id.field-meta.xml,A,CustomFieldTranslation Pricebook2Id.field-meta.xml,,,log,📰
+objects/Opportunity/fields/Probability.field-meta.xml,A,CustomFieldTranslation Probability.field-meta.xml,,,log,📰
+objects/Opportunity/fields/StageName.field-meta.xml,A,CustomFieldTranslation StageName.field-meta.xml,,,log,📰
+objects/Opportunity/fields/TotalOpportunityQuantity.field-meta.xml,A,CustomFieldTranslation TotalOpportunityQuantity.field-meta.xml,,,log,📰
+objects/Opportunity/fields/TrackingNumber__c.field-meta.xml,A,CustomFieldTranslation TrackingNumber__c.field-meta.xml,,,log,📰
+objects/Opportunity/fields/Type.field-meta.xml,A,CustomFieldTranslation Type.field-meta.xml,,,log,📰
+objects/Opportunity/listViews/AllOpportunities.listView-meta.xml,A,ListView AllOpportunities,,,log,📰
+objects/Opportunity/listViews/ClosingNextMonth.listView-meta.xml,A,ListView ClosingNextMonth,,,log,📰
+objects/Opportunity/listViews/ClosingThisMonth.listView-meta.xml,A,ListView ClosingThisMonth,,,log,📰
+objects/Opportunity/listViews/Default_Opportunity_Pipeline.listView-meta.xml,A,ListView Default_Opportunity_Pipeline,,,log,📰
+objects/Opportunity/listViews/MyOpportunities.listView-meta.xml,A,ListView MyOpportunities,,,log,📰
+objects/Opportunity/listViews/NewLastWeek.listView-meta.xml,A,ListView NewLastWeek,,,log,📰
+objects/Opportunity/listViews/NewThisWeek.listView-meta.xml,A,ListView NewThisWeek,,,log,📰
+objects/Opportunity/listViews/Private.listView-meta.xml,A,ListView Private,,,log,📰
+objects/Opportunity/listViews/Won.listView-meta.xml,A,ListView Won,,,log,📰
+objects/Opportunity/webLinks/DeliveryStatus.webLink-meta.xml,A,WebLink DeliveryStatus,,,log,📰
+objects/Panel_Batch__c/Panel_Batch__c.object-meta.xml,A,CustomObject Panel_Batch__c/Panel_Batch__c,,,log,📰
+objects/Panel_Batch__c/fields/Arrival_Date__c.field-meta.xml,A,CustomFieldTranslation Arrival_Date__c.field-meta.xml,,,log,📰
+objects/Panel_Batch__c/fields/Cost__c.field-meta.xml,A,CustomFieldTranslation Cost__c.field-meta.xml,,,log,📰
+objects/Panel_Batch__c/fields/External_Id__c.field-meta.xml,A,CustomFieldTranslation External_Id__c.field-meta.xml,,,log,📰
+objects/Panel_Batch__c/fields/Installation__c.field-meta.xml,A,CustomFieldTranslation Installation__c.field-meta.xml,,,log,📰
+objects/Panel_Batch__c/fields/Quantity__c.field-meta.xml,A,CustomFieldTranslation Quantity__c.field-meta.xml,,,log,📰
+objects/Panel_Batch__c/fields/Quote_Pdf_Url__c.field-meta.xml,A,CustomFieldTranslation Quote_Pdf_Url__c.field-meta.xml,,,log,📰
+objects/Panel_Batch__c/fields/Serial_Prefix__c.field-meta.xml,A,CustomFieldTranslation Serial_Prefix__c.field-meta.xml,,,log,📰
+objects/Panel_Batch__c/listViews/All_Panel_Batches.listView-meta.xml,A,ListView All_Panel_Batches,,,log,📰
+permissionsetgroups/force__AgentforceServiceAgentUserPsg.permissionsetgroup-meta.xml,A,PermissionSetGroup force__AgentforceServiceAgentUserPsg,,,log,📰
+permissionsetgroups/force__Commerce_Shopper.permissionsetgroup-meta.xml,A,PermissionSetGroup force__Commerce_Shopper,,,log,📰
+permissionsetgroups/force__CopilotSalesforceAdminPSG.permissionsetgroup-meta.xml,A,PermissionSetGroup force__CopilotSalesforceAdminPSG,,,log,📰
+permissionsetgroups/force__CopilotSalesforceUserPSG.permissionsetgroup-meta.xml,A,PermissionSetGroup force__CopilotSalesforceUserPSG,,,log,📰
+permissionsetgroups/force__Enablement_Admin.permissionsetgroup-meta.xml,A,PermissionSetGroup force__Enablement_Admin,,,log,📰
+permissionsetgroups/force__Enablement_Resources_Manager.permissionsetgroup-meta.xml,A,PermissionSetGroup force__Enablement_Resources_Manager,,,log,📰
+permissionsetgroups/force__Enablement_User.permissionsetgroup-meta.xml,A,PermissionSetGroup force__Enablement_User,,,log,📰
+permissionsetgroups/force__Partner_Enablement_User.permissionsetgroup-meta.xml,A,PermissionSetGroup force__Partner_Enablement_User,,,log,📰
+permissionsetgroups/force__SalesCloudCallCoachingSeller.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SalesCloudCallCoachingSeller,,,log,📰
+permissionsetgroups/force__SalesCloudSeller.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SalesCloudSeller,,,log,📰
+permissionsetgroups/force__SetupWithAgentforceUserPsg.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SetupWithAgentforceUserPsg,,,log,📰
+permissionsetgroups/force__SubscriptionManagementBillingAdmin.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementBillingAdmin,,,log,📰
+permissionsetgroups/force__SubscriptionManagementBillingOperations.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementBillingOperations,,,log,📰
+permissionsetgroups/force__SubscriptionManagementBuyerIntegrationUser.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementBuyerIntegrationUser,,,log,📰
+permissionsetgroups/force__SubscriptionManagementCollections.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementCollections,,,log,📰
+permissionsetgroups/force__SubscriptionManagementCreditMemoAdjustmentsOperations.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementCreditMemoAdjustmentsOperations,,,log,📰
+permissionsetgroups/force__SubscriptionManagementPaymentAdministrator.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementPaymentAdministrator,,,log,📰
+permissionsetgroups/force__SubscriptionManagementPaymentOperations.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementPaymentOperations,,,log,📰
+permissionsetgroups/force__SubscriptionManagementProductAndPricingAdmin.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementProductAndPricingAdmin,,,log,📰
+permissionsetgroups/force__SubscriptionManagementSalesOperationsRep.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementSalesOperationsRep,,,log,📰
+permissionsetgroups/force__SubscriptionManagementSalesRep.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementSalesRep,,,log,📰
+permissionsetgroups/force__SubscriptionManagementTaxAdmin.permissionsetgroup-meta.xml,A,PermissionSetGroup force__SubscriptionManagementTaxAdmin,,,log,📰
+permissionsets/Experience_Profile_Manager.permissionset-meta.xml,A,PermissionSet Experience_Profile_Manager,,,log,📰
+permissionsets/Helios_Delivery_Crew.permissionset-meta.xml,A,PermissionSet Helios_Delivery_Crew,,,log,📰
+permissionsets/Helios_Delivery_Manager.permissionset-meta.xml,A,PermissionSet Helios_Delivery_Manager,,,log,📰
+permissionsets/sfdcInternalInt__sfdc_platformmetabolism_slagent.permissionset-meta.xml,A,PermissionSet sfdcInternalInt__sfdc_platformmetabolism_slagent,,,log,📰
+permissionsets/sfdcInternalInt__sfdc_scrt2.permissionset-meta.xml,A,PermissionSet sfdcInternalInt__sfdc_scrt2,,,log,📰
+permissionsets/sfdc_aiplanner_service_permset.permissionset-meta.xml,A,PermissionSet sfdc_aiplanner_service_permset,,,log,📰
+presenceUserConfigs/default_presence_config.presenceUserConfig-meta.xml,A,PresenceUserConfig default_presence_config,,,log,📰
+profilePasswordPolicies/PT1_profilePasswordPolicy1740026011544.profilePasswordPolicy-meta.xml,A,ProfilePasswordPolicy PT1_profilePasswordPolicy1740026011544,,,log,📰
+profileSessionSettings/PT1_profileSessionSetting1740026011694.profileSessionSetting-meta.xml,A,ProfileSessionSetting PT1_profileSessionSetting1740026011694,,,log,📰
+profiles/Admin.profile-meta.xml,A,Profile Admin,,,log,📰
+profiles/Analytics Cloud Integration User.profile-meta.xml,A,Profile Analytics Cloud Integration User,,,log,📰
+profiles/Analytics Cloud Security User.profile-meta.xml,A,Profile Analytics Cloud Security User,,,log,📰
+profiles/Anypoint Integration.profile-meta.xml,A,Profile Anypoint Integration,,,log,📰
+profiles/Authenticated Website.profile-meta.xml,A,Profile Authenticated Website,,,log,📰
+profiles/B2B Reordering Portal Buyer Profile.profile-meta.xml,A,Profile B2B Reordering Portal Buyer Profile,,,log,📰
+profiles/Chatter External User.profile-meta.xml,A,Profile Chatter External User,,,log,📰
+profiles/Chatter Free User.profile-meta.xml,A,Profile Chatter Free User,,,log,📰
+profiles/Chatter Moderator User.profile-meta.xml,A,Profile Chatter Moderator User,,,log,📰
+profiles/ContractManager.profile-meta.xml,A,Profile ContractManager,,,log,📰
+profiles/Cross Org Data Proxy User.profile-meta.xml,A,Profile Cross Org Data Proxy User,,,log,📰
+profiles/Custom%3A Marketing Profile.profile-meta.xml,A,Profile Custom%3A Marketing Profile,,,log,📰
+profiles/Custom%3A Sales Profile.profile-meta.xml,A,Profile Custom%3A Sales Profile,,,log,📰
+profiles/Custom%3A Support Profile.profile-meta.xml,A,Profile Custom%3A Support Profile,,,log,📰
+profiles/Customer Community Login User.profile-meta.xml,A,Profile Customer Community Login User,,,log,📰
+profiles/Customer Community Plus Login User.profile-meta.xml,A,Profile Customer Community Plus Login User,,,log,📰
+profiles/Customer Community Plus User.profile-meta.xml,A,Profile Customer Community Plus User,,,log,📰
+profiles/Customer Community User.profile-meta.xml,A,Profile Customer Community User,,,log,📰
+profiles/Customer Portal Manager Custom.profile-meta.xml,A,Profile Customer Portal Manager Custom,,,log,📰
+profiles/Customer Portal Manager Standard.profile-meta.xml,A,Profile Customer Portal Manager Standard,,,log,📰
+profiles/Einstein Agent User.profile-meta.xml,A,Profile Einstein Agent User,,,log,📰
+profiles/External Apps Login User.profile-meta.xml,A,Profile External Apps Login User,,,log,📰
+profiles/External Einstein Agent User.profile-meta.xml,A,Profile External Einstein Agent User,,,log,📰
+profiles/External Identity User.profile-meta.xml,A,Profile External Identity User,,,log,📰
+profiles/Force%2Ecom - App Subscription User.profile-meta.xml,A,Profile Force%2Ecom - App Subscription User,,,log,📰
+profiles/Force%2Ecom - Free User.profile-meta.xml,A,Profile Force%2Ecom - Free User,,,log,📰
+profiles/Gold Partner User.profile-meta.xml,A,Profile Gold Partner User,,,log,📰
+profiles/Helios Crew.profile-meta.xml,A,Profile Helios Crew,,,log,📰
+profiles/High Volume Customer Portal User.profile-meta.xml,A,Profile High Volume Customer Portal User,,,log,📰
+profiles/HighVolumePortal.profile-meta.xml,A,Profile HighVolumePortal,,,log,📰
+profiles/Identity User.profile-meta.xml,A,Profile Identity User,,,log,📰
+profiles/MarketingProfile.profile-meta.xml,A,Profile MarketingProfile,,,log,📰
+profiles/Minimum Access - API Only Integrations.profile-meta.xml,A,Profile Minimum Access - API Only Integrations,,,log,📰
+profiles/Minimum Access - Salesforce.profile-meta.xml,A,Profile Minimum Access - Salesforce,,,log,📰
+profiles/Partner App Subscription User.profile-meta.xml,A,Profile Partner App Subscription User,,,log,📰
+profiles/Partner Community Login User.profile-meta.xml,A,Profile Partner Community Login User,,,log,📰
+profiles/Partner Community User.profile-meta.xml,A,Profile Partner Community User,,,log,📰
+profiles/PlatformPortal.profile-meta.xml,A,Profile PlatformPortal,,,log,📰
+profiles/Read Only.profile-meta.xml,A,Profile Read Only,,,log,📰
+profiles/Salesforce API Only System Integrations.profile-meta.xml,A,Profile Salesforce API Only System Integrations,,,log,📰
+profiles/Silver Partner User.profile-meta.xml,A,Profile Silver Partner User,,,log,📰
+profiles/SolutionManager.profile-meta.xml,A,Profile SolutionManager,,,log,📰
+profiles/Standard.profile-meta.xml,A,Profile Standard,,,log,📰
+profiles/StandardAul.profile-meta.xml,A,Profile StandardAul,,,log,📰
+profiles/Work%2Ecom Only User.profile-meta.xml,A,Profile Work%2Ecom Only User,,,log,📰
+quickActions/Case.CloseCaseLightning.quickAction-meta.xml,A,QuickAction Case.CloseCaseLightning,,,log,📰
+quickActions/Case.LogACall.quickAction-meta.xml,A,QuickAction Case.LogACall,,,log,📰
+quickActions/Case.NewChildCase.quickAction-meta.xml,A,QuickAction Case.NewChildCase,,,log,📰
+quickActions/CollaborationGroup.NewGroupMember.quickAction-meta.xml,A,QuickAction CollaborationGroup.NewGroupMember,,,log,📰
+quickActions/CollaborationGroup.NewGroupRecord.quickAction-meta.xml,A,QuickAction CollaborationGroup.NewGroupRecord,,,log,📰
+quickActions/FeedItem.NewTaskFromFeedItem.quickAction-meta.xml,A,QuickAction FeedItem.NewTaskFromFeedItem,,,log,📰
+quickActions/LogACall.quickAction-meta.xml,A,QuickAction LogACall,,,log,📰
+quickActions/NewAccount.quickAction-meta.xml,A,QuickAction NewAccount,,,log,📰
+quickActions/NewCase.quickAction-meta.xml,A,QuickAction NewCase,,,log,📰
+quickActions/NewContact.quickAction-meta.xml,A,QuickAction NewContact,,,log,📰
+quickActions/NewEvent.quickAction-meta.xml,A,QuickAction NewEvent,,,log,📰
+quickActions/NewGroup.quickAction-meta.xml,A,QuickAction NewGroup,,,log,📰
+quickActions/NewLead.quickAction-meta.xml,A,QuickAction NewLead,,,log,📰
+quickActions/NewNote.quickAction-meta.xml,A,QuickAction NewNote,,,log,📰
+quickActions/NewOpportunity.quickAction-meta.xml,A,QuickAction NewOpportunity,,,log,📰
+quickActions/NewTask.quickAction-meta.xml,A,QuickAction NewTask,,,log,📰
+quickActions/SendEmail.quickAction-meta.xml,A,QuickAction SendEmail,,,log,📰
+quickActions/Task.Defer.quickAction-meta.xml,A,QuickAction Task.Defer,,,log,📰
+quickActions/Task.EditDescription.quickAction-meta.xml,A,QuickAction Task.EditDescription,,,log,📰
+quickActions/Task.UpdatePriority.quickAction-meta.xml,A,QuickAction Task.UpdatePriority,,,log,📰
+quickActions/Task.UpdateStatus.quickAction-meta.xml,A,QuickAction Task.UpdateStatus,,,log,📰
+remoteSiteSettings/ApexDevNet.remoteSite-meta.xml,A,RemoteSiteSetting ApexDevNet,,,log,📰
+remoteSiteSettings/Helios_Warehouse.remoteSite-meta.xml,A,RemoteSiteSetting Helios_Warehouse,,,log,📰
+reportTypes/Program_Definition_sfdcSESv60.reportType-meta.xml,A,ReportType Program_Definition_sfdcSESv60,,,log,📰
+reportTypes/Program_Definition_sfdcSESv61.reportType-meta.xml,A,ReportType Program_Definition_sfdcSESv61,,,log,📰
+reportTypes/Program_Progress_sfdcSESv60.reportType-meta.xml,A,ReportType Program_Progress_sfdcSESv60,,,log,📰
+reportTypes/Program_Progress_sfdcSESv61.reportType-meta.xml,A,ReportType Program_Progress_sfdcSESv61,,,log,📰
+reportTypes/Program_Task_Progress_sfdcSESv60.reportType-meta.xml,A,ReportType Program_Task_Progress_sfdcSESv60,,,log,📰
+reportTypes/Program_Task_Progress_sfdcSESv61.reportType-meta.xml,A,ReportType Program_Task_Progress_sfdcSESv61,,,log,📰
+reportTypes/flow_orchestration_log_ootb_crt_two_four_eight.reportType-meta.xml,A,ReportType flow_orchestration_log_ootb_crt_two_four_eight,,,log,📰
+reportTypes/flow_orchestration_run_ootb_crt_two_four_eight.reportType-meta.xml,A,ReportType flow_orchestration_run_ootb_crt_two_four_eight,,,log,📰
+reportTypes/flow_orchestration_stage_run_ootb_crt_two_four_eight.reportType-meta.xml,A,ReportType flow_orchestration_stage_run_ootb_crt_two_four_eight,,,log,📰
+reportTypes/flow_orchestration_step_run_ootb_crt_two_four_eight.reportType-meta.xml,A,ReportType flow_orchestration_step_run_ootb_crt_two_four_eight,,,log,📰
+reportTypes/flow_orchestration_work_item_ootb_crt_two_four_eight.reportType-meta.xml,A,ReportType flow_orchestration_work_item_ootb_crt_two_four_eight,,,log,📰
+reportTypes/screen_flows_prebuilt_crt.reportType-meta.xml,A,ReportType screen_flows_prebuilt_crt,,,log,📰
+reports/EBotR_v3.reportFolder-meta.xml,A,ReportFolder EBotR_v3,,,log,📰
+reports/EBotR_v4.reportFolder-meta.xml,A,ReportFolder EBotR_v4,,,log,📰
+reports/EBotR_v5.reportFolder-meta.xml,A,ReportFolder EBotR_v5,,,log,📰
+reports/EinsteinBotReports.reportFolder-meta.xml,A,ReportFolder EinsteinBotReports,,,log,📰
+reports/EinsteinBotReports_v2.reportFolder-meta.xml,A,ReportFolder EinsteinBotReports_v2,,,log,📰
+reports/EnablementDashboardReports_sfdcSESv60.reportFolder-meta.xml,A,ReportFolder EnablementDashboardReports_sfdcSESv60,,,log,📰
+reports/EnablementDashboardReports_sfdcSESv61.reportFolder-meta.xml,A,ReportFolder EnablementDashboardReports_sfdcSESv61,,,log,📰
+reports/unfiled$public/flow_orchestration_log_ootb_report_two_four_eight.report-meta.xml,A,ReportFolder unfiled$public/flow_orchestration_log_ootb_report_two_four_eight.report-meta.xml,,,log,📰
+reports/unfiled$public/flow_orchestration_run_ootb_report_two_four_eight.report-meta.xml,A,ReportFolder unfiled$public/flow_orchestration_run_ootb_report_two_four_eight.report-meta.xml,,,log,📰
+reports/unfiled$public/flow_orchestration_stage_run_ootb_report_two_four_eight.report-meta.xml,A,ReportFolder unfiled$public/flow_orchestration_stage_run_ootb_report_two_four_eight.report-meta.xml,,,log,📰
+reports/unfiled$public/flow_orchestration_step_run_ootb_report_two_four_eight.report-meta.xml,A,ReportFolder unfiled$public/flow_orchestration_step_run_ootb_report_two_four_eight.report-meta.xml,,,log,📰
+reports/unfiled$public/flow_orchestration_work_item_ootb_report_two_four_eight.report-meta.xml,A,ReportFolder unfiled$public/flow_orchestration_work_item_ootb_report_two_four_eight.report-meta.xml,,,log,📰
+reports/unfiled$public/flow_screen_prebuilt_report.report-meta.xml,A,ReportFolder unfiled$public/flow_screen_prebuilt_report.report-meta.xml,,,log,📰
+roles/CEO.role-meta.xml,A,Role CEO,,,log,📰
+roles/CFO.role-meta.xml,A,Role CFO,,,log,📰
+roles/COO.role-meta.xml,A,Role COO,,,log,📰
+roles/ChannelSalesTeam.role-meta.xml,A,Role ChannelSalesTeam,,,log,📰
+roles/CustomerSupportInternational.role-meta.xml,A,Role CustomerSupportInternational,,,log,📰
+roles/CustomerSupportNorthAmerica.role-meta.xml,A,Role CustomerSupportNorthAmerica,,,log,📰
+roles/DirectorChannelSales.role-meta.xml,A,Role DirectorChannelSales,,,log,📰
+roles/DirectorDirectSales.role-meta.xml,A,Role DirectorDirectSales,,,log,📰
+roles/EasternSalesTeam.role-meta.xml,A,Role EasternSalesTeam,,,log,📰
+roles/InstallationRepairServices.role-meta.xml,A,Role InstallationRepairServices,,,log,📰
+roles/MarketingTeam.role-meta.xml,A,Role MarketingTeam,,,log,📰
+roles/SVPCustomerServiceSupport.role-meta.xml,A,Role SVPCustomerServiceSupport,,,log,📰
+roles/SVPHumanResources.role-meta.xml,A,Role SVPHumanResources,,,log,📰
+roles/SVPSalesMarketing.role-meta.xml,A,Role SVPSalesMarketing,,,log,📰
+roles/VPInternationalSales.role-meta.xml,A,Role VPInternationalSales,,,log,📰
+roles/VPMarketing.role-meta.xml,A,Role VPMarketing,,,log,📰
+roles/VPNorthAmericanSales.role-meta.xml,A,Role VPNorthAmericanSales,,,log,📰
+roles/WesternSalesTeam.role-meta.xml,A,Role WesternSalesTeam,,,log,📰
+serviceChannels/sfdc_livemessage.serviceChannel-meta.xml,A,ServiceChannel sfdc_livemessage,,,log,📰
+serviceChannels/sfdc_phone.serviceChannel-meta.xml,A,ServiceChannel sfdc_phone,,,log,📰
+settings/AIReplyRecommendations.settings-meta.xml,A,Settings AIReplyRecommendations,,,log,📰
+settings/Account.settings-meta.xml,A,Settings Account,,,log,📰
+settings/AccountIntelligence.settings-meta.xml,A,Settings AccountIntelligence,,,log,📰
+settings/Actions.settings-meta.xml,A,Settings Actions,,,log,📰
+settings/Activities.settings-meta.xml,A,Settings Activities,,,log,📰
+settings/Address.settings-meta.xml,A,Settings Address,,,log,📰
+settings/AdminSuccess.settings-meta.xml,A,Settings AdminSuccess,,,log,📰
+settings/AgentPlatform.settings-meta.xml,A,Settings AgentPlatform,,,log,📰
+settings/AgentforceForDevelopers.settings-meta.xml,A,Settings AgentforceForDevelopers,,,log,📰
+settings/AgentforcePlatformTracing.settings-meta.xml,A,Settings AgentforcePlatformTracing,,,log,📰
+settings/AgentforceProspecting.settings-meta.xml,A,Settings AgentforceProspecting,,,log,📰
+settings/AgentforceSessionTracing.settings-meta.xml,A,Settings AgentforceSessionTracing,,,log,📰
+settings/Ai4m.settings-meta.xml,A,Settings Ai4m,,,log,📰
+settings/Analytics.settings-meta.xml,A,Settings Analytics,,,log,📰
+settings/Apex.settings-meta.xml,A,Settings Apex,,,log,📰
+settings/AppAnalytics.settings-meta.xml,A,Settings AppAnalytics,,,log,📰
+settings/AppExperience.settings-meta.xml,A,Settings AppExperience,,,log,📰
+settings/AppStudio.settings-meta.xml,A,Settings AppStudio,,,log,📰
+settings/Blockchain.settings-meta.xml,A,Settings Blockchain,,,log,📰
+settings/Bot.settings-meta.xml,A,Settings Bot,,,log,📰
+settings/BusinessHours.settings-meta.xml,A,Settings BusinessHours,,,log,📰
+settings/BusinessValueMetrics.settings-meta.xml,A,Settings BusinessValueMetrics,,,log,📰
+settings/Campaign.settings-meta.xml,A,Settings Campaign,,,log,📰
+settings/Case.settings-meta.xml,A,Settings Case,,,log,📰
+settings/Chatter.settings-meta.xml,A,Settings Chatter,,,log,📰
+settings/ChatterEmailsMD.settings-meta.xml,A,Settings ChatterEmailsMD,,,log,📰
+settings/CodeBuilder.settings-meta.xml,A,Settings CodeBuilder,,,log,📰
+settings/CollectionsDashboard.settings-meta.xml,A,Settings CollectionsDashboard,,,log,📰
+settings/Commerce.settings-meta.xml,A,Settings Commerce,,,log,📰
+settings/Communities.settings-meta.xml,A,Settings Communities,,,log,📰
+settings/Company.settings-meta.xml,A,Settings Company,,,log,📰
+settings/ConnectedApp.settings-meta.xml,A,Settings ConnectedApp,,,log,📰
+settings/Content.settings-meta.xml,A,Settings Content,,,log,📰
+settings/Contract.settings-meta.xml,A,Settings Contract,,,log,📰
+settings/ConversationalIntelligence.settings-meta.xml,A,Settings ConversationalIntelligence,,,log,📰
+settings/Currency.settings-meta.xml,A,Settings Currency,,,log,📰
+settings/CustomAddressField.settings-meta.xml,A,Settings CustomAddressField,,,log,📰
+settings/CustomPreferencePage.settings-meta.xml,A,Settings CustomPreferencePage,,,log,📰
+settings/CustomerDataPlatform.settings-meta.xml,A,Settings CustomerDataPlatform,,,log,📰
+settings/CustomizablePropensityScoring.settings-meta.xml,A,Settings CustomizablePropensityScoring,,,log,📰
+settings/DataDotCom.settings-meta.xml,A,Settings DataDotCom,,,log,📰
+settings/DataMask.settings-meta.xml,A,Settings DataMask,,,log,📰
+settings/Deployment.settings-meta.xml,A,Settings Deployment,,,log,📰
+settings/DevHub.settings-meta.xml,A,Settings DevHub,,,log,📰
+settings/DigitalWallet.settings-meta.xml,A,Settings DigitalWallet,,,log,📰
+settings/Disco.settings-meta.xml,A,Settings Disco,,,log,📰
+settings/Discovery.settings-meta.xml,A,Settings Discovery,,,log,📰
+settings/DocumentChecklist.settings-meta.xml,A,Settings DocumentChecklist,,,log,📰
+settings/DxGlobalTerms.settings-meta.xml,A,Settings DxGlobalTerms,,,log,📰
+settings/DynamicForms.settings-meta.xml,A,Settings DynamicForms,,,log,📰
+settings/EAC.settings-meta.xml,A,Settings EAC,,,log,📰
+settings/EasyFreemium.settings-meta.xml,A,Settings EasyFreemium,,,log,📰
+settings/EasySuitesInvoicing.settings-meta.xml,A,Settings EasySuitesInvoicing,,,log,📰
+settings/EinsteinAI.settings-meta.xml,A,Settings EinsteinAI,,,log,📰
+settings/EinsteinCopilot.settings-meta.xml,A,Settings EinsteinCopilot,,,log,📰
+settings/EinsteinDocumentCapture.settings-meta.xml,A,Settings EinsteinDocumentCapture,,,log,📰
+settings/EinsteinGPTSalesEmails.settings-meta.xml,A,Settings EinsteinGPTSalesEmails,,,log,📰
+settings/EinsteinGpt.settings-meta.xml,A,Settings EinsteinGpt,,,log,📰
+settings/EmailAdministration.settings-meta.xml,A,Settings EmailAdministration,,,log,📰
+settings/EmailAuthorization.settings-meta.xml,A,Settings EmailAuthorization,,,log,📰
+settings/EmailIntegration.settings-meta.xml,A,Settings EmailIntegration,,,log,📰
+settings/EmailTemplate.settings-meta.xml,A,Settings EmailTemplate,,,log,📰
+settings/EmployeeFieldAccess.settings-meta.xml,A,Settings EmployeeFieldAccess,,,log,📰
+settings/EmployeeUser.settings-meta.xml,A,Settings EmployeeUser,,,log,📰
+settings/EncryptionKey.settings-meta.xml,A,Settings EncryptionKey,,,log,📰
+settings/EnhancedNotes.settings-meta.xml,A,Settings EnhancedNotes,,,log,📰
+settings/EnterpriseApi.settings-meta.xml,A,Settings EnterpriseApi,,,log,📰
+settings/Entitlement.settings-meta.xml,A,Settings Entitlement,,,log,📰
+settings/Essentials.settings-meta.xml,A,Settings Essentials,,,log,📰
+settings/Event.settings-meta.xml,A,Settings Event,,,log,📰
+settings/Evf.settings-meta.xml,A,Settings Evf,,,log,📰
+settings/EvidenceMgmt.settings-meta.xml,A,Settings EvidenceMgmt,,,log,📰
+settings/ExperienceBundle.settings-meta.xml,A,Settings ExperienceBundle,,,log,📰
+settings/ExternalClientApp.settings-meta.xml,A,Settings ExternalClientApp,,,log,📰
+settings/FieldService.settings-meta.xml,A,Settings FieldService,,,log,📰
+settings/FileUploadAndDownloadSecurity.settings-meta.xml,A,Settings FileUploadAndDownloadSecurity,,,log,📰
+settings/FilesConnect.settings-meta.xml,A,Settings FilesConnect,,,log,📰
+settings/Flow.settings-meta.xml,A,Settings Flow,,,log,📰
+settings/Forecasting.settings-meta.xml,A,Settings Forecasting,,,log,📰
+settings/Formula.settings-meta.xml,A,Settings Formula,,,log,📰
+settings/GRCIntelligenceUdd.settings-meta.xml,A,Settings GRCIntelligenceUdd,,,log,📰
+settings/GenerativeCampaigns.settings-meta.xml,A,Settings GenerativeCampaigns,,,log,📰
+settings/GoogleApps.settings-meta.xml,A,Settings GoogleApps,,,log,📰
+settings/Help.settings-meta.xml,A,Settings Help,,,log,📰
+settings/HerokuAppLink.settings-meta.xml,A,Settings HerokuAppLink,,,log,📰
+settings/HighVelocitySales.settings-meta.xml,A,Settings HighVelocitySales,,,log,📰
+settings/Ideas.settings-meta.xml,A,Settings Ideas,,,log,📰
+settings/IdentityProvider.settings-meta.xml,A,Settings IdentityProvider,,,log,📰
+settings/IncidentMgmt.settings-meta.xml,A,Settings IncidentMgmt,,,log,📰
+settings/Industries.settings-meta.xml,A,Settings Industries,,,log,📰
+settings/IndustriesCommunicationsSales.settings-meta.xml,A,Settings IndustriesCommunicationsSales,,,log,📰
+settings/IndustriesEinsteinFeature.settings-meta.xml,A,Settings IndustriesEinsteinFeature,,,log,📰
+settings/IndustriesEnergyUtilitiesMultiSite.settings-meta.xml,A,Settings IndustriesEnergyUtilitiesMultiSite,,,log,📰
+settings/IndustriesInsurance.settings-meta.xml,A,Settings IndustriesInsurance,,,log,📰
+settings/IndustriesMaczPricing.settings-meta.xml,A,Settings IndustriesMaczPricing,,,log,📰
+settings/IndustriesMfgAdvnOrder.settings-meta.xml,A,Settings IndustriesMfgAdvnOrder,,,log,📰
+settings/IndustriesUnifiedInventory.settings-meta.xml,A,Settings IndustriesUnifiedInventory,,,log,📰
+settings/InsuranceBrokerage.settings-meta.xml,A,Settings InsuranceBrokerage,,,log,📰
+settings/InvLatePymntRiskCalc.settings-meta.xml,A,Settings InvLatePymntRiskCalc,,,log,📰
+settings/Inventory.settings-meta.xml,A,Settings Inventory,,,log,📰
+settings/InvocableAction.settings-meta.xml,A,Settings InvocableAction,,,log,📰
+settings/Knowledge.settings-meta.xml,A,Settings Knowledge,,,log,📰
+settings/KnowledgeGeneration.settings-meta.xml,A,Settings KnowledgeGeneration,,,log,📰
+settings/Language.settings-meta.xml,A,Settings Language,,,log,📰
+settings/LeadConfig.settings-meta.xml,A,Settings LeadConfig,,,log,📰
+settings/LeadScore.settings-meta.xml,A,Settings LeadScore,,,log,📰
+settings/LightningExperience.settings-meta.xml,A,Settings LightningExperience,,,log,📰
+settings/LiveAgent.settings-meta.xml,A,Settings LiveAgent,,,log,📰
+settings/LiveMessage.settings-meta.xml,A,Settings LiveMessage,,,log,📰
+settings/MCETransformations.settings-meta.xml,A,Settings MCETransformations,,,log,📰
+settings/Macro.settings-meta.xml,A,Settings Macro,,,log,📰
+settings/MailMerge.settings-meta.xml,A,Settings MailMerge,,,log,📰
+settings/Meetings.settings-meta.xml,A,Settings Meetings,,,log,📰
+settings/MissionforceLogistics.settings-meta.xml,A,Settings MissionforceLogistics,,,log,📰
+settings/Mobile.settings-meta.xml,A,Settings Mobile,,,log,📰
+settings/MsTeamsApp.settings-meta.xml,A,Settings MsTeamsApp,,,log,📰
+settings/MyDomain.settings-meta.xml,A,Settings MyDomain,,,log,📰
+settings/Name.settings-meta.xml,A,Settings Name,,,log,📰
+settings/Notifications.settings-meta.xml,A,Settings Notifications,,,log,📰
+settings/OauthOidc.settings-meta.xml,A,Settings OauthOidc,,,log,📰
+settings/ObjectLinking.settings-meta.xml,A,Settings ObjectLinking,,,log,📰
+settings/OmniChannel.settings-meta.xml,A,Settings OmniChannel,,,log,📰
+settings/OmniChannelPricing.settings-meta.xml,A,Settings OmniChannelPricing,,,log,📰
+settings/OmniStudio.settings-meta.xml,A,Settings OmniStudio,,,log,📰
+settings/Opportunity.settings-meta.xml,A,Settings Opportunity,,,log,📰
+settings/Order.settings-meta.xml,A,Settings Order,,,log,📰
+settings/OrderManagement.settings-meta.xml,A,Settings OrderManagement,,,log,📰
+settings/Org.settings-meta.xml,A,Settings Org,,,log,📰
+settings/Pardot.settings-meta.xml,A,Settings Pardot,,,log,📰
+settings/PardotEinstein.settings-meta.xml,A,Settings PardotEinstein,,,log,📰
+settings/PartyDataModel.settings-meta.xml,A,Settings PartyDataModel,,,log,📰
+settings/PathAssistant.settings-meta.xml,A,Settings PathAssistant,,,log,📰
+settings/Payments.settings-meta.xml,A,Settings Payments,,,log,📰
+settings/PaymentsManagementEnabled.settings-meta.xml,A,Settings PaymentsManagementEnabled,,,log,📰
+settings/Picklist.settings-meta.xml,A,Settings Picklist,,,log,📰
+settings/PlatformEncryption.settings-meta.xml,A,Settings PlatformEncryption,,,log,📰
+settings/PlatformEvent.settings-meta.xml,A,Settings PlatformEvent,,,log,📰
+settings/PlatformWebIde.settings-meta.xml,A,Settings PlatformWebIde,,,log,📰
+settings/Portals.settings-meta.xml,A,Settings Portals,,,log,📰
+settings/PredictionBuilder.settings-meta.xml,A,Settings PredictionBuilder,,,log,📰
+settings/Privacy.settings-meta.xml,A,Settings Privacy,,,log,📰
+settings/PrivacyAgent.settings-meta.xml,A,Settings PrivacyAgent,,,log,📰
+settings/PrmCore.settings-meta.xml,A,Settings PrmCore,,,log,📰
+settings/Product.settings-meta.xml,A,Settings Product,,,log,📰
+settings/ProductDiscovery.settings-meta.xml,A,Settings ProductDiscovery,,,log,📰
+settings/PurchaseOrderMgmt.settings-meta.xml,A,Settings PurchaseOrderMgmt,,,log,📰
+settings/QualityManagement.settings-meta.xml,A,Settings QualityManagement,,,log,📰
+settings/QuickText.settings-meta.xml,A,Settings QuickText,,,log,📰
+settings/Quote.settings-meta.xml,A,Settings Quote,,,log,📰
+settings/RealTimeEvent.settings-meta.xml,A,Settings RealTimeEvent,,,log,📰
+settings/RecommendationBuilder.settings-meta.xml,A,Settings RecommendationBuilder,,,log,📰
+settings/RecordPage.settings-meta.xml,A,Settings RecordPage,,,log,📰
+settings/ReleaseMgmt.settings-meta.xml,A,Settings ReleaseMgmt,,,log,📰
+settings/RetailExecution.settings-meta.xml,A,Settings RetailExecution,,,log,📰
+settings/RiskMgmt.settings-meta.xml,A,Settings RiskMgmt,,,log,📰
+settings/SalesBots.settings-meta.xml,A,Settings SalesBots,,,log,📰
+settings/SalesCloudSurfaces.settings-meta.xml,A,Settings SalesCloudSurfaces,,,log,📰
+settings/SalesEmailAssistant.settings-meta.xml,A,Settings SalesEmailAssistant,,,log,📰
+settings/Sandbox.settings-meta.xml,A,Settings Sandbox,,,log,📰
+settings/SceGlobalModelOptOut.settings-meta.xml,A,Settings SceGlobalModelOptOut,,,log,📰
+settings/Schema.settings-meta.xml,A,Settings Schema,,,log,📰
+settings/Search.settings-meta.xml,A,Settings Search,,,log,📰
+settings/Security.settings-meta.xml,A,Settings Security,,,log,📰
+settings/SecurityAgent.settings-meta.xml,A,Settings SecurityAgent,,,log,📰
+settings/SecurityHub.settings-meta.xml,A,Settings SecurityHub,,,log,📰
+settings/ServiceAIRecommendations.settings-meta.xml,A,Settings ServiceAIRecommendations,,,log,📰
+settings/ServiceCatalog.settings-meta.xml,A,Settings ServiceCatalog,,,log,📰
+settings/ServiceCloudVoice.settings-meta.xml,A,Settings ServiceCloudVoice,,,log,📰
+settings/ServiceHam.settings-meta.xml,A,Settings ServiceHam,,,log,📰
+settings/ServiceHelios.settings-meta.xml,A,Settings ServiceHelios,,,log,📰
+settings/ServiceIssueManagement.settings-meta.xml,A,Settings ServiceIssueManagement,,,log,📰
+settings/ServiceItam.settings-meta.xml,A,Settings ServiceItam,,,log,📰
+settings/ServiceItom.settings-meta.xml,A,Settings ServiceItom,,,log,📰
+settings/ServiceItsmChangeManagement.settings-meta.xml,A,Settings ServiceItsmChangeManagement,,,log,📰
+settings/ServiceItsmIntelligenceUdd.settings-meta.xml,A,Settings ServiceItsmIntelligenceUdd,,,log,📰
+settings/ServiceSetupAssistant.settings-meta.xml,A,Settings ServiceSetupAssistant,,,log,📰
+settings/SetupCopilot.settings-meta.xml,A,Settings SetupCopilot,,,log,📰
+settings/Sharing.settings-meta.xml,A,Settings Sharing,,,log,📰
+settings/Site.settings-meta.xml,A,Settings Site,,,log,📰
+settings/SourceTracking.settings-meta.xml,A,Settings SourceTracking,,,log,📰
+settings/SubscriptionManagement.settings-meta.xml,A,Settings SubscriptionManagement,,,log,📰
+settings/Survey.settings-meta.xml,A,Settings Survey,,,log,📰
+settings/SystemNotification.settings-meta.xml,A,Settings SystemNotification,,,log,📰
+settings/Territory2.settings-meta.xml,A,Settings Territory2,,,log,📰
+settings/Trailhead.settings-meta.xml,A,Settings Trailhead,,,log,📰
+settings/TransactableMarketplacePrivateOffer.settings-meta.xml,A,Settings TransactableMarketplacePrivateOffer,,,log,📰
+settings/TrialOrg.settings-meta.xml,A,Settings TrialOrg,,,log,📰
+settings/UIBundle.settings-meta.xml,A,Settings UIBundle,,,log,📰
+settings/UiWidget.settings-meta.xml,A,Settings UiWidget,,,log,📰
+settings/UserEngagement.settings-meta.xml,A,Settings UserEngagement,,,log,📰
+settings/UserInterface.settings-meta.xml,A,Settings UserInterface,,,log,📰
+settings/UserManagement.settings-meta.xml,A,Settings UserManagement,,,log,📰
+settings/Voice.settings-meta.xml,A,Settings Voice,,,log,📰
+settings/WebToX.settings-meta.xml,A,Settings WebToX,,,log,📰
+settings/WorkDotCom.settings-meta.xml,A,Settings WorkDotCom,,,log,📰
+sharingRules/AIPredictionScore.sharingRules-meta.xml,A,SharingTerritoryRule AIPredictionScore.sharingRules-meta.xml,,,log,📰
+sharingRules/AITestSuiteWorkbookAssoc.sharingRules-meta.xml,A,SharingTerritoryRule AITestSuiteWorkbookAssoc.sharingRules-meta.xml,,,log,📰
+sharingRules/AIWorkbook.sharingRules-meta.xml,A,SharingTerritoryRule AIWorkbook.sharingRules-meta.xml,,,log,📰
+sharingRules/Account.sharingRules-meta.xml,A,SharingTerritoryRule Account.sharingRules-meta.xml,,,log,📰
+sharingRules/ActivationTarget.sharingRules-meta.xml,A,SharingTerritoryRule ActivationTarget.sharingRules-meta.xml,,,log,📰
+sharingRules/ActivationTargetPlatform.sharingRules-meta.xml,A,SharingTerritoryRule ActivationTargetPlatform.sharingRules-meta.xml,,,log,📰
+sharingRules/ActivationTrgtIntOrgAccess.sharingRules-meta.xml,A,SharingTerritoryRule ActivationTrgtIntOrgAccess.sharingRules-meta.xml,,,log,📰
+sharingRules/ActiveScratchOrg.sharingRules-meta.xml,A,SharingTerritoryRule ActiveScratchOrg.sharingRules-meta.xml,,,log,📰
+sharingRules/ActivityRecurrence2.sharingRules-meta.xml,A,SharingTerritoryRule ActivityRecurrence2.sharingRules-meta.xml,,,log,📰
+sharingRules/ActivityRecurrence2Exception.sharingRules-meta.xml,A,SharingTerritoryRule ActivityRecurrence2Exception.sharingRules-meta.xml,,,log,📰
+sharingRules/ActvTgtPlatformFieldValue.sharingRules-meta.xml,A,SharingTerritoryRule ActvTgtPlatformFieldValue.sharingRules-meta.xml,,,log,📰
+sharingRules/AgentWork.sharingRules-meta.xml,A,SharingTerritoryRule AgentWork.sharingRules-meta.xml,,,log,📰
+sharingRules/AiEvaluation.sharingRules-meta.xml,A,SharingTerritoryRule AiEvaluation.sharingRules-meta.xml,,,log,📰
+sharingRules/AiGroundingFileRef.sharingRules-meta.xml,A,SharingTerritoryRule AiGroundingFileRef.sharingRules-meta.xml,,,log,📰
+sharingRules/AiGroundingLibFileDef.sharingRules-meta.xml,A,SharingTerritoryRule AiGroundingLibFileDef.sharingRules-meta.xml,,,log,📰
+sharingRules/AiGroundingSourceStage.sharingRules-meta.xml,A,SharingTerritoryRule AiGroundingSourceStage.sharingRules-meta.xml,,,log,📰
+sharingRules/AiGroundingWebRef.sharingRules-meta.xml,A,SharingTerritoryRule AiGroundingWebRef.sharingRules-meta.xml,,,log,📰
+sharingRules/AiJobRun.sharingRules-meta.xml,A,SharingTerritoryRule AiJobRun.sharingRules-meta.xml,,,log,📰
+sharingRules/AiJobRunItem.sharingRules-meta.xml,A,SharingTerritoryRule AiJobRunItem.sharingRules-meta.xml,,,log,📰
+sharingRules/AiSkill.sharingRules-meta.xml,A,SharingTerritoryRule AiSkill.sharingRules-meta.xml,,,log,📰
+sharingRules/AlternativePaymentMethod.sharingRules-meta.xml,A,SharingTerritoryRule AlternativePaymentMethod.sharingRules-meta.xml,,,log,📰
+sharingRules/AnalyticsUserAttrFuncTkn.sharingRules-meta.xml,A,SharingTerritoryRule AnalyticsUserAttrFuncTkn.sharingRules-meta.xml,,,log,📰
+sharingRules/AppointmentInvitation.sharingRules-meta.xml,A,SharingTerritoryRule AppointmentInvitation.sharingRules-meta.xml,,,log,📰
+sharingRules/ApprovalSubmission.sharingRules-meta.xml,A,SharingTerritoryRule ApprovalSubmission.sharingRules-meta.xml,,,log,📰
+sharingRules/Asset.sharingRules-meta.xml,A,SharingTerritoryRule Asset.sharingRules-meta.xml,,,log,📰
+sharingRules/AssistantInteraction.sharingRules-meta.xml,A,SharingTerritoryRule AssistantInteraction.sharingRules-meta.xml,,,log,📰
+sharingRules/AssistantProgress.sharingRules-meta.xml,A,SharingTerritoryRule AssistantProgress.sharingRules-meta.xml,,,log,📰
+sharingRules/AssistantRecommendation.sharingRules-meta.xml,A,SharingTerritoryRule AssistantRecommendation.sharingRules-meta.xml,,,log,📰
+sharingRules/AuthorizationForm.sharingRules-meta.xml,A,SharingTerritoryRule AuthorizationForm.sharingRules-meta.xml,,,log,📰
+sharingRules/AuthorizationFormConsent.sharingRules-meta.xml,A,SharingTerritoryRule AuthorizationFormConsent.sharingRules-meta.xml,,,log,📰
+sharingRules/AuthorizationFormDataUse.sharingRules-meta.xml,A,SharingTerritoryRule AuthorizationFormDataUse.sharingRules-meta.xml,,,log,📰
+sharingRules/BusinessBrand.sharingRules-meta.xml,A,SharingTerritoryRule BusinessBrand.sharingRules-meta.xml,,,log,📰
+sharingRules/BuyerGroup.sharingRules-meta.xml,A,SharingTerritoryRule BuyerGroup.sharingRules-meta.xml,,,log,📰
+sharingRules/CalendarModel.sharingRules-meta.xml,A,SharingTerritoryRule CalendarModel.sharingRules-meta.xml,,,log,📰
+sharingRules/CalendarView.sharingRules-meta.xml,A,SharingTerritoryRule CalendarView.sharingRules-meta.xml,,,log,📰
+sharingRules/Campaign.sharingRules-meta.xml,A,SharingTerritoryRule Campaign.sharingRules-meta.xml,,,log,📰
+sharingRules/Case.sharingRules-meta.xml,A,SharingTerritoryRule Case.sharingRules-meta.xml,,,log,📰
+sharingRules/ChangeRequest.sharingRules-meta.xml,A,SharingTerritoryRule ChangeRequest.sharingRules-meta.xml,,,log,📰
+sharingRules/CleanLeadBackup.sharingRules-meta.xml,A,SharingTerritoryRule CleanLeadBackup.sharingRules-meta.xml,,,log,📰
+sharingRules/CommSubscription.sharingRules-meta.xml,A,SharingTerritoryRule CommSubscription.sharingRules-meta.xml,,,log,📰
+sharingRules/CommSubscriptionChannelType.sharingRules-meta.xml,A,SharingTerritoryRule CommSubscriptionChannelType.sharingRules-meta.xml,,,log,📰
+sharingRules/CommSubscriptionConsent.sharingRules-meta.xml,A,SharingTerritoryRule CommSubscriptionConsent.sharingRules-meta.xml,,,log,📰
+sharingRules/CommerceJobStatus.sharingRules-meta.xml,A,SharingTerritoryRule CommerceJobStatus.sharingRules-meta.xml,,,log,📰
+sharingRules/ComponentResponseCache.sharingRules-meta.xml,A,SharingTerritoryRule ComponentResponseCache.sharingRules-meta.xml,,,log,📰
+sharingRules/ConsumptionSchedule.sharingRules-meta.xml,A,SharingTerritoryRule ConsumptionSchedule.sharingRules-meta.xml,,,log,📰
+sharingRules/Contact.sharingRules-meta.xml,A,SharingTerritoryRule Contact.sharingRules-meta.xml,,,log,📰
+sharingRules/ContactPointConsent.sharingRules-meta.xml,A,SharingTerritoryRule ContactPointConsent.sharingRules-meta.xml,,,log,📰
+sharingRules/ContactPointOttSvc.sharingRules-meta.xml,A,SharingTerritoryRule ContactPointOttSvc.sharingRules-meta.xml,,,log,📰
+sharingRules/ContactPointTypeConsent.sharingRules-meta.xml,A,SharingTerritoryRule ContactPointTypeConsent.sharingRules-meta.xml,,,log,📰
+sharingRules/ContactRequest.sharingRules-meta.xml,A,SharingTerritoryRule ContactRequest.sharingRules-meta.xml,,,log,📰
+sharingRules/ConvCoachingRecommendation.sharingRules-meta.xml,A,SharingTerritoryRule ConvCoachingRecommendation.sharingRules-meta.xml,,,log,📰
+sharingRules/ConvEntryRelatedRecordCopy.sharingRules-meta.xml,A,SharingTerritoryRule ConvEntryRelatedRecordCopy.sharingRules-meta.xml,,,log,📰
+sharingRules/ConversationApiLog.sharingRules-meta.xml,A,SharingTerritoryRule ConversationApiLog.sharingRules-meta.xml,,,log,📰
+sharingRules/ConversationEntryCopy.sharingRules-meta.xml,A,SharingTerritoryRule ConversationEntryCopy.sharingRules-meta.xml,,,log,📰
+sharingRules/Coupon.sharingRules-meta.xml,A,SharingTerritoryRule Coupon.sharingRules-meta.xml,,,log,📰
+sharingRules/CouponCodeRedemption.sharingRules-meta.xml,A,SharingTerritoryRule CouponCodeRedemption.sharingRules-meta.xml,,,log,📰
+sharingRules/CreditMemo.sharingRules-meta.xml,A,SharingTerritoryRule CreditMemo.sharingRules-meta.xml,,,log,📰
+sharingRules/Crew_Capacity__c.sharingRules-meta.xml,A,SharingTerritoryRule Crew_Capacity__c.sharingRules-meta.xml,,,log,📰
+sharingRules/Customer.sharingRules-meta.xml,A,SharingTerritoryRule Customer.sharingRules-meta.xml,,,log,📰
+sharingRules/DataActionJobSummary.sharingRules-meta.xml,A,SharingTerritoryRule DataActionJobSummary.sharingRules-meta.xml,,,log,📰
+sharingRules/DataActionTarget.sharingRules-meta.xml,A,SharingTerritoryRule DataActionTarget.sharingRules-meta.xml,,,log,📰
+sharingRules/DataCommCapActvTarget.sharingRules-meta.xml,A,SharingTerritoryRule DataCommCapActvTarget.sharingRules-meta.xml,,,log,📰
+sharingRules/DataCommunicationCap.sharingRules-meta.xml,A,SharingTerritoryRule DataCommunicationCap.sharingRules-meta.xml,,,log,📰
+sharingRules/DataKitDeploymentLog.sharingRules-meta.xml,A,SharingTerritoryRule DataKitDeploymentLog.sharingRules-meta.xml,,,log,📰
+sharingRules/DataKnowledgeRsrchRpt.sharingRules-meta.xml,A,SharingTerritoryRule DataKnowledgeRsrchRpt.sharingRules-meta.xml,,,log,📰
+sharingRules/DataKnowledgeRsrchTmpl.sharingRules-meta.xml,A,SharingTerritoryRule DataKnowledgeRsrchTmpl.sharingRules-meta.xml,,,log,📰
+sharingRules/DataKnowledgeSpace.sharingRules-meta.xml,A,SharingTerritoryRule DataKnowledgeSpace.sharingRules-meta.xml,,,log,📰
+sharingRules/DataKnowledgeSpcJobRun.sharingRules-meta.xml,A,SharingTerritoryRule DataKnowledgeSpcJobRun.sharingRules-meta.xml,,,log,📰
+sharingRules/DataKnowledgeSrcFileRef.sharingRules-meta.xml,A,SharingTerritoryRule DataKnowledgeSrcFileRef.sharingRules-meta.xml,,,log,📰
+sharingRules/DataLineageDefSyncLog.sharingRules-meta.xml,A,SharingTerritoryRule DataLineageDefSyncLog.sharingRules-meta.xml,,,log,📰
+sharingRules/DataLineageNodeDefSyncLog.sharingRules-meta.xml,A,SharingTerritoryRule DataLineageNodeDefSyncLog.sharingRules-meta.xml,,,log,📰
+sharingRules/DataMaskCustomValueLibrary.sharingRules-meta.xml,A,SharingTerritoryRule DataMaskCustomValueLibrary.sharingRules-meta.xml,,,log,📰
+sharingRules/DataPackageKit.sharingRules-meta.xml,A,SharingTerritoryRule DataPackageKit.sharingRules-meta.xml,,,log,📰
+sharingRules/DataQueryWorkspace.sharingRules-meta.xml,A,SharingTerritoryRule DataQueryWorkspace.sharingRules-meta.xml,,,log,📰
+sharingRules/DataSourceBundle.sharingRules-meta.xml,A,SharingTerritoryRule DataSourceBundle.sharingRules-meta.xml,,,log,📰
+sharingRules/DataUseLegalBasis.sharingRules-meta.xml,A,SharingTerritoryRule DataUseLegalBasis.sharingRules-meta.xml,,,log,📰
+sharingRules/DataUsePurpose.sharingRules-meta.xml,A,SharingTerritoryRule DataUsePurpose.sharingRules-meta.xml,,,log,📰
+sharingRules/DeliveryEstimationSetup.sharingRules-meta.xml,A,SharingTerritoryRule DeliveryEstimationSetup.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsActivityLog.sharingRules-meta.xml,A,SharingTerritoryRule DevopsActivityLog.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsEnvironment.sharingRules-meta.xml,A,SharingTerritoryRule DevopsEnvironment.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsPipeline.sharingRules-meta.xml,A,SharingTerritoryRule DevopsPipeline.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsPipelineStageTrigger.sharingRules-meta.xml,A,SharingTerritoryRule DevopsPipelineStageTrigger.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsProject.sharingRules-meta.xml,A,SharingTerritoryRule DevopsProject.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsQualityGate.sharingRules-meta.xml,A,SharingTerritoryRule DevopsQualityGate.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsRequestInfo.sharingRules-meta.xml,A,SharingTerritoryRule DevopsRequestInfo.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsTest.sharingRules-meta.xml,A,SharingTerritoryRule DevopsTest.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsTestExecution.sharingRules-meta.xml,A,SharingTerritoryRule DevopsTestExecution.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsTestProviderSyncLog.sharingRules-meta.xml,A,SharingTerritoryRule DevopsTestProviderSyncLog.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsTestSuite.sharingRules-meta.xml,A,SharingTerritoryRule DevopsTestSuite.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsTestSuiteExecution.sharingRules-meta.xml,A,SharingTerritoryRule DevopsTestSuiteExecution.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsTestSuiteGroupExec.sharingRules-meta.xml,A,SharingTerritoryRule DevopsTestSuiteGroupExec.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsTestSuiteStage.sharingRules-meta.xml,A,SharingTerritoryRule DevopsTestSuiteStage.sharingRules-meta.xml,,,log,📰
+sharingRules/DevopsWkItmTstSteGrpExec.sharingRules-meta.xml,A,SharingTerritoryRule DevopsWkItmTstSteGrpExec.sharingRules-meta.xml,,,log,📰
+sharingRules/EngagementChannelType.sharingRules-meta.xml,A,SharingTerritoryRule EngagementChannelType.sharingRules-meta.xml,,,log,📰
+sharingRules/ExchangeUserMapping.sharingRules-meta.xml,A,SharingTerritoryRule ExchangeUserMapping.sharingRules-meta.xml,,,log,📰
+sharingRules/ExtDataShareTarget.sharingRules-meta.xml,A,SharingTerritoryRule ExtDataShareTarget.sharingRules-meta.xml,,,log,📰
+sharingRules/ExternalEventMapping.sharingRules-meta.xml,A,SharingTerritoryRule ExternalEventMapping.sharingRules-meta.xml,,,log,📰
+sharingRules/FinanceBalanceSnapshot.sharingRules-meta.xml,A,SharingTerritoryRule FinanceBalanceSnapshot.sharingRules-meta.xml,,,log,📰
+sharingRules/FinanceTransaction.sharingRules-meta.xml,A,SharingTerritoryRule FinanceTransaction.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowInterview.sharingRules-meta.xml,A,SharingTerritoryRule FlowInterview.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowInterviewLog.sharingRules-meta.xml,A,SharingTerritoryRule FlowInterviewLog.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowOrchestrationInstance.sharingRules-meta.xml,A,SharingTerritoryRule FlowOrchestrationInstance.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowOrchestrationInstanceLink.sharingRules-meta.xml,A,SharingTerritoryRule FlowOrchestrationInstanceLink.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowOrchestrationStageInstance.sharingRules-meta.xml,A,SharingTerritoryRule FlowOrchestrationStageInstance.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowOrchestrationStepInstance.sharingRules-meta.xml,A,SharingTerritoryRule FlowOrchestrationStepInstance.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowOrchestrationWorkItem.sharingRules-meta.xml,A,SharingTerritoryRule FlowOrchestrationWorkItem.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowRecord.sharingRules-meta.xml,A,SharingTerritoryRule FlowRecord.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowTestResult.sharingRules-meta.xml,A,SharingTerritoryRule FlowTestResult.sharingRules-meta.xml,,,log,📰
+sharingRules/FlowVersionMilestone.sharingRules-meta.xml,A,SharingTerritoryRule FlowVersionMilestone.sharingRules-meta.xml,,,log,📰
+sharingRules/FulfillmentOrder.sharingRules-meta.xml,A,SharingTerritoryRule FulfillmentOrder.sharingRules-meta.xml,,,log,📰
+sharingRules/Handover_Item__c.sharingRules-meta.xml,A,SharingTerritoryRule Handover_Item__c.sharingRules-meta.xml,,,log,📰
+sharingRules/Image.sharingRules-meta.xml,A,SharingTerritoryRule Image.sharingRules-meta.xml,,,log,📰
+sharingRules/Incident.sharingRules-meta.xml,A,SharingTerritoryRule Incident.sharingRules-meta.xml,,,log,📰
+sharingRules/Individual.sharingRules-meta.xml,A,SharingTerritoryRule Individual.sharingRules-meta.xml,,,log,📰
+sharingRules/Installation__c.sharingRules-meta.xml,A,SharingTerritoryRule Installation__c.sharingRules-meta.xml,,,log,📰
+sharingRules/InventoryReservation.sharingRules-meta.xml,A,SharingTerritoryRule InventoryReservation.sharingRules-meta.xml,,,log,📰
+sharingRules/Invoice.sharingRules-meta.xml,A,SharingTerritoryRule Invoice.sharingRules-meta.xml,,,log,📰
+sharingRules/Lead.sharingRules-meta.xml,A,SharingTerritoryRule Lead.sharingRules-meta.xml,,,log,📰
+sharingRules/LegalEntity.sharingRules-meta.xml,A,SharingTerritoryRule LegalEntity.sharingRules-meta.xml,,,log,📰
+sharingRules/ListEmail.sharingRules-meta.xml,A,SharingTerritoryRule ListEmail.sharingRules-meta.xml,,,log,📰
+sharingRules/LiveAgentSession.sharingRules-meta.xml,A,SharingTerritoryRule LiveAgentSession.sharingRules-meta.xml,,,log,📰
+sharingRules/LiveChatTranscript.sharingRules-meta.xml,A,SharingTerritoryRule LiveChatTranscript.sharingRules-meta.xml,,,log,📰
+sharingRules/Location.sharingRules-meta.xml,A,SharingTerritoryRule Location.sharingRules-meta.xml,,,log,📰
+sharingRules/LocationGroup.sharingRules-meta.xml,A,SharingTerritoryRule LocationGroup.sharingRules-meta.xml,,,log,📰
+sharingRules/LocationShippingCarrierMethod.sharingRules-meta.xml,A,SharingTerritoryRule LocationShippingCarrierMethod.sharingRules-meta.xml,,,log,📰
+sharingRules/Macro.sharingRules-meta.xml,A,SharingTerritoryRule Macro.sharingRules-meta.xml,,,log,📰
+sharingRules/MacroUsage.sharingRules-meta.xml,A,SharingTerritoryRule MacroUsage.sharingRules-meta.xml,,,log,📰
+sharingRules/MessagingEndUser.sharingRules-meta.xml,A,SharingTerritoryRule MessagingEndUser.sharingRules-meta.xml,,,log,📰
+sharingRules/MessagingSession.sharingRules-meta.xml,A,SharingTerritoryRule MessagingSession.sharingRules-meta.xml,,,log,📰
+sharingRules/MktDataTransform.sharingRules-meta.xml,A,SharingTerritoryRule MktDataTransform.sharingRules-meta.xml,,,log,📰
+sharingRules/MktDataTransformSvcLocator.sharingRules-meta.xml,A,SharingTerritoryRule MktDataTransformSvcLocator.sharingRules-meta.xml,,,log,📰
+sharingRules/MktMLModel.sharingRules-meta.xml,A,SharingTerritoryRule MktMLModel.sharingRules-meta.xml,,,log,📰
+sharingRules/NotifDeliveryUserPref.sharingRules-meta.xml,A,SharingTerritoryRule NotifDeliveryUserPref.sharingRules-meta.xml,,,log,📰
+sharingRules/OperatingHours.sharingRules-meta.xml,A,SharingTerritoryRule OperatingHours.sharingRules-meta.xml,,,log,📰
+sharingRules/Opportunity.sharingRules-meta.xml,A,SharingTerritoryRule Opportunity.sharingRules-meta.xml,,,log,📰
+sharingRules/Order.sharingRules-meta.xml,A,SharingTerritoryRule Order.sharingRules-meta.xml,,,log,📰
+sharingRules/OutboundEngagementTemplate.sharingRules-meta.xml,A,SharingTerritoryRule OutboundEngagementTemplate.sharingRules-meta.xml,,,log,📰
+sharingRules/OutboundEngmtContentRsrc.sharingRules-meta.xml,A,SharingTerritoryRule OutboundEngmtContentRsrc.sharingRules-meta.xml,,,log,📰
+sharingRules/Panel_Batch__c.sharingRules-meta.xml,A,SharingTerritoryRule Panel_Batch__c.sharingRules-meta.xml,,,log,📰
+sharingRules/PartyConsent.sharingRules-meta.xml,A,SharingTerritoryRule PartyConsent.sharingRules-meta.xml,,,log,📰
+sharingRules/PendingServiceRouting.sharingRules-meta.xml,A,SharingTerritoryRule PendingServiceRouting.sharingRules-meta.xml,,,log,📰
+sharingRules/PrivacyJobSession.sharingRules-meta.xml,A,SharingTerritoryRule PrivacyJobSession.sharingRules-meta.xml,,,log,📰
+sharingRules/PrivacyObjectSession.sharingRules-meta.xml,A,SharingTerritoryRule PrivacyObjectSession.sharingRules-meta.xml,,,log,📰
+sharingRules/PrivacyRTBFRequest.sharingRules-meta.xml,A,SharingTerritoryRule PrivacyRTBFRequest.sharingRules-meta.xml,,,log,📰
+sharingRules/PrivacySessionRecordFailure.sharingRules-meta.xml,A,SharingTerritoryRule PrivacySessionRecordFailure.sharingRules-meta.xml,,,log,📰
+sharingRules/Problem.sharingRules-meta.xml,A,SharingTerritoryRule Problem.sharingRules-meta.xml,,,log,📰
+sharingRules/ProcessException.sharingRules-meta.xml,A,SharingTerritoryRule ProcessException.sharingRules-meta.xml,,,log,📰
+sharingRules/Product2.sharingRules-meta.xml,A,SharingTerritoryRule Product2.sharingRules-meta.xml,,,log,📰
+sharingRules/ProductCatalog.sharingRules-meta.xml,A,SharingTerritoryRule ProductCatalog.sharingRules-meta.xml,,,log,📰
+sharingRules/Promotion.sharingRules-meta.xml,A,SharingTerritoryRule Promotion.sharingRules-meta.xml,,,log,📰
+sharingRules/PromotionLineItemRule.sharingRules-meta.xml,A,SharingTerritoryRule PromotionLineItemRule.sharingRules-meta.xml,,,log,📰
+sharingRules/PromotionSegment.sharingRules-meta.xml,A,SharingTerritoryRule PromotionSegment.sharingRules-meta.xml,,,log,📰
+sharingRules/PromptAction.sharingRules-meta.xml,A,SharingTerritoryRule PromptAction.sharingRules-meta.xml,,,log,📰
+sharingRules/PromptError.sharingRules-meta.xml,A,SharingTerritoryRule PromptError.sharingRules-meta.xml,,,log,📰
+sharingRules/QuickText.sharingRules-meta.xml,A,SharingTerritoryRule QuickText.sharingRules-meta.xml,,,log,📰
+sharingRules/QuickTextUsage.sharingRules-meta.xml,A,SharingTerritoryRule QuickTextUsage.sharingRules-meta.xml,,,log,📰
+sharingRules/RecordMergeHistory.sharingRules-meta.xml,A,SharingTerritoryRule RecordMergeHistory.sharingRules-meta.xml,,,log,📰
+sharingRules/ReportResultBlob.sharingRules-meta.xml,A,SharingTerritoryRule ReportResultBlob.sharingRules-meta.xml,,,log,📰
+sharingRules/RetentionStoreUsage.sharingRules-meta.xml,A,SharingTerritoryRule RetentionStoreUsage.sharingRules-meta.xml,,,log,📰
+sharingRules/ReturnOrder.sharingRules-meta.xml,A,SharingTerritoryRule ReturnOrder.sharingRules-meta.xml,,,log,📰
+sharingRules/Scorecard.sharingRules-meta.xml,A,SharingTerritoryRule Scorecard.sharingRules-meta.xml,,,log,📰
+sharingRules/ScratchOrgInfo.sharingRules-meta.xml,A,SharingTerritoryRule ScratchOrgInfo.sharingRules-meta.xml,,,log,📰
+sharingRules/SearchRecentQuery.sharingRules-meta.xml,A,SharingTerritoryRule SearchRecentQuery.sharingRules-meta.xml,,,log,📰
+sharingRules/Seller.sharingRules-meta.xml,A,SharingTerritoryRule Seller.sharingRules-meta.xml,,,log,📰
+sharingRules/ServiceAppointment.sharingRules-meta.xml,A,SharingTerritoryRule ServiceAppointment.sharingRules-meta.xml,,,log,📰
+sharingRules/ServiceAppointmentAttendee.sharingRules-meta.xml,A,SharingTerritoryRule ServiceAppointmentAttendee.sharingRules-meta.xml,,,log,📰
+sharingRules/ServiceContract.sharingRules-meta.xml,A,SharingTerritoryRule ServiceContract.sharingRules-meta.xml,,,log,📰
+sharingRules/ServiceRequestRelatedRecord.sharingRules-meta.xml,A,SharingTerritoryRule ServiceRequestRelatedRecord.sharingRules-meta.xml,,,log,📰
+sharingRules/ServiceResource.sharingRules-meta.xml,A,SharingTerritoryRule ServiceResource.sharingRules-meta.xml,,,log,📰
+sharingRules/ServiceTerritory.sharingRules-meta.xml,A,SharingTerritoryRule ServiceTerritory.sharingRules-meta.xml,,,log,📰
+sharingRules/SfdcPartnerSbscrOffer.sharingRules-meta.xml,A,SharingTerritoryRule SfdcPartnerSbscrOffer.sharingRules-meta.xml,,,log,📰
+sharingRules/Shift.sharingRules-meta.xml,A,SharingTerritoryRule Shift.sharingRules-meta.xml,,,log,📰
+sharingRules/Shipment.sharingRules-meta.xml,A,SharingTerritoryRule Shipment.sharingRules-meta.xml,,,log,📰
+sharingRules/ShippingCarrier.sharingRules-meta.xml,A,SharingTerritoryRule ShippingCarrier.sharingRules-meta.xml,,,log,📰
+sharingRules/ShippingCarrierMethod.sharingRules-meta.xml,A,SharingTerritoryRule ShippingCarrierMethod.sharingRules-meta.xml,,,log,📰
+sharingRules/ShippingConfigurationSet.sharingRules-meta.xml,A,SharingTerritoryRule ShippingConfigurationSet.sharingRules-meta.xml,,,log,📰
+sharingRules/SiqUserBlacklist.sharingRules-meta.xml,A,SharingTerritoryRule SiqUserBlacklist.sharingRules-meta.xml,,,log,📰
+sharingRules/SourceCodeRepoProvider.sharingRules-meta.xml,A,SharingTerritoryRule SourceCodeRepoProvider.sharingRules-meta.xml,,,log,📰
+sharingRules/SourceCodeRepository.sharingRules-meta.xml,A,SharingTerritoryRule SourceCodeRepository.sharingRules-meta.xml,,,log,📰
+sharingRules/StagedInviteeEmail.sharingRules-meta.xml,A,SharingTerritoryRule StagedInviteeEmail.sharingRules-meta.xml,,,log,📰
+sharingRules/StreamActivityAccess.sharingRules-meta.xml,A,SharingTerritoryRule StreamActivityAccess.sharingRules-meta.xml,,,log,📰
+sharingRules/StreamingChannel.sharingRules-meta.xml,A,SharingTerritoryRule StreamingChannel.sharingRules-meta.xml,,,log,📰
+sharingRules/TableauHostMapping.sharingRules-meta.xml,A,SharingTerritoryRule TableauHostMapping.sharingRules-meta.xml,,,log,📰
+sharingRules/TenantConsumptionAlert.sharingRules-meta.xml,A,SharingTerritoryRule TenantConsumptionAlert.sharingRules-meta.xml,,,log,📰
+sharingRules/TodayGoal.sharingRules-meta.xml,A,SharingTerritoryRule TodayGoal.sharingRules-meta.xml,,,log,📰
+sharingRules/UnstructuredStorageSpace.sharingRules-meta.xml,A,SharingTerritoryRule UnstructuredStorageSpace.sharingRules-meta.xml,,,log,📰
+sharingRules/User.sharingRules-meta.xml,A,SharingTerritoryRule User.sharingRules-meta.xml,,,log,📰
+sharingRules/UserAppMenuCustomization.sharingRules-meta.xml,A,SharingTerritoryRule UserAppMenuCustomization.sharingRules-meta.xml,,,log,📰
+sharingRules/UserCapabilityPreference.sharingRules-meta.xml,A,SharingTerritoryRule UserCapabilityPreference.sharingRules-meta.xml,,,log,📰
+sharingRules/UserDefinedLabel.sharingRules-meta.xml,A,SharingTerritoryRule UserDefinedLabel.sharingRules-meta.xml,,,log,📰
+sharingRules/UserDefinedLabelAssignment.sharingRules-meta.xml,A,SharingTerritoryRule UserDefinedLabelAssignment.sharingRules-meta.xml,,,log,📰
+sharingRules/UserDevopsPreference.sharingRules-meta.xml,A,SharingTerritoryRule UserDevopsPreference.sharingRules-meta.xml,,,log,📰
+sharingRules/UserEmailPreferredPerson.sharingRules-meta.xml,A,SharingTerritoryRule UserEmailPreferredPerson.sharingRules-meta.xml,,,log,📰
+sharingRules/UserExternalCredential.sharingRules-meta.xml,A,SharingTerritoryRule UserExternalCredential.sharingRules-meta.xml,,,log,📰
+sharingRules/UserLocalWebServerIdentity.sharingRules-meta.xml,A,SharingTerritoryRule UserLocalWebServerIdentity.sharingRules-meta.xml,,,log,📰
+sharingRules/UserPrioritizedRecord.sharingRules-meta.xml,A,SharingTerritoryRule UserPrioritizedRecord.sharingRules-meta.xml,,,log,📰
+sharingRules/UserProvisioningRequest.sharingRules-meta.xml,A,SharingTerritoryRule UserProvisioningRequest.sharingRules-meta.xml,,,log,📰
+sharingRules/UserServicePresence.sharingRules-meta.xml,A,SharingTerritoryRule UserServicePresence.sharingRules-meta.xml,,,log,📰
+sharingRules/VoiceCall.sharingRules-meta.xml,A,SharingTerritoryRule VoiceCall.sharingRules-meta.xml,,,log,📰
+sharingRules/VoiceChnlInteractionEvent.sharingRules-meta.xml,A,SharingTerritoryRule VoiceChnlInteractionEvent.sharingRules-meta.xml,,,log,📰
+sharingRules/Waitlist.sharingRules-meta.xml,A,SharingTerritoryRule Waitlist.sharingRules-meta.xml,,,log,📰
+sharingRules/WebCart.sharingRules-meta.xml,A,SharingTerritoryRule WebCart.sharingRules-meta.xml,,,log,📰
+sharingRules/WebStore.sharingRules-meta.xml,A,SharingTerritoryRule WebStore.sharingRules-meta.xml,,,log,📰
+sharingRules/WorkItem.sharingRules-meta.xml,A,SharingTerritoryRule WorkItem.sharingRules-meta.xml,,,log,📰
+sharingRules/WorkOrder.sharingRules-meta.xml,A,SharingTerritoryRule WorkOrder.sharingRules-meta.xml,,,log,📰
+sharingRules/WorkPlan.sharingRules-meta.xml,A,SharingTerritoryRule WorkPlan.sharingRules-meta.xml,,,log,📰
+sharingRules/WorkPlanTemplate.sharingRules-meta.xml,A,SharingTerritoryRule WorkPlanTemplate.sharingRules-meta.xml,,,log,📰
+sharingRules/WorkStepTemplate.sharingRules-meta.xml,A,SharingTerritoryRule WorkStepTemplate.sharingRules-meta.xml,,,log,📰
+sharingRules/WorkType.sharingRules-meta.xml,A,SharingTerritoryRule WorkType.sharingRules-meta.xml,,,log,📰
+sharingRules/WorkTypeGroup.sharingRules-meta.xml,A,SharingTerritoryRule WorkTypeGroup.sharingRules-meta.xml,,,log,📰
+sharingRules/WorkflowSLAAction.sharingRules-meta.xml,A,SharingTerritoryRule WorkflowSLAAction.sharingRules-meta.xml,,,log,📰
+standardValueSetTranslations/AddressCountryCode-da.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-da,,,log,📰
+standardValueSetTranslations/AddressCountryCode-de.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-de,,,log,📰
+standardValueSetTranslations/AddressCountryCode-es.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-es,,,log,📰
+standardValueSetTranslations/AddressCountryCode-es_MX.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-es_MX,,,log,📰
+standardValueSetTranslations/AddressCountryCode-fi.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-fi,,,log,📰
+standardValueSetTranslations/AddressCountryCode-fr.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-fr,,,log,📰
+standardValueSetTranslations/AddressCountryCode-it.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-it,,,log,📰
+standardValueSetTranslations/AddressCountryCode-ja.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-ja,,,log,📰
+standardValueSetTranslations/AddressCountryCode-ko.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-ko,,,log,📰
+standardValueSetTranslations/AddressCountryCode-no.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-no,,,log,📰
+standardValueSetTranslations/AddressCountryCode-pt_BR.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-pt_BR,,,log,📰
+standardValueSetTranslations/AddressCountryCode-ru.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-ru,,,log,📰
+standardValueSetTranslations/AddressCountryCode-sv.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-sv,,,log,📰
+standardValueSetTranslations/AddressCountryCode-th.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-th,,,log,📰
+standardValueSetTranslations/AddressCountryCode-zh_CN.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-zh_CN,,,log,📰
+standardValueSetTranslations/AddressCountryCode-zh_TW.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressCountryCode-zh_TW,,,log,📰
+standardValueSetTranslations/AddressStateCode-da.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-da,,,log,📰
+standardValueSetTranslations/AddressStateCode-de.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-de,,,log,📰
+standardValueSetTranslations/AddressStateCode-es.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-es,,,log,📰
+standardValueSetTranslations/AddressStateCode-es_MX.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-es_MX,,,log,📰
+standardValueSetTranslations/AddressStateCode-fi.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-fi,,,log,📰
+standardValueSetTranslations/AddressStateCode-fr.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-fr,,,log,📰
+standardValueSetTranslations/AddressStateCode-it.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-it,,,log,📰
+standardValueSetTranslations/AddressStateCode-ja.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-ja,,,log,📰
+standardValueSetTranslations/AddressStateCode-ko.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-ko,,,log,📰
+standardValueSetTranslations/AddressStateCode-no.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-no,,,log,📰
+standardValueSetTranslations/AddressStateCode-pt_BR.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-pt_BR,,,log,📰
+standardValueSetTranslations/AddressStateCode-ru.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-ru,,,log,📰
+standardValueSetTranslations/AddressStateCode-sv.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-sv,,,log,📰
+standardValueSetTranslations/AddressStateCode-th.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-th,,,log,📰
+standardValueSetTranslations/AddressStateCode-zh_CN.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-zh_CN,,,log,📰
+standardValueSetTranslations/AddressStateCode-zh_TW.standardValueSetTranslation-meta.xml,A,StandardValueSetTranslation AddressStateCode-zh_TW,,,log,📰
+standardValueSets/AccountContactRole.standardValueSet-meta.xml,A,StandardValueSet AccountContactRole,,,log,📰
+standardValueSets/AccountOwnership.standardValueSet-meta.xml,A,StandardValueSet AccountOwnership,,,log,📰
+standardValueSets/AccountRating.standardValueSet-meta.xml,A,StandardValueSet AccountRating,,,log,📰
+standardValueSets/AccountType.standardValueSet-meta.xml,A,StandardValueSet AccountType,,,log,📰
+standardValueSets/AssetStatus.standardValueSet-meta.xml,A,StandardValueSet AssetStatus,,,log,📰
+standardValueSets/CampaignMemberStatus.standardValueSet-meta.xml,A,StandardValueSet CampaignMemberStatus,,,log,📰
+standardValueSets/CampaignStatus.standardValueSet-meta.xml,A,StandardValueSet CampaignStatus,,,log,📰
+standardValueSets/CampaignType.standardValueSet-meta.xml,A,StandardValueSet CampaignType,,,log,📰
+standardValueSets/CaseContactRole.standardValueSet-meta.xml,A,StandardValueSet CaseContactRole,,,log,📰
+standardValueSets/CaseOrigin.standardValueSet-meta.xml,A,StandardValueSet CaseOrigin,,,log,📰
+standardValueSets/CasePriority.standardValueSet-meta.xml,A,StandardValueSet CasePriority,,,log,📰
+standardValueSets/CaseReason.standardValueSet-meta.xml,A,StandardValueSet CaseReason,,,log,📰
+standardValueSets/CaseStatus.standardValueSet-meta.xml,A,StandardValueSet CaseStatus,,,log,📰
+standardValueSets/CaseType.standardValueSet-meta.xml,A,StandardValueSet CaseType,,,log,📰
+standardValueSets/ContactRole.standardValueSet-meta.xml,A,StandardValueSet ContactRole,,,log,📰
+standardValueSets/ContractContactRole.standardValueSet-meta.xml,A,StandardValueSet ContractContactRole,,,log,📰
+standardValueSets/ContractStatus.standardValueSet-meta.xml,A,StandardValueSet ContractStatus,,,log,📰
+standardValueSets/EntitlementType.standardValueSet-meta.xml,A,StandardValueSet EntitlementType,,,log,📰
+standardValueSets/EventSubject.standardValueSet-meta.xml,A,StandardValueSet EventSubject,,,log,📰
+standardValueSets/EventType.standardValueSet-meta.xml,A,StandardValueSet EventType,,,log,📰
+standardValueSets/FiscalYearPeriodPrefix.standardValueSet-meta.xml,A,StandardValueSet FiscalYearPeriodPrefix,,,log,📰
+standardValueSets/FiscalYearQuarterName.standardValueSet-meta.xml,A,StandardValueSet FiscalYearQuarterName,,,log,📰
+standardValueSets/FiscalYearQuarterPrefix.standardValueSet-meta.xml,A,StandardValueSet FiscalYearQuarterPrefix,,,log,📰
+standardValueSets/FulfillmentStatus.standardValueSet-meta.xml,A,StandardValueSet FulfillmentStatus,,,log,📰
+standardValueSets/FulfillmentType.standardValueSet-meta.xml,A,StandardValueSet FulfillmentType,,,log,📰
+standardValueSets/Industry.standardValueSet-meta.xml,A,StandardValueSet Industry,,,log,📰
+standardValueSets/LeadSource.standardValueSet-meta.xml,A,StandardValueSet LeadSource,,,log,📰
+standardValueSets/LeadStatus.standardValueSet-meta.xml,A,StandardValueSet LeadStatus,,,log,📰
+standardValueSets/OpportunityStage.standardValueSet-meta.xml,A,StandardValueSet OpportunityStage,,,log,📰
+standardValueSets/OpportunityType.standardValueSet-meta.xml,A,StandardValueSet OpportunityType,,,log,📰
+standardValueSets/OrderStatus.standardValueSet-meta.xml,A,StandardValueSet OrderStatus,,,log,📰
+standardValueSets/PartnerRole.standardValueSet-meta.xml,A,StandardValueSet PartnerRole,,,log,📰
+standardValueSets/ProcessExceptionCategory.standardValueSet-meta.xml,A,StandardValueSet ProcessExceptionCategory,,,log,📰
+standardValueSets/ProcessExceptionPriority.standardValueSet-meta.xml,A,StandardValueSet ProcessExceptionPriority,,,log,📰
+standardValueSets/ProcessExceptionSeverity.standardValueSet-meta.xml,A,StandardValueSet ProcessExceptionSeverity,,,log,📰
+standardValueSets/ProcessExceptionStatus.standardValueSet-meta.xml,A,StandardValueSet ProcessExceptionStatus,,,log,📰
+standardValueSets/Product2Family.standardValueSet-meta.xml,A,StandardValueSet Product2Family,,,log,📰
+standardValueSets/QuantityUnitOfMeasure.standardValueSet-meta.xml,A,StandardValueSet QuantityUnitOfMeasure,,,log,📰
+standardValueSets/QuickTextCategory.standardValueSet-meta.xml,A,StandardValueSet QuickTextCategory,,,log,📰
+standardValueSets/QuickTextChannel.standardValueSet-meta.xml,A,StandardValueSet QuickTextChannel,,,log,📰
+standardValueSets/ResourceAbsenceType.standardValueSet-meta.xml,A,StandardValueSet ResourceAbsenceType,,,log,📰
+standardValueSets/ReturnOrderLineItemProcessPlan.standardValueSet-meta.xml,A,StandardValueSet ReturnOrderLineItemProcessPlan,,,log,📰
+standardValueSets/ReturnOrderLineItemReasonForRejection.standardValueSet-meta.xml,A,StandardValueSet ReturnOrderLineItemReasonForRejection,,,log,📰
+standardValueSets/ReturnOrderLineItemReasonForReturn.standardValueSet-meta.xml,A,StandardValueSet ReturnOrderLineItemReasonForReturn,,,log,📰
+standardValueSets/ReturnOrderLineItemRepaymentMethod.standardValueSet-meta.xml,A,StandardValueSet ReturnOrderLineItemRepaymentMethod,,,log,📰
+standardValueSets/ReturnOrderShipmentType.standardValueSet-meta.xml,A,StandardValueSet ReturnOrderShipmentType,,,log,📰
+standardValueSets/ReturnOrderStatus.standardValueSet-meta.xml,A,StandardValueSet ReturnOrderStatus,,,log,📰
+standardValueSets/Salutation.standardValueSet-meta.xml,A,StandardValueSet Salutation,,,log,📰
+standardValueSets/ServiceAppointmentStatus.standardValueSet-meta.xml,A,StandardValueSet ServiceAppointmentStatus,,,log,📰
+standardValueSets/ServiceContractApprovalStatus.standardValueSet-meta.xml,A,StandardValueSet ServiceContractApprovalStatus,,,log,📰
+standardValueSets/SolutionStatus.standardValueSet-meta.xml,A,StandardValueSet SolutionStatus,,,log,📰
+standardValueSets/TaskPriority.standardValueSet-meta.xml,A,StandardValueSet TaskPriority,,,log,📰
+standardValueSets/TaskStatus.standardValueSet-meta.xml,A,StandardValueSet TaskStatus,,,log,📰
+standardValueSets/TaskSubject.standardValueSet-meta.xml,A,StandardValueSet TaskSubject,,,log,📰
+standardValueSets/TaskType.standardValueSet-meta.xml,A,StandardValueSet TaskType,,,log,📰
+standardValueSets/WorkOrderLineItemStatus.standardValueSet-meta.xml,A,StandardValueSet WorkOrderLineItemStatus,,,log,📰
+standardValueSets/WorkOrderPriority.standardValueSet-meta.xml,A,StandardValueSet WorkOrderPriority,,,log,📰
+standardValueSets/WorkOrderStatus.standardValueSet-meta.xml,A,StandardValueSet WorkOrderStatus,,,log,📰
+tabs/Crew_Capacity__c.tab-meta.xml,A,CustomTab Crew_Capacity__c,,,log,📰
+tabs/Installation__c.tab-meta.xml,A,CustomTab Installation__c,,,log,📰
+tabs/Panel_Batch__c.tab-meta.xml,A,CustomTab Panel_Batch__c,,,log,📰
+topicsForObjects/Account.topicsForObjects-meta.xml,A,TopicsForObjects Account,,,log,📰
+topicsForObjects/Asset.topicsForObjects-meta.xml,A,TopicsForObjects Asset,,,log,📰
+topicsForObjects/AssociatedLocation.topicsForObjects-meta.xml,A,TopicsForObjects AssociatedLocation,,,log,📰
+topicsForObjects/Campaign.topicsForObjects-meta.xml,A,TopicsForObjects Campaign,,,log,📰
+topicsForObjects/Case.topicsForObjects-meta.xml,A,TopicsForObjects Case,,,log,📰
+topicsForObjects/ChangeRequest.topicsForObjects-meta.xml,A,TopicsForObjects ChangeRequest,,,log,📰
+topicsForObjects/Contact.topicsForObjects-meta.xml,A,TopicsForObjects Contact,,,log,📰
+topicsForObjects/ContentDocument.topicsForObjects-meta.xml,A,TopicsForObjects ContentDocument,,,log,📰
+topicsForObjects/Contract.topicsForObjects-meta.xml,A,TopicsForObjects Contract,,,log,📰
+topicsForObjects/Crew_Capacity__c.topicsForObjects-meta.xml,A,TopicsForObjects Crew_Capacity__c,,,log,📰
+topicsForObjects/Event.topicsForObjects-meta.xml,A,TopicsForObjects Event,,,log,📰
+topicsForObjects/Handover_Item__c.topicsForObjects-meta.xml,A,TopicsForObjects Handover_Item__c,,,log,📰
+topicsForObjects/Incident.topicsForObjects-meta.xml,A,TopicsForObjects Incident,,,log,📰
+topicsForObjects/Installation__c.topicsForObjects-meta.xml,A,TopicsForObjects Installation__c,,,log,📰
+topicsForObjects/Lead.topicsForObjects-meta.xml,A,TopicsForObjects Lead,,,log,📰
+topicsForObjects/Opportunity.topicsForObjects-meta.xml,A,TopicsForObjects Opportunity,,,log,📰
+topicsForObjects/Order.topicsForObjects-meta.xml,A,TopicsForObjects Order,,,log,📰
+topicsForObjects/Panel_Batch__c.topicsForObjects-meta.xml,A,TopicsForObjects Panel_Batch__c,,,log,📰
+topicsForObjects/Problem.topicsForObjects-meta.xml,A,TopicsForObjects Problem,,,log,📰
+topicsForObjects/ResourceAbsence.topicsForObjects-meta.xml,A,TopicsForObjects ResourceAbsence,,,log,📰
+topicsForObjects/ResourcePreference.topicsForObjects-meta.xml,A,TopicsForObjects ResourcePreference,,,log,📰
+topicsForObjects/ReturnOrder.topicsForObjects-meta.xml,A,TopicsForObjects ReturnOrder,,,log,📰
+topicsForObjects/ReturnOrderLineItem.topicsForObjects-meta.xml,A,TopicsForObjects ReturnOrderLineItem,,,log,📰
+topicsForObjects/ServiceAppointment.topicsForObjects-meta.xml,A,TopicsForObjects ServiceAppointment,,,log,📰
+topicsForObjects/ServiceResource.topicsForObjects-meta.xml,A,TopicsForObjects ServiceResource,,,log,📰
+topicsForObjects/ServiceResourceSkill.topicsForObjects-meta.xml,A,TopicsForObjects ServiceResourceSkill,,,log,📰
+topicsForObjects/ServiceTerritory.topicsForObjects-meta.xml,A,TopicsForObjects ServiceTerritory,,,log,📰
+topicsForObjects/ServiceTerritoryMember.topicsForObjects-meta.xml,A,TopicsForObjects ServiceTerritoryMember,,,log,📰
+topicsForObjects/Shift.topicsForObjects-meta.xml,A,TopicsForObjects Shift,,,log,📰
+topicsForObjects/Shipment.topicsForObjects-meta.xml,A,TopicsForObjects Shipment,,,log,📰
+topicsForObjects/Solution.topicsForObjects-meta.xml,A,TopicsForObjects Solution,,,log,📰
+topicsForObjects/Task.topicsForObjects-meta.xml,A,TopicsForObjects Task,,,log,📰
+topicsForObjects/WorkOrder.topicsForObjects-meta.xml,A,TopicsForObjects WorkOrder,,,log,📰
+topicsForObjects/WorkOrderLineItem.topicsForObjects-meta.xml,A,TopicsForObjects WorkOrderLineItem,,,log,📰
+topicsForObjects/WorkPlan.topicsForObjects-meta.xml,A,TopicsForObjects WorkPlan,,,log,📰
+topicsForObjects/WorkPlanTemplate.topicsForObjects-meta.xml,A,TopicsForObjects WorkPlanTemplate,,,log,📰
+topicsForObjects/WorkPlanTemplateEntry.topicsForObjects-meta.xml,A,TopicsForObjects WorkPlanTemplateEntry,,,log,📰
+topicsForObjects/WorkStep.topicsForObjects-meta.xml,A,TopicsForObjects WorkStep,,,log,📰
+topicsForObjects/WorkStepTemplate.topicsForObjects-meta.xml,A,TopicsForObjects WorkStepTemplate,,,log,📰
+transactionSecurityPolicies/sfdc_default_ReportExport_Protection.transactionSecurityPolicy-meta.xml,A,TransactionSecurityPolicy sfdc_default_ReportExport_Protection,,,log,📰
+translations/en_US.translation-meta.xml,A,Translations en_US,,,log,📰
+workflows/Case.workflow-meta.xml,A,Workflow Case,,,log,📰
+installedPackages/Developer Edition.json,A,InstalledPackage Developer Edition.json,,,log,📰
+manifest/package-all-org-items.xml,A,manifest/package-all-org-items.xml,,,log,📰
+manifest/package-backup-items.xml,A,manifest/package-backup-items.xml,,,log,📰
+manifest/package-skip-items.xml," ",manifest/package-skip-items.xml,M,,log,📰
+sfdx-project.json," ",sfdx-project.json,M,,log,📰

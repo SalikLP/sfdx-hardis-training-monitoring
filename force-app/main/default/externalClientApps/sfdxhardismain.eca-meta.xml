@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExternalClientApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <contactEmail>saliklp@gmail.com</contactEmail>
+    <description>External Client App used by sfdx-hardis for CI/CD authentication. Documentation: https://sfdx-hardis.cloudity.com/salesforce-devops-setup-auth/</description>
+    <distributionState>Local</distributionState>
+    <isProtected>false</isProtected>
+    <label>sfdxhardismain</label>
+    <orgScopedExternalApp>00Dbm000013CT7H:sfdxhardismain</orgScopedExternalApp>
+</ExternalClientApplication>

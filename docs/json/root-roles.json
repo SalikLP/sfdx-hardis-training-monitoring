@@ -1,0 +1,278 @@
+[
+  {
+    "text": "CEO (5)",
+    "icon": "fa-solid fa-users icon-blue",
+    "children": [
+      {
+        "text": "CFO",
+        "icon": "fa-solid fa-users icon-blue",
+        "children": [],
+        "roleData": {
+          "apiName": "CFO",
+          "caseAccessLevel": "Edit",
+          "contactAccessLevel": "Edit",
+          "description": "CFO",
+          "mayForecastManagerShare": "",
+          "name": "CFO",
+          "opportunityAccessLevel": "Edit",
+          "parentRole": "CEO"
+        }
+      },
+      {
+        "text": "COO",
+        "icon": "fa-solid fa-users icon-blue",
+        "children": [],
+        "roleData": {
+          "apiName": "COO",
+          "caseAccessLevel": "Edit",
+          "contactAccessLevel": "Edit",
+          "description": "COO",
+          "mayForecastManagerShare": "",
+          "name": "COO",
+          "opportunityAccessLevel": "Edit",
+          "parentRole": "CEO"
+        }
+      },
+      {
+        "text": "SVP, Customer Service & Support (3)",
+        "icon": "fa-solid fa-users icon-blue",
+        "children": [
+          {
+            "text": "Customer Support, International",
+            "icon": "fa-solid fa-users icon-blue",
+            "children": [],
+            "roleData": {
+              "apiName": "CustomerSupportInternational",
+              "caseAccessLevel": "Edit",
+              "contactAccessLevel": "Edit",
+              "description": "Customer Support, International",
+              "mayForecastManagerShare": "",
+              "name": "Customer Support, International",
+              "opportunityAccessLevel": "Edit",
+              "parentRole": "SVPCustomerServiceSupport"
+            }
+          },
+          {
+            "text": "Customer Support, North America",
+            "icon": "fa-solid fa-users icon-blue",
+            "children": [],
+            "roleData": {
+              "apiName": "CustomerSupportNorthAmerica",
+              "caseAccessLevel": "Edit",
+              "contactAccessLevel": "Edit",
+              "description": "Customer Support, North America",
+              "mayForecastManagerShare": "",
+              "name": "Customer Support, North America",
+              "opportunityAccessLevel": "Edit",
+              "parentRole": "SVPCustomerServiceSupport"
+            }
+          },
+          {
+            "text": "Installation & Repair Services",
+            "icon": "fa-solid fa-users icon-blue",
+            "children": [],
+            "roleData": {
+              "apiName": "InstallationRepairServices",
+              "caseAccessLevel": "Edit",
+              "contactAccessLevel": "Edit",
+              "description": "Installation & Repair Services",
+              "mayForecastManagerShare": "",
+              "name": "Installation & Repair Services",
+              "opportunityAccessLevel": "Edit",
+              "parentRole": "SVPCustomerServiceSupport"
+            }
+          }
+        ],
+        "roleData": {
+          "apiName": "SVPCustomerServiceSupport",
+          "caseAccessLevel": "Edit",
+          "contactAccessLevel": "Edit",
+          "description": "SVP, Customer Service & Support",
+          "mayForecastManagerShare": "",
+          "name": "SVP, Customer Service & Support",
+          "opportunityAccessLevel": "Edit",
+          "parentRole": "CEO"
+        }
+      },
+      {
+        "text": "SVP, Human Resources",
+        "icon": "fa-solid fa-users icon-blue",
+        "children": [],
+        "roleData": {
+          "apiName": "SVPHumanResources",
+          "caseAccessLevel": "Edit",
+          "contactAccessLevel": "Edit",
+          "description": "SVP, Human Resources",
+          "mayForecastManagerShare": "",
+          "name": "SVP, Human Resources",
+          "opportunityAccessLevel": "Edit",
+          "parentRole": "CEO"
+        }
+      },
+      {
+        "text": "SVP, Sales & Marketing (3)",
+        "icon": "fa-solid fa-users icon-blue",
+        "children": [
+          {
+            "text": "VP, International Sales",
+            "icon": "fa-solid fa-users icon-blue",
+            "children": [],
+            "roleData": {
+              "apiName": "VPInternationalSales",
+              "caseAccessLevel": "Edit",
+              "contactAccessLevel": "Edit",
+              "description": "VP, International Sales",
+              "mayForecastManagerShare": "",
+              "name": "VP, International Sales",
+              "opportunityAccessLevel": "Edit",
+              "parentRole": "SVPSalesMarketing"
+            }
+          },
+          {
+            "text": "VP, Marketing (1)",
+            "icon": "fa-solid fa-users icon-blue",
+            "children": [
+              {
+                "text": "Marketing Team",
+                "icon": "fa-solid fa-users icon-blue",
+                "children": [],
+                "roleData": {
+                  "apiName": "MarketingTeam",
+                  "caseAccessLevel": "Edit",
+                  "contactAccessLevel": "Edit",
+                  "description": "Marketing Team",
+                  "mayForecastManagerShare": "",
+                  "name": "Marketing Team",
+                  "opportunityAccessLevel": "Edit",
+                  "parentRole": "VPMarketing"
+                }
+              }
+            ],
+            "roleData": {
+              "apiName": "VPMarketing",
+              "caseAccessLevel": "Edit",
+              "contactAccessLevel": "Edit",
+              "description": "VP, Marketing",
+              "mayForecastManagerShare": "",
+              "name": "VP, Marketing",
+              "opportunityAccessLevel": "Edit",
+              "parentRole": "SVPSalesMarketing"
+            }
+          },
+          {
+            "text": "VP, North American Sales (2)",
+            "icon": "fa-solid fa-users icon-blue",
+            "children": [
+              {
+                "text": "Director, Channel Sales (1)",
+                "icon": "fa-solid fa-users icon-blue",
+                "children": [
+                  {
+                    "text": "Channel Sales Team",
+                    "icon": "fa-solid fa-users icon-blue",
+                    "children": [],
+                    "roleData": {
+                      "apiName": "ChannelSalesTeam",
+                      "caseAccessLevel": "Edit",
+                      "contactAccessLevel": "Edit",
+                      "description": "Channel Sales Team",
+                      "mayForecastManagerShare": "",
+                      "name": "Channel Sales Team",
+                      "opportunityAccessLevel": "Edit",
+                      "parentRole": "DirectorChannelSales"
+                    }
+                  }
+                ],
+                "roleData": {
+                  "apiName": "DirectorChannelSales",
+                  "caseAccessLevel": "Edit",
+                  "contactAccessLevel": "Edit",
+                  "description": "Director, Channel Sales",
+                  "mayForecastManagerShare": "",
+                  "name": "Director, Channel Sales",
+                  "opportunityAccessLevel": "Edit",
+                  "parentRole": "VPNorthAmericanSales"
+                }
+              },
+              {
+                "text": "Director, Direct Sales (2)",
+                "icon": "fa-solid fa-users icon-blue",
+                "children": [
+                  {
+                    "text": "Eastern Sales Team",
+                    "icon": "fa-solid fa-users icon-blue",
+                    "children": [],
+                    "roleData": {
+                      "apiName": "EasternSalesTeam",
+                      "caseAccessLevel": "Edit",
+                      "contactAccessLevel": "Edit",
+                      "description": "Eastern Sales Team",
+                      "mayForecastManagerShare": "",
+                      "name": "Eastern Sales Team",
+                      "opportunityAccessLevel": "Edit",
+                      "parentRole": "DirectorDirectSales"
+                    }
+                  },
+                  {
+                    "text": "Western Sales Team",
+                    "icon": "fa-solid fa-users icon-blue",
+                    "children": [],
+                    "roleData": {
+                      "apiName": "WesternSalesTeam",
+                      "caseAccessLevel": "Edit",
+                      "contactAccessLevel": "Edit",
+                      "description": "Western Sales Team",
+                      "mayForecastManagerShare": "",
+                      "name": "Western Sales Team",
+                      "opportunityAccessLevel": "Edit",
+                      "parentRole": "DirectorDirectSales"
+                    }
+                  }
+                ],
+                "roleData": {
+                  "apiName": "DirectorDirectSales",
+                  "caseAccessLevel": "Edit",
+                  "contactAccessLevel": "Edit",
+                  "description": "Director, Direct Sales",
+                  "mayForecastManagerShare": "",
+                  "name": "Director, Direct Sales",
+                  "opportunityAccessLevel": "Edit",
+                  "parentRole": "VPNorthAmericanSales"
+                }
+              }
+            ],
+            "roleData": {
+              "apiName": "VPNorthAmericanSales",
+              "caseAccessLevel": "Edit",
+              "contactAccessLevel": "Edit",
+              "description": "VP, North American Sales",
+              "mayForecastManagerShare": "",
+              "name": "VP, North American Sales",
+              "opportunityAccessLevel": "Edit",
+              "parentRole": "SVPSalesMarketing"
+            }
+          }
+        ],
+        "roleData": {
+          "apiName": "SVPSalesMarketing",
+          "caseAccessLevel": "Edit",
+          "contactAccessLevel": "Edit",
+          "description": "SVP, Sales & Marketing",
+          "mayForecastManagerShare": "",
+          "name": "SVP, Sales & Marketing",
+          "opportunityAccessLevel": "Edit",
+          "parentRole": "CEO"
+        }
+      }
+    ],
+    "roleData": {
+      "apiName": "CEO",
+      "caseAccessLevel": "Edit",
+      "contactAccessLevel": "Edit",
+      "description": "CEO",
+      "mayForecastManagerShare": "",
+      "name": "CEO",
+      "opportunityAccessLevel": "Edit"
+    }
+  }
+]
