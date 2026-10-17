@@ -1,7 +1,7 @@
 instanceUrl: https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com
 targetUsername: saliklp.2d9238027487@agentforce.com
 msTeamsWebhookUrl: null
-deploymentRepository: https://github.com/SalikLP/sfdx-hardis-training-monitoring.git
+deploymentRepository: https://github.com/SalikLP/sfdx-hardis-training
 notificationConfig:
   - key: ORG_LIMITS
     notifications:
