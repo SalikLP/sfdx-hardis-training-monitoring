@@ -95,3 +95,29 @@ First characters of the serial numbers on this pallet.
 **Type**
 
 *Text*
+
+---
+### Supplier
+
+The company the panels of this batch were bought from, as written on the invoice.
+
+**API Name**
+
+`Supplier__c`
+
+**Type**
+
+*Text*
+
+---
+### Warranty Years
+
+How many years these panels are covered for by the supplier.
+
+**API Name**
+
+`Warranty_Years__c`
+
+**Type**
+
+*Number*

@@ -8,6 +8,7 @@
 ```mermaid
 graph TD
 Panel_Batch__c["Panel Batch"]:::customObject
+click Panel_Batch__c "../Panel_Batch__c/"
 Installation__c["Installation"]:::mainObject
 click Installation__c "../Installation__c/"
 Handover_Item__c["Handover Item"]:::customObject
@@ -41,9 +42,11 @@ linkStyle 0,1,2 stroke:#A6A6A6,stroke-width:2px;
 | Crew_Warning_Sent__c | Crew Warning Sent | Checkbox | <!-- --> |
 | Crew_Workload__c | Crew Workload | Number | Panels each person of the crew has to lay on this job. |
 | External_Id__c | External Id | Text | Stable key used by the training data loader. Never edit it by hand. |
+| Gate_Code__c | Gate Code | Text | The code of the gate or the entrance of the site, as the customer gave it to the planner. |
 | Install_Date__c | Install Date | Date | The day the crew is expected on site. |
 | Panels_Required__c | Panels Required | Number | How many panels the crew has to load for this installation. |
 | Roof_Type__c | Roof Type | Picklist | Drives how long the job takes. |
+| Scaffolding_Required__c | Scaffolding Required | Checkbox | Set by the planner when the roof cannot be reached without scaffolding, so the crew books it before the day. |
 | Signed_Off_By__c | Signed Off By | Text | Who signed the installation off with the customer. |
 | Status__c | Status | Picklist | Where this installation stands. |
 | Total_Capacity_kW__c | Total Capacity kW | Number | Total installed capacity once every panel is on the roof. |

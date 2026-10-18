@@ -85,9 +85,11 @@
         <members>Installation__c.Crew_Warning_Sent__c</members>
         <members>Installation__c.Crew_Workload__c</members>
         <members>Installation__c.External_Id__c</members>
+        <members>Installation__c.Gate_Code__c</members>
         <members>Installation__c.Install_Date__c</members>
         <members>Installation__c.Panels_Required__c</members>
         <members>Installation__c.Roof_Type__c</members>
+        <members>Installation__c.Scaffolding_Required__c</members>
         <members>Installation__c.Signed_Off_By__c</members>
         <members>Installation__c.Status__c</members>
         <members>Installation__c.Total_Capacity_kW__c</members>
@@ -109,6 +111,8 @@
         <members>Panel_Batch__c.Quantity__c</members>
         <members>Panel_Batch__c.Quote_Pdf_Url__c</members>
         <members>Panel_Batch__c.Serial_Prefix__c</members>
+        <members>Panel_Batch__c.Supplier__c</members>
+        <members>Panel_Batch__c.Warranty_Years__c</members>
         <name>CustomField</name>
     </types>
     <types>

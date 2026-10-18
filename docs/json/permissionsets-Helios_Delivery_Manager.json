@@ -64,7 +64,7 @@
     ]
   },
   {
-    "text": "Field Permissions (28)",
+    "text": "Field Permissions (32)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -389,7 +389,7 @@
         ]
       },
       {
-        "text": "Installation__c (11)",
+        "text": "Installation__c (13)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -546,6 +546,36 @@
             ]
           },
           {
+            "text": "Installation__c.Gate_Code__c",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: Installation__c.Gate_Code__c",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
             "text": "Installation__c.Install_Date__c",
             "icon": "fa-solid fa-square-pen icon-success",
             "a_attr": {
@@ -614,6 +644,36 @@
             "children": [
               {
                 "text": "Field: Installation__c.Roof_Type__c",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
+            "text": "Installation__c.Scaffolding_Required__c",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: Installation__c.Scaffolding_Required__c",
                 "icon": "",
                 "a_attr": {
                   "href": null
@@ -728,7 +788,7 @@
         ]
       },
       {
-        "text": "Panel_Batch__c (7)",
+        "text": "Panel_Batch__c (9)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -923,6 +983,66 @@
             "children": [
               {
                 "text": "Field: Panel_Batch__c.Serial_Prefix__c",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
+            "text": "Panel_Batch__c.Supplier__c",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: Panel_Batch__c.Supplier__c",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
+            "text": "Panel_Batch__c.Warranty_Years__c",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: Panel_Batch__c.Warranty_Years__c",
                 "icon": "",
                 "a_attr": {
                   "href": null

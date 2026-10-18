@@ -36,6 +36,8 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 | Quantity__c | Quantity | Number | How many panels are on this pallet. |
 | Quote_Pdf_Url__c | Quote PDF URL | Url | Where the generated quote PDF for this batch is stored. |
 | Serial_Prefix__c | Serial Prefix | Text | First characters of the serial numbers on this pallet. |
+| Supplier__c | Supplier | Text | The company the panels of this batch were bought from, as written on the invoice. |
+| Warranty_Years__c | Warranty Years | Number | How many years these panels are covered for by the supplier. |
 
 
 

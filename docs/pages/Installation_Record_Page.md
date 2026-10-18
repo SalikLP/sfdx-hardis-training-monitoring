@@ -7,7 +7,7 @@
 
 |<!-- -->|<!-- -->|
 |:---|:---|
-|Sobject Type|Installation__c|
+|Sobject Type|[Installation__c](../objects/Installation__c.md)|
 |Type|Record Page|
 |Master Label|Installation Record Page|
 |Template|flexipage:recordHomeTemplateDesktop|

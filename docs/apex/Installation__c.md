@@ -96,6 +96,19 @@ Stable key used by the training data loader. Never edit it by hand.
 *Text*
 
 ---
+### Gate Code
+
+The code of the gate or the entrance of the site, as the customer gave it to the planner.
+
+**API Name**
+
+`Gate_Code__c`
+
+**Type**
+
+*Text*
+
+---
 ### Install Date
 
 The day the crew is expected on site.
@@ -141,6 +154,19 @@ Drives how long the job takes.
 * Metal
 
 ---
+### Scaffolding Required
+
+Set by the planner when the roof cannot be reached without scaffolding, so the crew books it before the day.
+
+**API Name**
+
+`Scaffolding_Required__c`
+
+**Type**
+
+*Checkbox*
+
+---
 ### Signed Off By
 
 Who signed the installation off with the customer.
@@ -172,6 +198,7 @@ Where this installation stands.
 * In Progress
 * Completed
 * Cancelled
+* Awaiting Parts
 
 ---
 ### Total Capacity kW
