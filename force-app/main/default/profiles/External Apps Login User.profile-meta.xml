@@ -4042,6 +4042,10 @@
         <tab>standard-report</tab>
         <visibility>DefaultOff</visibility>
     </tabVisibilities>
+    <tabVisibilities>
+        <tab>standard-salesforcepages</tab>
+        <visibility>DefaultOn</visibility>
+    </tabVisibilities>
     <userLicense>External Apps Login</userLicense>
     <userPermissions>
         <enabled>true</enabled>

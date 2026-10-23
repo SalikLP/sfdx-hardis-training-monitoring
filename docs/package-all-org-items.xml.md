@@ -9,7 +9,7 @@ Contains the entire list of metadatas that are present in the monitored org (not
 
 <div id="jstree-container"></div>
 
-Metadatas: 1983
+Metadatas: 1988
 
 <details><summary>ApexClass (10)</summary>
 
@@ -206,7 +206,7 @@ Metadatas: 1983
 
 </details>
 
-<details><summary>CustomObject (396)</summary>
+<details><summary>CustomObject (398)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">Account</a><br/>
@@ -566,6 +566,8 @@ Metadatas: 1983
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">TimeSlot</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">Topic</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">TopicAssignment</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">UiPageAuthoringConv</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">UiPageAuthoringConvTurn</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">UnstructuredStorageSpace</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">UnstructuredStorageSpaceLayer</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">User</a><br/>
@@ -1788,7 +1790,7 @@ Metadatas: 1983
 
 </details>
 
-<details><summary>Settings (195)</summary>
+<details><summary>Settings (197)</summary>
 
 
   • Account<br/>
@@ -1829,6 +1831,7 @@ Metadatas: 1983
   • Currency<br/>
   • CustomAddressField<br/>
   • CustomerDataPlatform<br/>
+  • CustomerIntelligence<br/>
   • CustomizablePropensityScoring<br/>
   • CustomPreferencePage<br/>
   • DataDotCom<br/>
@@ -1956,6 +1959,7 @@ Metadatas: 1983
   • Security<br/>
   • SecurityAgent<br/>
   • SecurityHub<br/>
+  • SelfService<br/>
   • ServiceAIRecommendations<br/>
   • ServiceCatalog<br/>
   • ServiceCloudVoice<br/>
@@ -1989,7 +1993,7 @@ Metadatas: 1983
 
 </details>
 
-<details><summary>SharingRules (211)</summary>
+<details><summary>SharingRules (212)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">Account</a><br/>
@@ -2177,6 +2181,7 @@ Metadatas: 1983
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">TableauHostMapping</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">TenantConsumptionAlert</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">TodayGoal</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">UiPageAuthoringConv</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">UnstructuredStorageSpace</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">User</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">UserAppMenuCustomization</a><br/>

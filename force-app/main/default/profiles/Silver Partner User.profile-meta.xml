@@ -4267,6 +4267,10 @@
         <tab>standard-report</tab>
         <visibility>DefaultOn</visibility>
     </tabVisibilities>
+    <tabVisibilities>
+        <tab>standard-salesforcepages</tab>
+        <visibility>DefaultOn</visibility>
+    </tabVisibilities>
     <userLicense>Silver Partner</userLicense>
     <userPermissions>
         <enabled>true</enabled>

@@ -57247,7 +57247,7 @@
     ]
   },
   {
-    "text": "Tab Visibilities (257)",
+    "text": "Tab Visibilities (258)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -63163,11 +63163,34 @@
             }
           }
         ]
+      },
+      {
+        "text": "standard-salesforcepages",
+        "icon": "fa-solid fa-eye icon-success",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Tab: standard-salesforcepages",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Visibility: DefaultOn",
+            "icon": "fa-solid fa-eye icon-success",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
       }
     ]
   },
   {
-    "text": "User Permissions (219)",
+    "text": "User Permissions (222)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -64186,6 +64209,29 @@
         ]
       },
       {
+        "text": "CreateSalesforcePages",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Name: CreateSalesforcePages",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Enabled: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
         "text": "CreateTopics",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
@@ -64332,6 +64378,29 @@
         "children": [
           {
             "text": "Name: DeleteTopics",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Enabled: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "DeploySalesforcePages",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Name: DeploySalesforcePages",
             "icon": "",
             "a_attr": {
               "href": null
@@ -68104,6 +68173,29 @@
         "children": [
           {
             "text": "Name: ViewRoles",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Enabled: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "ViewSalesforcePages",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Name: ViewSalesforcePages",
             "icon": "",
             "a_attr": {
               "href": null

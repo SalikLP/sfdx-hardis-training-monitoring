@@ -9,7 +9,7 @@ Contains the list of metadatas that are in the git backup
 
 <div id="jstree-container"></div>
 
-Metadatas: 1074
+Metadatas: 1077
 
 <details><summary>ApexClass (6)</summary>
 
@@ -868,7 +868,7 @@ Metadatas: 1074
 
 </details>
 
-<details><summary>Settings (195)</summary>
+<details><summary>Settings (197)</summary>
 
 
   • Account<br/>
@@ -909,6 +909,7 @@ Metadatas: 1074
   • Currency<br/>
   • CustomAddressField<br/>
   • CustomerDataPlatform<br/>
+  • CustomerIntelligence<br/>
   • CustomizablePropensityScoring<br/>
   • CustomPreferencePage<br/>
   • DataDotCom<br/>
@@ -1036,6 +1037,7 @@ Metadatas: 1074
   • Security<br/>
   • SecurityAgent<br/>
   • SecurityHub<br/>
+  • SelfService<br/>
   • ServiceAIRecommendations<br/>
   • ServiceCatalog<br/>
   • ServiceCloudVoice<br/>
@@ -1069,7 +1071,7 @@ Metadatas: 1074
 
 </details>
 
-<details><summary>SharingRules (211)</summary>
+<details><summary>SharingRules (212)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">Account</a><br/>
@@ -1257,6 +1259,7 @@ Metadatas: 1074
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">TableauHostMapping</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">TenantConsumptionAlert</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">TodayGoal</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">UiPageAuthoringConv</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">UnstructuredStorageSpace</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">User</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">UserAppMenuCustomization</a><br/>

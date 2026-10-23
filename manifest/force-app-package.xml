@@ -868,6 +868,7 @@
         <members>CustomAddressField</members>
         <members>CustomPreferencePage</members>
         <members>CustomerDataPlatform</members>
+        <members>CustomerIntelligence</members>
         <members>CustomizablePropensityScoring</members>
         <members>DataDotCom</members>
         <members>DataMask</members>
@@ -994,6 +995,7 @@
         <members>Security</members>
         <members>SecurityAgent</members>
         <members>SecurityHub</members>
+        <members>SelfService</members>
         <members>ServiceAIRecommendations</members>
         <members>ServiceCatalog</members>
         <members>ServiceCloudVoice</members>
@@ -1212,6 +1214,7 @@
         <members>TableauHostMapping</members>
         <members>TenantConsumptionAlert</members>
         <members>TodayGoal</members>
+        <members>UiPageAuthoringConv</members>
         <members>UnstructuredStorageSpace</members>
         <members>User</members>
         <members>UserAppMenuCustomization</members>
