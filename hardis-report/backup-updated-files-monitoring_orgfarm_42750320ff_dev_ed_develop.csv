@@ -1,2 +1,21 @@
 File,ChangeType,FileHuman,WorkingDir,PrevName,severity,severityIcon
 cleanDataServices/DataCloudGeoLocation.cleanDataService-meta.xml," ",CleanDataService DataCloudGeoLocation,M,,log,📰
+profiles/Analytics Cloud Integration User.profile-meta.xml," ",Profile Analytics Cloud Integration User,M,,log,📰
+profiles/Analytics Cloud Security User.profile-meta.xml," ",Profile Analytics Cloud Security User,M,,log,📰
+profiles/B2B Reordering Portal Buyer Profile.profile-meta.xml," ",Profile B2B Reordering Portal Buyer Profile,M,,log,📰
+profiles/Chatter External User.profile-meta.xml," ",Profile Chatter External User,M,,log,📰
+profiles/Chatter Free User.profile-meta.xml," ",Profile Chatter Free User,M,,log,📰
+profiles/Chatter Moderator User.profile-meta.xml," ",Profile Chatter Moderator User,M,,log,📰
+profiles/Cross Org Data Proxy User.profile-meta.xml," ",Profile Cross Org Data Proxy User,M,,log,📰
+profiles/Custom%3A Marketing Profile.profile-meta.xml," ",Profile Custom%3A Marketing Profile,M,,log,📰
+profiles/Custom%3A Sales Profile.profile-meta.xml," ",Profile Custom%3A Sales Profile,M,,log,📰
+profiles/Custom%3A Support Profile.profile-meta.xml," ",Profile Custom%3A Support Profile,M,,log,📰
+profiles/Einstein Agent User.profile-meta.xml," ",Profile Einstein Agent User,M,,log,📰
+profiles/External Einstein Agent User.profile-meta.xml," ",Profile External Einstein Agent User,M,,log,📰
+profiles/Force%2Ecom - App Subscription User.profile-meta.xml," ",Profile Force%2Ecom - App Subscription User,M,,log,📰
+profiles/Force%2Ecom - Free User.profile-meta.xml," ",Profile Force%2Ecom - Free User,M,,log,📰
+profiles/Partner App Subscription User.profile-meta.xml," ",Profile Partner App Subscription User,M,,log,📰
+profiles/Read Only.profile-meta.xml," ",Profile Read Only,M,,log,📰
+profiles/Salesforce API Only System Integrations.profile-meta.xml," ",Profile Salesforce API Only System Integrations,M,,log,📰
+profiles/StandardAul.profile-meta.xml," ",Profile StandardAul,M,,log,📰
+profiles/Work%2Ecom Only User.profile-meta.xml," ",Profile Work%2Ecom Only User,M,,log,📰
