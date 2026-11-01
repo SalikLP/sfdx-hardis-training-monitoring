@@ -2550,6 +2550,9 @@
         <layout>FinanceTransaction-Finance Transaction Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
+        <layout>FlowRecord-Flow Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
         <layout>FulfillmentOrder-Fulfillment Order Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
@@ -3684,6 +3687,10 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>Panel_Batch__c</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Proto_Board_App_Page</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>

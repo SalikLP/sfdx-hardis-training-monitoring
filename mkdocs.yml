@@ -112,7 +112,7 @@ extra:
       link: https://twitter.com/NicolasVuillamy
   generator: false
 nav:
-  - "Home": "index.md"
+  - Home: index.md
   - Objects:
       - All objects: objects/index.md
       - Account: objects/Account.md
@@ -139,6 +139,7 @@ nav:
           - Installation_Assign_Crew: flows/Installation_Assign_Crew.md
           - Installation_Close_Check: flows/Installation_Close_Check.md
           - Installation_Crew_Warning: flows/Installation_Crew_Warning.md
+          - Proto_Board_Host_Flow: flows/Proto_Board_Host_Flow.md
           - sfdc_default_ReportExport_Protection_Flow: flows/sfdc_default_ReportExport_Protection_Flow.md
   - Authorizations:
       - Profiles:
@@ -217,6 +218,7 @@ nav:
           - Experience_Profile_Manager: permissionsets/Experience_Profile_Manager.md
           - Helios_Delivery_Crew: permissionsets/Helios_Delivery_Crew.md
           - Helios_Delivery_Manager: permissionsets/Helios_Delivery_Manager.md
+          - Proto_Board_Access: permissionsets/Proto_Board_Access.md
           - sfdc_aiplanner_service_permset: permissionsets/sfdc_aiplanner_service_permset.md
           - sfdcInternalInt__sfdc_platformmetabolism_slagent: permissionsets/sfdcInternalInt__sfdc_platformmetabolism_slagent.md
           - sfdcInternalInt__sfdc_scrt2: permissionsets/sfdcInternalInt__sfdc_scrt2.md
@@ -232,6 +234,14 @@ nav:
       - Lightning Web Components:
           - All Lightning Web Components: lwc/index.md
           - installationTimeline: lwc/installationTimeline.md
+          - protoBoardStore: lwc/protoBoardStore.md
+          - protoBoardWidget: lwc/protoBoardWidget.md
+          - protoFilterWidget: lwc/protoFilterWidget.md
+          - protoWidgetCpe: lwc/protoWidgetCpe.md
+      - Aura Components:
+          - All Aura Components: aura/index.md
+          - protoFourColBoardTemplate: aura/protoFourColBoardTemplate.md
+          - protoFourColRecordTemplate: aura/protoFourColRecordTemplate.md
   - Lightning Pages:
       - All Lightning pages: pages/index.md
       - AcademicOperations_UtilityBar: pages/AcademicOperations_UtilityBar.md
@@ -247,6 +257,8 @@ nav:
       - LightningSalesConsole_UtilityBar: pages/LightningSalesConsole_UtilityBar.md
       - LightningService_UtilityBar: pages/LightningService_UtilityBar.md
       - MediaAdSalesManagement_UtilityBar: pages/MediaAdSalesManagement_UtilityBar.md
+      - Proto_Board_Account_Record_Page: pages/Proto_Board_Account_Record_Page.md
+      - Proto_Board_App_Page: pages/Proto_Board_App_Page.md
       - RevenueCloudConsole_UtilityBar: pages/RevenueCloudConsole_UtilityBar.md
       - SalesCloudMobile_UtilityBar: pages/SalesCloudMobile_UtilityBar.md
   - Packages:

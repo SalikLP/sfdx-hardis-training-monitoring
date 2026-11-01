@@ -140,4 +140,8 @@
         <name>sfdxhardismon_orgfarm_42750320</name>
         <type>ExternalClientApplication</type>
     </appMenuItems>
+    <appMenuItems>
+        <name>Proto_Board_Lab</name>
+        <type>CustomApplication</type>
+    </appMenuItems>
 </AppMenu>

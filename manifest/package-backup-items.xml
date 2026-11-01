@@ -33,6 +33,11 @@
         <name>AssignmentRules</name>
     </types>
     <types>
+        <members>protoFourColBoardTemplate</members>
+        <members>protoFourColRecordTemplate</members>
+        <name>AuraDefinitionBundle</name>
+    </types>
+    <types>
         <members>Case</members>
         <members>Lead</members>
         <name>AutoResponseRules</name>
@@ -51,6 +56,7 @@
     </types>
     <types>
         <members>Helios_Delivery</members>
+        <members>Proto_Board_Lab</members>
         <name>CustomApplication</name>
     </types>
     <types>
@@ -135,6 +141,7 @@
         <members>Crew_Capacity__c</members>
         <members>Installation__c</members>
         <members>Panel_Batch__c</members>
+        <members>Proto_Board_App_Page</members>
         <name>CustomTab</name>
     </types>
     <types>
@@ -241,6 +248,8 @@
         <members>LightningSales_UtilityBar</members>
         <members>LightningService_UtilityBar</members>
         <members>MediaAdSalesManagement_UtilityBar</members>
+        <members>Proto_Board_Account_Record_Page</members>
+        <members>Proto_Board_App_Page</members>
         <members>RevenueCloudConsole_UtilityBar</members>
         <members>SalesCloudMobile_UtilityBar</members>
         <name>FlexiPage</name>
@@ -249,6 +258,7 @@
         <members>Installation_Assign_Crew</members>
         <members>Installation_Close_Check</members>
         <members>Installation_Crew_Warning</members>
+        <members>Proto_Board_Host_Flow</members>
         <members>sfdc_default_ReportExport_Protection_Flow</members>
         <name>Flow</name>
     </types>
@@ -256,6 +266,7 @@
         <members>Installation_Assign_Crew</members>
         <members>Installation_Close_Check</members>
         <members>Installation_Crew_Warning</members>
+        <members>Proto_Board_Host_Flow</members>
         <members>sfdc_default_ReportExport_Protection_Flow</members>
         <name>FlowDefinition</name>
     </types>
@@ -345,6 +356,7 @@
         <members>FeedItem-Feed Item Layout</members>
         <members>FinanceBalanceSnapshot-Finance Balance Snapshot Layout</members>
         <members>FinanceTransaction-Finance Transaction Layout</members>
+        <members>FlowRecord-Flow Layout</members>
         <members>FulfillmentOrder-Fulfillment Order Layout</members>
         <members>FulfillmentOrderItemAdjustment-Fulfillment Order Item Adjustment Layout</members>
         <members>FulfillmentOrderItemTax-Fulfillment Order Item Tax Layout</members>
@@ -448,6 +460,10 @@
     </types>
     <types>
         <members>installationTimeline</members>
+        <members>protoBoardStore</members>
+        <members>protoBoardWidget</members>
+        <members>protoFilterWidget</members>
+        <members>protoWidgetCpe</members>
         <name>LightningComponentBundle</name>
     </types>
     <types>
@@ -486,6 +502,7 @@
         <members>Experience_Profile_Manager</members>
         <members>Helios_Delivery_Crew</members>
         <members>Helios_Delivery_Manager</members>
+        <members>Proto_Board_Access</members>
         <members>sfdcInternalInt__sfdc_platformmetabolism_slagent</members>
         <members>sfdcInternalInt__sfdc_scrt2</members>
         <members>sfdc_aiplanner_service_permset</members>

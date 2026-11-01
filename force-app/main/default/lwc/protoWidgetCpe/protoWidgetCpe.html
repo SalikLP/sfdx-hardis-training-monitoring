@@ -1,0 +1,44 @@
+<template>
+    <div class="slds-p-around_small" style="font-family: var(--lwc-fontFamily);">
+        <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-m-bottom_small">
+            <div>
+                <h2 class="slds-text-heading_small">Configure Board Widget (CPE Prototype)</h2>
+                <p class="slds-text-body_small slds-text-color_weak">Custom Property Editor replacing raw Flow properties</p>
+            </div>
+            <span class="slds-badge slds-theme_success">CPE Active</span>
+        </div>
+
+        <lightning-input
+            label="Widget Title"
+            value={titleValue}
+            onchange={handleTitleChange}
+            class="slds-m-bottom_x-small">
+        </lightning-input>
+
+        <lightning-combobox
+            label="Widget Type"
+            value={widgetTypeValue}
+            options={widgetTypeOptions}
+            onchange={handleTypeChange}
+            class="slds-m-bottom_x-small">
+        </lightning-combobox>
+
+        <lightning-input
+            label="Board ID (Filter Context Scope)"
+            value={boardIdValue}
+            onchange={handleBoardIdChange}
+            field-level-help="Widgets and Filter Widgets with the same Board ID share one filter context."
+            class="slds-m-bottom_x-small">
+        </lightning-input>
+
+        <template lwc:if={availableFilterWidgets.length}>
+            <lightning-combobox
+                label="Quick-bind Flow Reactive Filter Output (from this Screen)"
+                value={filterContextRef}
+                options={availableFilterWidgets}
+                onchange={handleReactiveBindChange}
+                class="slds-m-bottom_x-small">
+            </lightning-combobox>
+        </template>
+    </div>
+</template>

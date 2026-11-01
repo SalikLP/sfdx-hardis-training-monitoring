@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <applicationVisibilities>
+        <application>Proto_Board_Lab</application>
+        <visible>true</visible>
+    </applicationVisibilities>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Proto Board Access (PROTOTYPE)</label>
+    <tabSettings>
+        <tab>Proto_Board_App_Page</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+</PermissionSet>

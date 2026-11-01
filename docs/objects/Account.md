@@ -91,6 +91,11 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 
 
 
+## Related Lightning Pages
+
+| Lightning Page | Type |
+| :----      | :--: | 
+| [Proto_Board_Account_Record_Page](../pages/Proto_Board_Account_Record_Page.md) | Record Page |
 
 
 ## Related Profiles

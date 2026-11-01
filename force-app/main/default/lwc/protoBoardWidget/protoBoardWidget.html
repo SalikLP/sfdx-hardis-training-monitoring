@@ -1,0 +1,68 @@
+<template>
+    <article class="slds-card slds-p-around_small proto-widget-card" style="height: 100%; border: 1px solid var(--lwc-colorBorder, #e5e5e5);">
+        <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-m-bottom_x-small">
+            <div class="slds-grid slds-grid_vertical-align-center">
+                <lightning-icon icon-name={iconName} size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                <h3 class="slds-text-heading_small">{title}</h3>
+            </div>
+            <div>
+                <span class="slds-badge">{effectiveBoardId}</span>
+            </div>
+        </div>
+
+        <template lwc:if={isMetric}>
+            <div class="slds-p-vertical_small slds-text-align_center" style="background: var(--lwc-colorBackground, #f3f3f3); border-radius: 0.25rem;">
+                <div class="slds-text-title_caps slds-text-color_weak">Simulated Pipeline Total</div>
+                <div class="slds-text-heading_large slds-m-top_xx-small" style="font-weight: 700;">{simulatedMetricValue}</div>
+                <div class="slds-text-body_small slds-m-top_xx-small">{simulatedSubtitle}</div>
+            </div>
+        </template>
+
+        <template lwc:if={isBar}>
+            <div class="slds-p-vertical_x-small">
+                <template for:each={simulatedBars} for:item="bar">
+                    <div key={bar.label} class="slds-m-bottom_x-small">
+                        <div class="slds-grid slds-grid_align-spread slds-text-body_small">
+                            <span>{bar.label}</span>
+                            <strong>{bar.displayValue}</strong>
+                        </div>
+                        <div style="background: #e5e5e5; height: 10px; border-radius: 4px; overflow: hidden;">
+                            <div style={bar.barStyle}></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template lwc:if={isTable}>
+            <div class="slds-p-vertical_x-small">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th scope="col"><div class="slds-truncate">Deal Name</div></th>
+                            <th scope="col"><div class="slds-truncate">Stage</div></th>
+                            <th scope="col"><div class="slds-truncate">Owner</div></th>
+                            <th scope="col"><div class="slds-truncate">Amount</div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={simulatedRows} for:item="row">
+                            <tr key={row.id}>
+                                <td><div class="slds-truncate">{row.name}</div></td>
+                                <td><div class="slds-truncate">{row.stage}</div></td>
+                                <td><div class="slds-truncate">{row.owner}</div></td>
+                                <td><div class="slds-truncate">{row.amount}</div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <div class="slds-m-top_small slds-p-around_x-small" style="background: #fafaf9; border-top: 1px dashed #c9c9c9; font-size: 0.75rem;">
+            <div><strong>Active Filter State:</strong> Stage=<code>{activeStage}</code> | Owner=<code>{activeOwner}</code> | Date=<code>{activeDateRange}</code></div>
+            <div><strong>Record Context:</strong> <code>{effectiveRecordContext}</code></div>
+            <div><strong>Transport / Updates:</strong> <code>{lastTransport}</code> (#{updateCount})</div>
+        </div>
+    </article>
+</template>

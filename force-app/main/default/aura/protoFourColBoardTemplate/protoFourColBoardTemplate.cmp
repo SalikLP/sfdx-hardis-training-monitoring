@@ -1,0 +1,53 @@
+<aura:component implements="lightning:appHomeTemplate"
+                description="PROTOTYPE: 1-4 Column Dashboard Page Template with Header, 4-Column KPI Row, and 2-Column Main Row">
+    <aura:attribute name="header" type="Aura.Component[]" description="Full-width Filter Bar / Header Region"/>
+    <aura:attribute name="col1" type="Aura.Component[]" description="4-Column Row: Column 1 (3/12)"/>
+    <aura:attribute name="col2" type="Aura.Component[]" description="4-Column Row: Column 2 (3/12)"/>
+    <aura:attribute name="col3" type="Aura.Component[]" description="4-Column Row: Column 3 (3/12)"/>
+    <aura:attribute name="col4" type="Aura.Component[]" description="4-Column Row: Column 4 (3/12)"/>
+    <aura:attribute name="mainLeft" type="Aura.Component[]" description="2-Column Row: Left (6/12)"/>
+    <aura:attribute name="mainRight" type="Aura.Component[]" description="2-Column Row: Right (6/12)"/>
+    <aura:attribute name="footer" type="Aura.Component[]" description="Full-width Footer / Secondary Board Region"/>
+
+    <div>
+        <!-- 1-Column Full Width Region -->
+        <div class="slds-grid slds-wrap slds-m-bottom_small">
+            <div class="slds-col slds-size_1-of-1">
+                {!v.header}
+            </div>
+        </div>
+
+        <!-- 4-Column Responsive Region -->
+        <div class="slds-grid slds-wrap slds-gutters_small slds-m-bottom_small">
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_3-of-12">
+                {!v.col1}
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_3-of-12">
+                {!v.col2}
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_3-of-12">
+                {!v.col3}
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_3-of-12">
+                {!v.col4}
+            </div>
+        </div>
+
+        <!-- 2-Column Responsive Region -->
+        <div class="slds-grid slds-wrap slds-gutters_small slds-m-bottom_small">
+            <div class="slds-col slds-size_1-of-1 slds-large-size_6-of-12">
+                {!v.mainLeft}
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-large-size_6-of-12">
+                {!v.mainRight}
+            </div>
+        </div>
+
+        <!-- Full Width Bottom Region -->
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-1">
+                {!v.footer}
+            </div>
+        </div>
+    </div>
+</aura:component>

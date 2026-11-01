@@ -1,0 +1,55 @@
+<template>
+    <article class="slds-card slds-p-around_small proto-filter-card">
+        <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-m-bottom_x-small">
+            <div class="slds-grid slds-grid_vertical-align-center">
+                <lightning-icon icon-name="utility:filterList" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                <h2 class="slds-text-heading_small slds-m-right_small">{title}</h2>
+                <span class="slds-badge slds-theme_info">boardId: {effectiveBoardId}</span>
+                <template lwc:if={recordId}>
+                    <span class="slds-badge slds-m-left_x-small">recordId: {recordId}</span>
+                </template>
+            </div>
+            <div class="slds-text-body_small slds-text-color_weak">
+                Emits: LMS + Store + FlowAttributeChangeEvent
+            </div>
+        </div>
+
+        <div class="slds-grid slds-wrap slds-gutters_x-small slds-grid_vertical-align-end">
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+                <lightning-combobox
+                    name="stage"
+                    label="Stage Filter"
+                    value={stage}
+                    options={stageOptions}
+                    onchange={handleStageChange}>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+                <lightning-combobox
+                    name="ownerScope"
+                    label="Owner Scope"
+                    value={ownerScope}
+                    options={ownerOptions}
+                    onchange={handleOwnerChange}>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+                <lightning-combobox
+                    name="dateRange"
+                    label="Close Date Range"
+                    value={dateRange}
+                    options={dateRangeOptions}
+                    onchange={handleDateRangeChange}>
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12 slds-p-top_x-small">
+                <lightning-button
+                    label="Reset Filters"
+                    icon-name="utility:refresh"
+                    onclick={handleReset}
+                    class="slds-m-right_x-small">
+                </lightning-button>
+            </div>
+        </div>
+    </article>
+</template>

@@ -15,6 +15,8 @@
 | [LightningSalesConsole_UtilityBar](LightningSalesConsole_UtilityBar.md) | Utility Bar |
 | [LightningService_UtilityBar](LightningService_UtilityBar.md) | Utility Bar |
 | [MediaAdSalesManagement_UtilityBar](MediaAdSalesManagement_UtilityBar.md) | Utility Bar |
+| [Proto_Board_Account_Record_Page](Proto_Board_Account_Record_Page.md) | Record Page |
+| [Proto_Board_App_Page](Proto_Board_App_Page.md) | App Page |
 | [RevenueCloudConsole_UtilityBar](RevenueCloudConsole_UtilityBar.md) | Utility Bar |
 | [SalesCloudMobile_UtilityBar](SalesCloudMobile_UtilityBar.md) | Utility Bar |
 

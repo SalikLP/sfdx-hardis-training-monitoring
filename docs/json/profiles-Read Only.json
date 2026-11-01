@@ -15432,7 +15432,7 @@
     ]
   },
   {
-    "text": "Layout Assignments (156)",
+    "text": "Layout Assignments (157)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -16407,6 +16407,22 @@
         "children": [
           {
             "text": "Layout: FinanceTransaction-Finance Transaction Layout",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "FlowRecord-Flow Layout",
+        "icon": "fa-solid fa-file",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Layout: FlowRecord-Flow Layout",
             "icon": "",
             "a_attr": {
               "href": null
@@ -22366,7 +22382,7 @@
     ]
   },
   {
-    "text": "Tab Visibilities (244)",
+    "text": "Tab Visibilities (245)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -22427,6 +22443,29 @@
         "children": [
           {
             "text": "Tab: Panel_Batch__c",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Visibility: Hidden",
+            "icon": "fa-solid fa-eye-slash icon-error",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Proto_Board_App_Page",
+        "icon": "fa-solid fa-eye-slash icon-error",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Tab: Proto_Board_App_Page",
             "icon": "",
             "a_attr": {
               "href": null

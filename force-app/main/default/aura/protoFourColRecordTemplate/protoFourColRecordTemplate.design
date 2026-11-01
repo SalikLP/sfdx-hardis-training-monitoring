@@ -1,0 +1,16 @@
+<design:component label="Proto 4-Column Record Board Template (PROTOTYPE)">
+    <design:supportedFormFactors>
+        <design:supportedFormFactor type="Large"/>
+        <design:supportedFormFactor type="Small"/>
+    </design:supportedFormFactors>
+    <flexipage:template>
+        <flexipage:region name="header" defaultWidth="LARGE"/>
+        <flexipage:region name="col1" defaultWidth="SMALL"/>
+        <flexipage:region name="col2" defaultWidth="SMALL"/>
+        <flexipage:region name="col3" defaultWidth="SMALL"/>
+        <flexipage:region name="col4" defaultWidth="SMALL"/>
+        <flexipage:region name="mainLeft" defaultWidth="MEDIUM"/>
+        <flexipage:region name="mainRight" defaultWidth="MEDIUM"/>
+        <flexipage:region name="footer" defaultWidth="LARGE"/>
+    </flexipage:template>
+</design:component>
