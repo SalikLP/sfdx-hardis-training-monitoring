@@ -4,10 +4,18 @@
         <application>Proto_Board_Lab</application>
         <visible>true</visible>
     </applicationVisibilities>
+    <classAccesses>
+        <apexClass>ProtoTableQueryService</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
     <hasActivationRequired>false</hasActivationRequired>
     <label>Proto Board Access (PROTOTYPE)</label>
     <tabSettings>
         <tab>Proto_Board_App_Page</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Proto_Table_Widget_Lab</tab>
         <visibility>Visible</visibility>
     </tabSettings>
 </PermissionSet>

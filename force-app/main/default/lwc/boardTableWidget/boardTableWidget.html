@@ -1,0 +1,375 @@
+<template>
+    <article class="slds-card c-board-card">
+        <div class="slds-card__header slds-grid slds-grid_vertical-align-center">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__body slds-grid slds-grid_vertical-align-center">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_small slds-truncate" title={effectiveTitle}
+                            >{effectiveTitle}</span
+                        >
+                    </h2>
+                    <template lwc:if={showRowCount}>
+                        <lightning-badge
+                            class="c-board-table-count slds-m-left_x-small"
+                            label={rowCountLabel}
+                        ></lightning-badge>
+                    </template>
+                </div>
+            </header>
+            <div class="slds-no-flex slds-grid slds-grid_vertical-align-center">
+                <template lwc:if={isRefreshing}>
+                    <div class="c-board-header-spinner slds-m-right_x-small">
+                        <lightning-spinner size="x-small" alternative-text="Refreshing data"></lightning-spinner>
+                    </div>
+                </template>
+                <template lwc:if={filterBindingSummary}>
+                    <lightning-helptext
+                        class="c-board-binding-help slds-m-right_xx-small"
+                        icon-name="utility:info_alt"
+                        content={filterBindingSummary}
+                        alternative-text="Filter binding details"
+                    ></lightning-helptext>
+                </template>
+                <lightning-button-icon
+                    icon-name="utility:refresh"
+                    size="small"
+                    variant="bare"
+                    alternative-text="Refresh widget"
+                    title="Refresh widget"
+                    onclick={handleRefreshClick}
+                ></lightning-button-icon>
+            </div>
+        </div>
+        <div class="slds-card__body c-board-table-container">
+            <template lwc:if={showWidgetState}>
+                <div class="slds-card__body_inner">
+                    <c-board-widget-state
+                        state={viewState}
+                        widget-type="table"
+                        error={errorPayload}
+                        has-active-filters={hasActiveFilters}
+                        onretry={handleRetry}
+                    ></c-board-widget-state>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class={bodyClass} data-scope-key={activeScopeKey} aria-busy={ariaBusy}>
+                    <div class="c-board-table-scroll" onscroll={handleScroll}>
+                        <table
+                            class="slds-table slds-table_bordered slds-table_cell-buffer c-board-table"
+                            aria-label={effectiveTitle}
+                        >
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <template for:each={columnViews} for:item="column">
+                                        <th
+                                            key={column.key}
+                                            scope="col"
+                                            class={column.headerClass}
+                                            style={column.headerStyle}
+                                            aria-sort={column.ariaSort}
+                                            data-column-id={column.id}
+                                        >
+                                            <template lwc:if={column.isSortable}>
+                                                <button
+                                                    type="button"
+                                                    class="slds-button c-board-table-sort"
+                                                    data-field-path={column.fieldPath}
+                                                    onclick={handleSort}
+                                                >
+                                                    <span class="slds-truncate" title={column.label}
+                                                        >{column.label}</span
+                                                    >
+                                                    <template lwc:if={column.isSorted}>
+                                                        <lightning-icon
+                                                            class="slds-m-left_xx-small"
+                                                            icon-name={column.sortIcon}
+                                                            size="xx-small"
+                                                            alternative-text={column.sortAssistiveText}
+                                                        ></lightning-icon>
+                                                    </template>
+                                                </button>
+                                            </template>
+                                            <template lwc:else>
+                                                <span class="slds-truncate" title={column.label}>{column.label}</span>
+                                            </template>
+                                        </th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={rowViews} for:item="row">
+                                    <tr key={row.key} class="slds-hint-parent" data-row-id={row.id}>
+                                        <template for:each={row.cells} for:item="cell">
+                                            <td key={cell.key} class={cell.cellClass}>
+                                                <template lwc:if={cell.showExpander}>
+                                                    <div class="c-board-table-expander">
+                                                        <template lwc:if={row.canExpand}>
+                                                            <button
+                                                                type="button"
+                                                                class="slds-button c-board-table-expand"
+                                                                aria-expanded={row.ariaExpanded}
+                                                                aria-label={row.expandLabel}
+                                                                title={row.expandLabel}
+                                                                data-row-id={row.id}
+                                                                onclick={handleToggleChildren}
+                                                            >
+                                                                {row.chevron}
+                                                            </button>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <span
+                                                                class="c-board-table-expand c-board-table-expand_disabled"
+                                                                aria-hidden="true"
+                                                                >▸</span
+                                                            >
+                                                        </template>
+                                                        <lightning-badge
+                                                            class="c-board-table-child-count"
+                                                            label={row.childBadgeLabel}
+                                                        ></lightning-badge>
+                                                    </div>
+                                                </template>
+                                                <div class={cell.contentClass} title={cell.title}>
+                                                    <template lwc:if={cell.isLink}>
+                                                        <a
+                                                            href={cell.href}
+                                                            class="c-board-table-link"
+                                                            data-record-id={cell.recordId}
+                                                            onclick={handleRecordLinkClick}
+                                                            ><template lwc:if={cell.hasHighlight}
+                                                                ><template for:each={cell.segments} for:item="seg"
+                                                                    ><mark
+                                                                        lwc:if={seg.isMatch}
+                                                                        key={seg.key}
+                                                                        class="c-board-table-mark"
+                                                                        >{seg.text}</mark
+                                                                    ><span lwc:else key={seg.key}
+                                                                        >{seg.text}</span
+                                                                    ></template
+                                                                ></template
+                                                            ><template lwc:else>{cell.text}</template></a
+                                                        >
+                                                    </template>
+                                                    <template lwc:elseif={cell.isBadge}>
+                                                        <lightning-badge label={cell.text}></lightning-badge>
+                                                    </template>
+                                                    <template lwc:elseif={cell.isBoolean}>
+                                                        <template lwc:if={cell.isChecked}>
+                                                            <lightning-icon
+                                                                icon-name="utility:check"
+                                                                size="x-small"
+                                                                alternative-text="True"
+                                                            ></lightning-icon>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <span class="slds-assistive-text">False</span>
+                                                        </template>
+                                                    </template>
+                                                    <template lwc:elseif={cell.hasHighlight}
+                                                        ><template for:each={cell.segments} for:item="seg"
+                                                            ><mark
+                                                                lwc:if={seg.isMatch}
+                                                                key={seg.key}
+                                                                class="c-board-table-mark"
+                                                                >{seg.text}</mark
+                                                            ><span lwc:else key={seg.key}>{seg.text}</span></template
+                                                        ></template
+                                                    >
+                                                    <template lwc:else>{cell.text}</template>
+                                                </div>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                    <template lwc:if={row.child}>
+                                        <tr key={row.child.key} class="c-board-table-child-row">
+                                            <td colspan={row.child.colspan} class="c-board-table-child-cell">
+                                                <template lwc:if={row.child.isLoading}>
+                                                    <div class="c-board-table-child-spinner">
+                                                        <lightning-spinner
+                                                            size="small"
+                                                            variant="brand"
+                                                            alternative-text="Loading related records"
+                                                        ></lightning-spinner>
+                                                    </div>
+                                                </template>
+                                                <template lwc:elseif={row.child.errorMessage}>
+                                                    <p class="c-board-table-child-error slds-text-color_error">
+                                                        {row.child.errorMessage}
+                                                    </p>
+                                                </template>
+                                                <template lwc:elseif={row.child.isEmpty}>
+                                                    <p class="c-board-table-child-empty slds-text-color_weak">
+                                                        No related records.
+                                                    </p>
+                                                </template>
+                                                <template lwc:elseif={row.child.hasRows}>
+                                                    <template lwc:if={row.child.matchSummary}>
+                                                        <p
+                                                            class="c-board-table-child-match slds-text-body_small slds-m-bottom_xx-small"
+                                                        >
+                                                            {row.child.matchSummary}
+                                                            <button
+                                                                type="button"
+                                                                class="slds-button slds-m-left_x-small c-board-table-show-all"
+                                                                data-row-id={row.child.rowId}
+                                                                onclick={handleShowAllChildren}
+                                                            >
+                                                                {row.child.showAllLabel}
+                                                            </button>
+                                                        </p>
+                                                    </template>
+                                                    <table
+                                                        class="slds-table slds-table_bordered slds-table_cell-buffer c-board-child-table"
+                                                        aria-label={row.child.label}
+                                                    >
+                                                        <thead>
+                                                            <tr class="slds-line-height_reset">
+                                                                <template
+                                                                    for:each={row.child.columns}
+                                                                    for:item="childColumn"
+                                                                >
+                                                                    <th
+                                                                        key={childColumn.key}
+                                                                        scope="col"
+                                                                        class={childColumn.headerClass}
+                                                                        style={childColumn.headerStyle}
+                                                                    >
+                                                                        <span
+                                                                            class="slds-truncate"
+                                                                            title={childColumn.label}
+                                                                            >{childColumn.label}</span
+                                                                        >
+                                                                    </th>
+                                                                </template>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <template for:each={row.child.rows} for:item="childRow">
+                                                                <tr key={childRow.key}>
+                                                                    <template
+                                                                        for:each={childRow.cells}
+                                                                        for:item="childCell"
+                                                                    >
+                                                                        <td
+                                                                            key={childCell.key}
+                                                                            class={childCell.cellClass}
+                                                                        >
+                                                                            <div
+                                                                                class={childCell.contentClass}
+                                                                                title={childCell.title}
+                                                                            >
+                                                                                <template lwc:if={childCell.isLink}>
+                                                                                    <a
+                                                                                        href={childCell.href}
+                                                                                        class="c-board-table-link"
+                                                                                        data-record-id={childCell.recordId}
+                                                                                        onclick={handleRecordLinkClick}
+                                                                                        ><template
+                                                                                            lwc:if={childCell.hasHighlight}
+                                                                                            ><template
+                                                                                                for:each={childCell.segments}
+                                                                                                for:item="seg"
+                                                                                                ><mark
+                                                                                                    lwc:if={seg.isMatch}
+                                                                                                    key={seg.key}
+                                                                                                    class="c-board-table-mark"
+                                                                                                    >{seg.text}</mark
+                                                                                                ><span
+                                                                                                    lwc:else
+                                                                                                    key={seg.key}
+                                                                                                    >{seg.text}</span
+                                                                                                ></template
+                                                                                            ></template
+                                                                                        ><template lwc:else
+                                                                                            >{childCell.text}</template
+                                                                                        ></a
+                                                                                    >
+                                                                                </template>
+                                                                                <template
+                                                                                    lwc:elseif={childCell.isBadge}
+                                                                                >
+                                                                                    <lightning-badge
+                                                                                        label={childCell.text}
+                                                                                    ></lightning-badge>
+                                                                                </template>
+                                                                                <template
+                                                                                    lwc:elseif={childCell.isBoolean}
+                                                                                >
+                                                                                    <template
+                                                                                        lwc:if={childCell.isChecked}
+                                                                                    >
+                                                                                        <lightning-icon
+                                                                                            icon-name="utility:check"
+                                                                                            size="x-small"
+                                                                                            alternative-text="True"
+                                                                                        ></lightning-icon>
+                                                                                    </template>
+                                                                                    <template lwc:else>
+                                                                                        <span
+                                                                                            class="slds-assistive-text"
+                                                                                            >False</span
+                                                                                        >
+                                                                                    </template>
+                                                                                </template>
+                                                                                <template
+                                                                                    lwc:elseif={childCell.hasHighlight}
+                                                                                    ><template
+                                                                                        for:each={childCell.segments}
+                                                                                        for:item="seg"
+                                                                                        ><mark
+                                                                                            lwc:if={seg.isMatch}
+                                                                                            key={seg.key}
+                                                                                            class="c-board-table-mark"
+                                                                                            >{seg.text}</mark
+                                                                                        ><span lwc:else key={seg.key}
+                                                                                            >{seg.text}</span
+                                                                                        ></template
+                                                                                    ></template
+                                                                                >
+                                                                                <template lwc:else
+                                                                                    >{childCell.text}</template
+                                                                                >
+                                                                            </div>
+                                                                        </td>
+                                                                    </template>
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                        <div class="c-board-table-footer slds-p-around_small slds-text-align_center">
+                            <template lwc:if={isLoadingMore}>
+                                <div class="c-board-table-footer-spinner">
+                                    <lightning-spinner
+                                        size="small"
+                                        variant="brand"
+                                        alternative-text="Loading more rows"
+                                    ></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:if={loadMoreErrorMessage}>
+                                <p class="c-board-table-load-error slds-text-color_error slds-m-bottom_x-small">
+                                    {loadMoreErrorMessage}
+                                </p>
+                            </template>
+                            <template lwc:if={showLoadMore}>
+                                <lightning-button
+                                    class="c-board-table-load-more"
+                                    label="Load more"
+                                    onclick={handleLoadMore}
+                                ></lightning-button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </article>
+</template>

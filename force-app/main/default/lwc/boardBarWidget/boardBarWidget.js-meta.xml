@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>68.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Board: Bar Chart</masterLabel>
+    <description>Unified vertical and horizontal bar chart widget for Board component library</description>
+    <targets>
+        <target>lightning__FlowScreen</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightning__RecordPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen" configurationEditor="c-board-bar-cpe">
+            <property name="boardId" type="String" label="Board ID" default="default" />
+            <property name="title" type="String" label="Title" />
+            <property name="objectApiName" type="String" label="Object API Name" />
+            <property name="orientation" type="String" label="Orientation" default="vertical" />
+            <property name="recordId" type="String" label="Record ID" role="inputOnly" />
+            <property name="filterContextJson" type="String" label="Filter Context JSON" />
+            <property name="configJson" type="String" label="Configuration JSON" />
+        </targetConfig>
+        <targetConfig targets="lightning__AppPage,lightning__HomePage,lightning__RecordPage">
+            <property name="boardId" type="String" label="Board ID" default="default" />
+            <property name="title" type="String" label="Title" />
+            <property name="objectApiName" type="String" label="Object API Name" />
+            <property
+                name="orientation"
+                type="String"
+                label="Orientation"
+                datasource="vertical,horizontal"
+                default="vertical"
+            />
+            <property name="recordId" type="String" label="Record ID" />
+            <property name="filterContextJson" type="String" label="Filter Context JSON" />
+            <property name="configJson" type="String" label="Configuration JSON" />
+            <supportedFormFactors>
+                <supportedFormFactor type="Large" />
+                <supportedFormFactor type="Small" />
+            </supportedFormFactors>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

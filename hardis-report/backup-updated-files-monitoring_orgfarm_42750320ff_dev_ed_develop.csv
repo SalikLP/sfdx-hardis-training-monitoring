@@ -1,32 +1,99 @@
 File,ChangeType,FileHuman,WorkingDir,PrevName,severity,severityIcon
-appMenus/AppSwitcher.appMenu-meta.xml," ",AppMenu AppSwitcher,M,,log,📰
-applications/Proto_Board_Lab.app-meta.xml,A,CustomApplication Proto_Board_Lab,,,log,📰
-aura/protoFourColBoardTemplate/protoFourColBoardTemplate.cmp,A,AuraDefinitionBundle protoFourColBoardTemplate/protoFourColBoardTemplate.cmp,,,log,📰
-aura/protoFourColBoardTemplate/protoFourColBoardTemplate.cmp-meta.xml,A,AuraDefinitionBundle protoFourColBoardTemplate/protoFourColBoardTemplate.cmp-meta.xml,,,log,📰
-aura/protoFourColBoardTemplate/protoFourColBoardTemplate.design,A,AuraDefinitionBundle protoFourColBoardTemplate/protoFourColBoardTemplate.design,,,log,📰
-aura/protoFourColRecordTemplate/protoFourColRecordTemplate.cmp,A,AuraDefinitionBundle protoFourColRecordTemplate/protoFourColRecordTemplate.cmp,,,log,📰
-aura/protoFourColRecordTemplate/protoFourColRecordTemplate.cmp-meta.xml,A,AuraDefinitionBundle protoFourColRecordTemplate/protoFourColRecordTemplate.cmp-meta.xml,,,log,📰
-aura/protoFourColRecordTemplate/protoFourColRecordTemplate.design,A,AuraDefinitionBundle protoFourColRecordTemplate/protoFourColRecordTemplate.design,,,log,📰
+applications/Proto_Board_Lab.app-meta.xml," ",CustomApplication Proto_Board_Lab,M,,log,📰
+classes/BoardDescribe.cls,A,ApexClass BoardDescribe,,,log,📰
+classes/BoardDescribe.cls-meta.xml,A,ApexClass BoardDescribe,,,log,📰
+classes/BoardErrors.cls,A,ApexClass BoardErrors,,,log,📰
+classes/BoardErrors.cls-meta.xml,A,ApexClass BoardErrors,,,log,📰
+classes/BoardQueryService.cls,A,ApexClass BoardQueryService,,,log,📰
+classes/BoardQueryService.cls-meta.xml,A,ApexClass BoardQueryService,,,log,📰
+classes/BoardQueryServiceChildRowsTest.cls,A,ApexClass BoardQueryServiceChildRowsTest,,,log,📰
+classes/BoardQueryServiceChildRowsTest.cls-meta.xml,A,ApexClass BoardQueryServiceChildRowsTest,,,log,📰
+classes/BoardQueryServiceSearchTest.cls,A,ApexClass BoardQueryServiceSearchTest,,,log,📰
+classes/BoardQueryServiceSearchTest.cls-meta.xml,A,ApexClass BoardQueryServiceSearchTest,,,log,📰
+classes/BoardQueryServiceTableTest.cls,A,ApexClass BoardQueryServiceTableTest,,,log,📰
+classes/BoardQueryServiceTableTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableTest,,,log,📰
+classes/BoardQueryServiceTest.cls,A,ApexClass BoardQueryServiceTest,,,log,📰
+classes/BoardQueryServiceTest.cls-meta.xml,A,ApexClass BoardQueryServiceTest,,,log,📰
+classes/BoardSchemaService.cls,A,ApexClass BoardSchemaService,,,log,📰
+classes/BoardSchemaService.cls-meta.xml,A,ApexClass BoardSchemaService,,,log,📰
+classes/BoardSchemaServiceTest.cls,A,ApexClass BoardSchemaServiceTest,,,log,📰
+classes/BoardSchemaServiceTest.cls-meta.xml,A,ApexClass BoardSchemaServiceTest,,,log,📰
+classes/ProtoTableQueryService.cls,A,ApexClass ProtoTableQueryService,,,log,📰
+classes/ProtoTableQueryService.cls-meta.xml,A,ApexClass ProtoTableQueryService,,,log,📰
 cleanDataServices/DataCloudGeoLocation.cleanDataService-meta.xml," ",CleanDataService DataCloudGeoLocation,M,,log,📰
-extlClntAppOauthPolicies/sfdxhardismainOAuthSettings_defaultPolicy.ecaOauthPlcy-meta.xml," ",ExtlClntAppOauthConfigurablePolicies sfdxhardismainOAuthSettings_defaultPolicy,M,,log,📰
-extlClntAppOauthPolicies/sfdxhardismon_orgfarm_42750320OAuthSettings_defaultPolicy.ecaOauthPlcy-meta.xml," ",ExtlClntAppOauthConfigurablePolicies sfdxhardismon_orgfarm_42750320OAuthSettings_defaultPolicy,M,,log,📰
-flexipages/Proto_Board_Account_Record_Page.flexipage-meta.xml,A,FlexiPage Proto_Board_Account_Record_Page,,,log,📰
-flexipages/Proto_Board_App_Page.flexipage-meta.xml,A,FlexiPage Proto_Board_App_Page,,,log,📰
-flowDefinitions/Proto_Board_Host_Flow.flowDefinition-meta.xml,A,FlowDefinition Proto_Board_Host_Flow,,,log,📰
-flows/Proto_Board_Host_Flow.flow-meta.xml,A,Flow Proto_Board_Host_Flow,,,log,📰
-layouts/FlowRecord-Flow Layout.layout-meta.xml,A,Layout FlowRecord-Flow Layout,,,log,📰
-lwc/protoBoardStore/protoBoardStore.js,A,LightningComponentBundle protoBoardStore/protoBoardStore.js,,,log,📰
-lwc/protoBoardStore/protoBoardStore.js-meta.xml,A,LightningComponentBundle protoBoardStore/protoBoardStore.js-meta.xml,,,log,📰
-lwc/protoBoardWidget/protoBoardWidget.html,A,LightningComponentBundle protoBoardWidget/protoBoardWidget.html,,,log,📰
-lwc/protoBoardWidget/protoBoardWidget.js,A,LightningComponentBundle protoBoardWidget/protoBoardWidget.js,,,log,📰
-lwc/protoBoardWidget/protoBoardWidget.js-meta.xml,A,LightningComponentBundle protoBoardWidget/protoBoardWidget.js-meta.xml,,,log,📰
-lwc/protoFilterWidget/protoFilterWidget.html,A,LightningComponentBundle protoFilterWidget/protoFilterWidget.html,,,log,📰
-lwc/protoFilterWidget/protoFilterWidget.js,A,LightningComponentBundle protoFilterWidget/protoFilterWidget.js,,,log,📰
-lwc/protoFilterWidget/protoFilterWidget.js-meta.xml,A,LightningComponentBundle protoFilterWidget/protoFilterWidget.js-meta.xml,,,log,📰
-lwc/protoWidgetCpe/protoWidgetCpe.html,A,LightningComponentBundle protoWidgetCpe/protoWidgetCpe.html,,,log,📰
-lwc/protoWidgetCpe/protoWidgetCpe.js,A,LightningComponentBundle protoWidgetCpe/protoWidgetCpe.js,,,log,📰
-lwc/protoWidgetCpe/protoWidgetCpe.js-meta.xml,A,LightningComponentBundle protoWidgetCpe/protoWidgetCpe.js-meta.xml,,,log,📰
-permissionsets/Proto_Board_Access.permissionset-meta.xml,A,PermissionSet Proto_Board_Access,,,log,📰
+flexipages/Proto_Table_Widget_Lab.flexipage-meta.xml,A,FlexiPage Proto_Table_Widget_Lab,,,log,📰
+flexipages/Service_Command_Board.flexipage-meta.xml,A,FlexiPage Service_Command_Board,,,log,📰
+flowDefinitions/Service_Command_Board.flowDefinition-meta.xml,A,FlowDefinition Service_Command_Board,,,log,📰
+flows/Service_Command_Board.flow-meta.xml,A,Flow Service_Command_Board,,,log,📰
+lwc/boardBarCpe/boardBarCpe.css,A,LightningComponentBundle boardBarCpe/boardBarCpe.css,,,log,📰
+lwc/boardBarCpe/boardBarCpe.html,A,LightningComponentBundle boardBarCpe/boardBarCpe.html,,,log,📰
+lwc/boardBarCpe/boardBarCpe.js,A,LightningComponentBundle boardBarCpe/boardBarCpe.js,,,log,📰
+lwc/boardBarCpe/boardBarCpe.js-meta.xml,A,LightningComponentBundle boardBarCpe/boardBarCpe.js-meta.xml,,,log,📰
+lwc/boardBarWidget/barModel.js,A,LightningComponentBundle boardBarWidget/barModel.js,,,log,📰
+lwc/boardBarWidget/boardBarWidget.css,A,LightningComponentBundle boardBarWidget/boardBarWidget.css,,,log,📰
+lwc/boardBarWidget/boardBarWidget.html,A,LightningComponentBundle boardBarWidget/boardBarWidget.html,,,log,📰
+lwc/boardBarWidget/boardBarWidget.js,A,LightningComponentBundle boardBarWidget/boardBarWidget.js,,,log,📰
+lwc/boardBarWidget/boardBarWidget.js-meta.xml,A,LightningComponentBundle boardBarWidget/boardBarWidget.js-meta.xml,,,log,📰
+lwc/boardChartUtils/boardChartUtils.js,A,LightningComponentBundle boardChartUtils/boardChartUtils.js,,,log,📰
+lwc/boardChartUtils/boardChartUtils.js-meta.xml,A,LightningComponentBundle boardChartUtils/boardChartUtils.js-meta.xml,,,log,📰
+lwc/boardConfigUtils/boardConfigUtils.js,A,LightningComponentBundle boardConfigUtils/boardConfigUtils.js,,,log,📰
+lwc/boardConfigUtils/boardConfigUtils.js-meta.xml,A,LightningComponentBundle boardConfigUtils/boardConfigUtils.js-meta.xml,,,log,📰
+lwc/boardContextStore/boardContextStore.js,A,LightningComponentBundle boardContextStore/boardContextStore.js,,,log,📰
+lwc/boardContextStore/boardContextStore.js-meta.xml,A,LightningComponentBundle boardContextStore/boardContextStore.js-meta.xml,,,log,📰
+lwc/boardContextStore/filterPersistence.js,A,LightningComponentBundle boardContextStore/filterPersistence.js,,,log,📰
+lwc/boardCpeColumnList/boardCpeColumnList.css,A,LightningComponentBundle boardCpeColumnList/boardCpeColumnList.css,,,log,📰
+lwc/boardCpeColumnList/boardCpeColumnList.html,A,LightningComponentBundle boardCpeColumnList/boardCpeColumnList.html,,,log,📰
+lwc/boardCpeColumnList/boardCpeColumnList.js,A,LightningComponentBundle boardCpeColumnList/boardCpeColumnList.js,,,log,📰
+lwc/boardCpeColumnList/boardCpeColumnList.js-meta.xml,A,LightningComponentBundle boardCpeColumnList/boardCpeColumnList.js-meta.xml,,,log,📰
+lwc/boardCpeCommon/boardCpeCommon.css,A,LightningComponentBundle boardCpeCommon/boardCpeCommon.css,,,log,📰
+lwc/boardCpeCommon/boardCpeCommon.html,A,LightningComponentBundle boardCpeCommon/boardCpeCommon.html,,,log,📰
+lwc/boardCpeCommon/boardCpeCommon.js,A,LightningComponentBundle boardCpeCommon/boardCpeCommon.js,,,log,📰
+lwc/boardCpeCommon/boardCpeCommon.js-meta.xml,A,LightningComponentBundle boardCpeCommon/boardCpeCommon.js-meta.xml,,,log,📰
+lwc/boardCpeCommon/cpeConfig.js,A,LightningComponentBundle boardCpeCommon/cpeConfig.js,,,log,📰
+lwc/boardCpeFormatEditor/boardCpeFormatEditor.html,A,LightningComponentBundle boardCpeFormatEditor/boardCpeFormatEditor.html,,,log,📰
+lwc/boardCpeFormatEditor/boardCpeFormatEditor.js,A,LightningComponentBundle boardCpeFormatEditor/boardCpeFormatEditor.js,,,log,📰
+lwc/boardCpeFormatEditor/boardCpeFormatEditor.js-meta.xml,A,LightningComponentBundle boardCpeFormatEditor/boardCpeFormatEditor.js-meta.xml,,,log,📰
+lwc/boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.css,A,LightningComponentBundle boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.css,,,log,📰
+lwc/boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.html,A,LightningComponentBundle boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.html,,,log,📰
+lwc/boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.js,A,LightningComponentBundle boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.js,,,log,📰
+lwc/boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.js-meta.xml,A,LightningComponentBundle boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.js-meta.xml,,,log,📰
+lwc/boardCpeUtils/boardCpeUtils.js,A,LightningComponentBundle boardCpeUtils/boardCpeUtils.js,,,log,📰
+lwc/boardCpeUtils/boardCpeUtils.js-meta.xml,A,LightningComponentBundle boardCpeUtils/boardCpeUtils.js-meta.xml,,,log,📰
+lwc/boardFilterCpe/boardFilterCpe.css,A,LightningComponentBundle boardFilterCpe/boardFilterCpe.css,,,log,📰
+lwc/boardFilterCpe/boardFilterCpe.html,A,LightningComponentBundle boardFilterCpe/boardFilterCpe.html,,,log,📰
+lwc/boardFilterCpe/boardFilterCpe.js,A,LightningComponentBundle boardFilterCpe/boardFilterCpe.js,,,log,📰
+lwc/boardFilterCpe/boardFilterCpe.js-meta.xml,A,LightningComponentBundle boardFilterCpe/boardFilterCpe.js-meta.xml,,,log,📰
+lwc/boardFilterWidget/boardFilterWidget.css,A,LightningComponentBundle boardFilterWidget/boardFilterWidget.css,,,log,📰
+lwc/boardFilterWidget/boardFilterWidget.html,A,LightningComponentBundle boardFilterWidget/boardFilterWidget.html,,,log,📰
+lwc/boardFilterWidget/boardFilterWidget.js,A,LightningComponentBundle boardFilterWidget/boardFilterWidget.js,,,log,📰
+lwc/boardFilterWidget/boardFilterWidget.js-meta.xml,A,LightningComponentBundle boardFilterWidget/boardFilterWidget.js-meta.xml,,,log,📰
+lwc/boardMetricCpe/boardMetricCpe.css,A,LightningComponentBundle boardMetricCpe/boardMetricCpe.css,,,log,📰
+lwc/boardMetricCpe/boardMetricCpe.html,A,LightningComponentBundle boardMetricCpe/boardMetricCpe.html,,,log,📰
+lwc/boardMetricCpe/boardMetricCpe.js,A,LightningComponentBundle boardMetricCpe/boardMetricCpe.js,,,log,📰
+lwc/boardMetricCpe/boardMetricCpe.js-meta.xml,A,LightningComponentBundle boardMetricCpe/boardMetricCpe.js-meta.xml,,,log,📰
+lwc/boardMetricWidget/boardMetricWidget.css,A,LightningComponentBundle boardMetricWidget/boardMetricWidget.css,,,log,📰
+lwc/boardMetricWidget/boardMetricWidget.html,A,LightningComponentBundle boardMetricWidget/boardMetricWidget.html,,,log,📰
+lwc/boardMetricWidget/boardMetricWidget.js,A,LightningComponentBundle boardMetricWidget/boardMetricWidget.js,,,log,📰
+lwc/boardMetricWidget/boardMetricWidget.js-meta.xml,A,LightningComponentBundle boardMetricWidget/boardMetricWidget.js-meta.xml,,,log,📰
+lwc/boardTableCpe/boardTableCpe.css,A,LightningComponentBundle boardTableCpe/boardTableCpe.css,,,log,📰
+lwc/boardTableCpe/boardTableCpe.html,A,LightningComponentBundle boardTableCpe/boardTableCpe.html,,,log,📰
+lwc/boardTableCpe/boardTableCpe.js,A,LightningComponentBundle boardTableCpe/boardTableCpe.js,,,log,📰
+lwc/boardTableCpe/boardTableCpe.js-meta.xml,A,LightningComponentBundle boardTableCpe/boardTableCpe.js-meta.xml,,,log,📰
+lwc/boardTableWidget/boardTableWidget.css,A,LightningComponentBundle boardTableWidget/boardTableWidget.css,,,log,📰
+lwc/boardTableWidget/boardTableWidget.html,A,LightningComponentBundle boardTableWidget/boardTableWidget.html,,,log,📰
+lwc/boardTableWidget/boardTableWidget.js,A,LightningComponentBundle boardTableWidget/boardTableWidget.js,,,log,📰
+lwc/boardTableWidget/boardTableWidget.js-meta.xml,A,LightningComponentBundle boardTableWidget/boardTableWidget.js-meta.xml,,,log,📰
+lwc/boardTableWidget/tableCells.js,A,LightningComponentBundle boardTableWidget/tableCells.js,,,log,📰
+lwc/boardWidgetState/boardWidgetState.css,A,LightningComponentBundle boardWidgetState/boardWidgetState.css,,,log,📰
+lwc/boardWidgetState/boardWidgetState.html,A,LightningComponentBundle boardWidgetState/boardWidgetState.html,,,log,📰
+lwc/boardWidgetState/boardWidgetState.js,A,LightningComponentBundle boardWidgetState/boardWidgetState.js,,,log,📰
+lwc/boardWidgetState/boardWidgetState.js-meta.xml,A,LightningComponentBundle boardWidgetState/boardWidgetState.js-meta.xml,,,log,📰
+lwc/protoTableHarness/protoTableHarness.css,A,LightningComponentBundle protoTableHarness/protoTableHarness.css,,,log,📰
+lwc/protoTableHarness/protoTableHarness.html,A,LightningComponentBundle protoTableHarness/protoTableHarness.html,,,log,📰
+lwc/protoTableHarness/protoTableHarness.js,A,LightningComponentBundle protoTableHarness/protoTableHarness.js,,,log,📰
+lwc/protoTableHarness/protoTableHarness.js-meta.xml,A,LightningComponentBundle protoTableHarness/protoTableHarness.js-meta.xml,,,log,📰
+permissionsets/Proto_Board_Access.permissionset-meta.xml," ",PermissionSet Proto_Board_Access,M,,log,📰
+permissionsets/Service_Command_Board.permissionset-meta.xml,A,PermissionSet Service_Command_Board,,,log,📰
 profiles/Admin.profile-meta.xml," ",Profile Admin,M,,log,📰
 profiles/Analytics Cloud Integration User.profile-meta.xml," ",Profile Analytics Cloud Integration User,M,,log,📰
 profiles/Analytics Cloud Security User.profile-meta.xml," ",Profile Analytics Cloud Security User,M,,log,📰
@@ -72,8 +139,10 @@ profiles/SolutionManager.profile-meta.xml," ",Profile SolutionManager,M,,log,�
 profiles/Standard.profile-meta.xml," ",Profile Standard,M,,log,📰
 profiles/StandardAul.profile-meta.xml," ",Profile StandardAul,M,,log,📰
 profiles/Work%2Ecom Only User.profile-meta.xml," ",Profile Work%2Ecom Only User,M,,log,📰
-settings/Forecasting.settings-meta.xml," ",Settings Forecasting,M,,log,📰
-tabs/Proto_Board_App_Page.tab-meta.xml,A,CustomTab Proto_Board_App_Page,,,log,📰
+staticresources/chartjs.js,A,StaticResource chartjs.js,,,log,📰
+staticresources/chartjs.resource-meta.xml,A,StaticResource chartjs,,,log,📰
+tabs/Proto_Table_Widget_Lab.tab-meta.xml,A,CustomTab Proto_Table_Widget_Lab,,,log,📰
+tabs/Service_Command_Board.tab-meta.xml,A,CustomTab Service_Command_Board,,,log,📰
 translations/en_US.translation-meta.xml," ",Translations en_US,M,,log,📰
 manifest/package-all-org-items.xml," ",manifest/package-all-org-items.xml,M,,log,📰
 manifest/package-backup-items.xml," ",manifest/package-backup-items.xml,M,,log,📰

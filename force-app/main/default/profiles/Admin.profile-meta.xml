@@ -151,6 +151,42 @@
         <visible>true</visible>
     </applicationVisibilities>
     <classAccesses>
+        <apexClass>BoardDescribe</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardErrors</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardQueryService</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardQueryServiceChildRowsTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardQueryServiceSearchTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardQueryServiceTableTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardQueryServiceTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardSchemaService</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardSchemaServiceTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>CrewCapacityBatch</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -172,6 +208,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>InstallationSchedulerTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>ProtoTableQueryService</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -9092,6 +9132,14 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>Proto_Board_App_Page</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Proto_Table_Widget_Lab</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Service_Command_Board</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>

@@ -1,0 +1,156 @@
+.c-board-card {
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+    border-color: var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-board-table-container {
+    container-type: inline-size;
+}
+
+.c-board-header-spinner {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+}
+
+.c-board-table-content {
+    opacity: 1;
+    transition: opacity 180ms ease-in-out;
+}
+
+.c-board-table-content_refreshing {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.c-board-table-scroll {
+    max-height: 32rem;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.c-board-table {
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+}
+
+/* Sticky column headers. */
+.c-board-table > thead > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+}
+
+/* Sticky first column on horizontal scroll. */
+.c-board-table > tbody > tr > .c-board-table-col_first,
+.c-board-table > thead > tr > .c-board-table-col_first {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+}
+
+.c-board-table > thead > tr > th.c-board-table-col_first {
+    z-index: 3;
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+}
+
+/* Child relationship: count badge + chevron in the first cell, inline `<tr colspan>` sub-table. */
+.c-board-table-expander {
+    float: left;
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0.5rem;
+}
+
+/* 24px minimum target (WCAG 2.2 target size) without inflating dense row height. */
+.c-board-table-expand {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    justify-content: center;
+    color: var(--slds-g-color-accent-2, #0b5cab);
+}
+
+.c-board-table-expand_disabled {
+    display: inline-flex;
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+    opacity: 0.4;
+}
+
+.c-board-table-child-match {
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+}
+
+.c-board-table-child-cell {
+    padding-left: 2rem;
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+}
+
+.c-board-table-child-spinner {
+    position: relative;
+    height: 2rem;
+}
+
+.c-board-child-table {
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+}
+
+.c-board-table-col_left {
+    text-align: left;
+}
+
+.c-board-table-col_center {
+    text-align: center;
+}
+
+.c-board-table-col_right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.c-board-table-sort {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    color: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+}
+
+.c-board-table-link {
+    color: var(--slds-g-color-accent-2, #0b5cab);
+}
+
+.c-board-table-footer {
+    position: relative;
+    min-height: 2.5rem;
+}
+
+.c-board-table-footer-spinner {
+    position: relative;
+    height: 2rem;
+}
+
+/* Responsive columns: hide `hideOnNarrow` columns when the table container is narrower than 480px. */
+@container (max-width: 479px) {
+    .c-board-table-col_narrow-hidden {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .c-board-table-content {
+        transition: none;
+    }
+}
+
+/* Free-text search matches inside parent and child cells */
+.c-board-table-mark {
+    background: var(--slds-g-color-warning-container-1, #f9e3b6);
+    color: var(--slds-g-color-on-warning-1, #8c4b02);
+    font-weight: var(--slds-g-font-weight-7, 700);
+    padding: 0;
+}

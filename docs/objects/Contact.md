@@ -74,8 +74,20 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 
 
 
+## Related Apex Classes
+
+| Apex Class | Type |
+| :----      | :--: | 
+| [BoardQueryServiceTest](../apex/BoardQueryServiceTest.md) | Test |
+| [BoardSchemaServiceTest](../apex/BoardSchemaServiceTest.md) | Test |
+| [ProtoTableQueryService](../apex/ProtoTableQueryService.md) | Lightning Controller |
 
 
+## Related Lightning Web Components
+
+| Component | Description | Exposed | Targets |
+| :-------- | :---------- | :-----: | :------------- |
+| [protoTableHarness](../lwc/protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 
 
 

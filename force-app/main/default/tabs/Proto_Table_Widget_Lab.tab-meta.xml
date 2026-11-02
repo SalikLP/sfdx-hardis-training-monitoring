@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Throwaway prototype tab for Ticket 12 Table Widget comparison</description>
+    <flexiPage>Proto_Table_Widget_Lab</flexiPage>
+    <label>Proto Table Widget</label>
+    <motif>Custom63: Chip</motif>
+</CustomTab>

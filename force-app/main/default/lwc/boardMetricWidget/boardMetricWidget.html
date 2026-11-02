@@ -1,0 +1,74 @@
+<template>
+    <article class="slds-card c-board-card">
+        <div class="slds-card__header slds-grid slds-grid_vertical-align-center">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_small slds-truncate" title={effectiveTitle}
+                            >{effectiveTitle}</span
+                        >
+                    </h2>
+                </div>
+            </header>
+            <div class="slds-no-flex slds-grid slds-grid_vertical-align-center">
+                <template lwc:if={isRefreshing}>
+                    <div class="c-board-header-spinner slds-m-right_x-small">
+                        <lightning-spinner size="x-small" alternative-text="Refreshing data"></lightning-spinner>
+                    </div>
+                </template>
+                <template lwc:if={filterBindingSummary}>
+                    <lightning-helptext
+                        class="c-board-binding-help slds-m-right_xx-small"
+                        icon-name="utility:info_alt"
+                        content={filterBindingSummary}
+                        alternative-text="Filter binding details"
+                    ></lightning-helptext>
+                </template>
+                <lightning-button-icon
+                    icon-name="utility:refresh"
+                    size="small"
+                    variant="bare"
+                    alternative-text="Refresh widget"
+                    title="Refresh widget"
+                    onclick={handleRefreshClick}
+                ></lightning-button-icon>
+            </div>
+        </div>
+        <div class="slds-card__body slds-card__body_inner c-board-metric-container">
+            <template lwc:if={showWidgetState}>
+                <c-board-widget-state
+                    state={viewState}
+                    widget-type="metric"
+                    error={errorPayload}
+                    has-active-filters={hasActiveFilters}
+                    onretry={handleRetry}
+                ></c-board-widget-state>
+            </template>
+            <template lwc:else>
+                <div class={bodyClass} data-scope-key={activeScopeKey} aria-busy={ariaBusy}>
+                    <div class="c-board-metric-kpi">
+                        <span class={valueClass} title={exactValue}>{displayValue}</span>
+                        <template lwc:if={thresholdIcon}>
+                            <lightning-icon
+                                class="c-board-metric-status"
+                                icon-name={thresholdIcon}
+                                variant={thresholdVariant}
+                                size="x-small"
+                                alternative-text={thresholdLabel}
+                                title={thresholdLabel}
+                            ></lightning-icon>
+                        </template>
+                    </div>
+                    <template lwc:if={subtitle}>
+                        <p class="c-board-metric-subtitle slds-text-body_small">{subtitle}</p>
+                    </template>
+                    <div class="c-board-metric-progress-region" aria-live="polite">
+                        <template lwc:if={progressText}>
+                            <p class="c-board-metric-progress slds-text-body_small">{progressText}</p>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </article>
+</template>

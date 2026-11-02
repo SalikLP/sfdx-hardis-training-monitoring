@@ -17,8 +17,10 @@
 | [MediaAdSalesManagement_UtilityBar](MediaAdSalesManagement_UtilityBar.md) | Utility Bar |
 | [Proto_Board_Account_Record_Page](Proto_Board_Account_Record_Page.md) | Record Page |
 | [Proto_Board_App_Page](Proto_Board_App_Page.md) | App Page |
+| [Proto_Table_Widget_Lab](Proto_Table_Widget_Lab.md) | App Page |
 | [RevenueCloudConsole_UtilityBar](RevenueCloudConsole_UtilityBar.md) | Utility Bar |
 | [SalesCloudMobile_UtilityBar](SalesCloudMobile_UtilityBar.md) | Utility Bar |
+| [Service_Command_Board](Service_Command_Board.md) | App Page |
 
 
 _Documentation generated from branch monitoring_orgfarm_42750320ff_dev_ed_develop with [sfdx-hardis](https://sfdx-hardis.cloudity.com) by [Cloudity](https://cloudity.com?ref=sfdxhardis) command [`sf hardis:doc:project2markdown`](https://sfdx-hardis.cloudity.com/hardis/doc/project2markdown/)_

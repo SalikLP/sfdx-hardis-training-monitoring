@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Reference Board: Account, Case, CaseComment, FeedItem, and Opportunity Filter, Metric, Bar Chart, and Table Widgets on one Lightning App Builder page (Board id serviceCommand).</description>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;filter&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Service Command Filters&quot;,&quot;filters&quot;:[{&quot;filterId&quot;:&quot;status&quot;,&quot;label&quot;:&quot;Case Status&quot;,&quot;type&quot;:&quot;PICKLIST&quot;,&quot;selectionMode&quot;:&quot;multi&quot;,&quot;optionsSource&quot;:&quot;FIELD_DESCRIBE&quot;,&quot;sourceObjectApiName&quot;:&quot;Case&quot;,&quot;fieldApiName&quot;:&quot;Status&quot;},{&quot;filterId&quot;:&quot;priority&quot;,&quot;label&quot;:&quot;Priority&quot;,&quot;type&quot;:&quot;PICKLIST&quot;,&quot;selectionMode&quot;:&quot;multi&quot;,&quot;optionsSource&quot;:&quot;CUSTOM&quot;,&quot;fieldApiName&quot;:&quot;Priority&quot;,&quot;options&quot;:[{&quot;label&quot;:&quot;High&quot;,&quot;value&quot;:&quot;High&quot;},{&quot;label&quot;:&quot;Medium&quot;,&quot;value&quot;:&quot;Medium&quot;},{&quot;label&quot;:&quot;Low&quot;,&quot;value&quot;:&quot;Low&quot;}]},{&quot;filterId&quot;:&quot;account&quot;,&quot;label&quot;:&quot;Account&quot;,&quot;type&quot;:&quot;LOOKUP&quot;,&quot;selectionMode&quot;:&quot;multi&quot;,&quot;fieldApiName&quot;:&quot;AccountId&quot;,&quot;targetObjectApiName&quot;:&quot;Account&quot;},{&quot;filterId&quot;:&quot;owner&quot;,&quot;label&quot;:&quot;Owner&quot;,&quot;type&quot;:&quot;USER&quot;,&quot;selectionMode&quot;:&quot;multi&quot;,&quot;includeQueues&quot;:true},{&quot;filterId&quot;:&quot;created&quot;,&quot;label&quot;:&quot;Created&quot;,&quot;type&quot;:&quot;DATE_RANGE&quot;,&quot;fieldApiName&quot;:&quot;CreatedDate&quot;},{&quot;filterId&quot;:&quot;search&quot;,&quot;label&quot;:&quot;Search&quot;,&quot;type&quot;:&quot;TEXT&quot;,&quot;matchMode&quot;:&quot;SOSL&quot;,&quot;minCharacters&quot;:2,&quot;placeholder&quot;:&quot;Search cases, comments, and posts&quot;}],&quot;persistence&quot;:&quot;SESSION&quot;}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Service Command Filters</value>
+                </componentInstanceProperties>
+                <componentName>boardFilterWidget</componentName>
+                <identifier>filterBar</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>region1</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;metric&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Open Cases&quot;,&quot;objectApiName&quot;:&quot;Case&quot;,&quot;aggregateFunction&quot;:&quot;COUNT&quot;,&quot;subtitle&quot;:&quot;Not closed&quot;,&quot;baseFilters&quot;:[{&quot;id&quot;:&quot;bf1&quot;,&quot;fieldPath&quot;:&quot;IsClosed&quot;,&quot;operator&quot;:&quot;EQ&quot;,&quot;value&quot;:false}],&quot;thresholds&quot;:[{&quot;operator&quot;:&quot;lte&quot;,&quot;value&quot;:1000,&quot;variant&quot;:&quot;success&quot;},{&quot;operator&quot;:&quot;lte&quot;,&quot;value&quot;:1500,&quot;variant&quot;:&quot;warning&quot;},{&quot;operator&quot;:&quot;gt&quot;,&quot;value&quot;:1500,&quot;variant&quot;:&quot;error&quot;}]}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>Case</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Open Cases</value>
+                </componentInstanceProperties>
+                <componentName>boardMetricWidget</componentName>
+                <identifier>openCases</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;metric&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Escalated&quot;,&quot;objectApiName&quot;:&quot;Case&quot;,&quot;aggregateFunction&quot;:&quot;COUNT&quot;,&quot;subtitle&quot;:&quot;Cases in Escalated status&quot;,&quot;baseFilters&quot;:[{&quot;id&quot;:&quot;bf1&quot;,&quot;fieldPath&quot;:&quot;Status&quot;,&quot;operator&quot;:&quot;EQ&quot;,&quot;value&quot;:&quot;Escalated&quot;}],&quot;thresholds&quot;:[{&quot;operator&quot;:&quot;lt&quot;,&quot;value&quot;:250,&quot;variant&quot;:&quot;success&quot;},{&quot;operator&quot;:&quot;lt&quot;,&quot;value&quot;:500,&quot;variant&quot;:&quot;warning&quot;},{&quot;operator&quot;:&quot;gte&quot;,&quot;value&quot;:500,&quot;variant&quot;:&quot;error&quot;}]}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>Case</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Escalated</value>
+                </componentInstanceProperties>
+                <componentName>boardMetricWidget</componentName>
+                <identifier>escalatedCases</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;bar&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Cases by Status and Priority&quot;,&quot;objectApiName&quot;:&quot;Case&quot;,&quot;orientation&quot;:&quot;vertical&quot;,&quot;groupByField&quot;:&quot;Status&quot;,&quot;stackByField&quot;:&quot;Priority&quot;,&quot;stackMode&quot;:&quot;stacked&quot;,&quot;aggregateFunction&quot;:&quot;COUNT&quot;,&quot;sortBy&quot;:&quot;PICKLIST_ORDER&quot;,&quot;showDataLabels&quot;:false}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>Case</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>orientation</name>
+                    <value>vertical</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Cases by Status and Priority</value>
+                </componentInstanceProperties>
+                <componentName>boardBarWidget</componentName>
+                <identifier>casesByStatus</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>region2</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;metric&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Accounts Affected&quot;,&quot;objectApiName&quot;:&quot;Account&quot;,&quot;aggregateFunction&quot;:&quot;COUNT&quot;,&quot;subtitle&quot;:&quot;Accounts with open cases&quot;,&quot;filterBindings&quot;:{&quot;status&quot;:&quot;Case(AccountId).Status&quot;,&quot;priority&quot;:&quot;IGNORE&quot;,&quot;account&quot;:&quot;Id&quot;,&quot;owner&quot;:&quot;IGNORE&quot;,&quot;created&quot;:&quot;IGNORE&quot;,&quot;search&quot;:&quot;IGNORE&quot;},&quot;baseFilters&quot;:[{&quot;id&quot;:&quot;bf1&quot;,&quot;fieldPath&quot;:&quot;Case(AccountId).IsClosed&quot;,&quot;operator&quot;:&quot;EQ&quot;,&quot;value&quot;:false}],&quot;thresholds&quot;:[{&quot;operator&quot;:&quot;lte&quot;,&quot;value&quot;:10,&quot;variant&quot;:&quot;success&quot;},{&quot;operator&quot;:&quot;gt&quot;,&quot;value&quot;:10,&quot;variant&quot;:&quot;warning&quot;}]}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>Account</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Accounts Affected</value>
+                </componentInstanceProperties>
+                <componentName>boardMetricWidget</componentName>
+                <identifier>accountsAffected</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;metric&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Open Pipeline&quot;,&quot;objectApiName&quot;:&quot;Opportunity&quot;,&quot;aggregateFunction&quot;:&quot;SUM&quot;,&quot;valueFieldApiName&quot;:&quot;Amount&quot;,&quot;subtitle&quot;:&quot;Open opportunity amount&quot;,&quot;format&quot;:{&quot;formatStyle&quot;:&quot;currency&quot;,&quot;currencyCode&quot;:&quot;USD&quot;},&quot;filterBindings&quot;:{&quot;status&quot;:&quot;IGNORE&quot;,&quot;priority&quot;:&quot;IGNORE&quot;},&quot;baseFilters&quot;:[{&quot;id&quot;:&quot;bf1&quot;,&quot;fieldPath&quot;:&quot;IsClosed&quot;,&quot;operator&quot;:&quot;EQ&quot;,&quot;value&quot;:false}],&quot;thresholds&quot;:[{&quot;operator&quot;:&quot;gte&quot;,&quot;value&quot;:2000000,&quot;variant&quot;:&quot;success&quot;},{&quot;operator&quot;:&quot;gte&quot;,&quot;value&quot;:1000000,&quot;variant&quot;:&quot;warning&quot;},{&quot;operator&quot;:&quot;lt&quot;,&quot;value&quot;:1000000,&quot;variant&quot;:&quot;error&quot;}]}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>Opportunity</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Open Pipeline</value>
+                </componentInstanceProperties>
+                <componentName>boardMetricWidget</componentName>
+                <identifier>openPipeline</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;bar&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Pipeline by Stage and Type&quot;,&quot;objectApiName&quot;:&quot;Opportunity&quot;,&quot;orientation&quot;:&quot;horizontal&quot;,&quot;groupByField&quot;:&quot;StageName&quot;,&quot;stackByField&quot;:&quot;Type&quot;,&quot;stackMode&quot;:&quot;grouped&quot;,&quot;aggregateFunction&quot;:&quot;SUM&quot;,&quot;valueFieldApiName&quot;:&quot;Amount&quot;,&quot;sortBy&quot;:&quot;PICKLIST_ORDER&quot;,&quot;maxSeries&quot;:3,&quot;format&quot;:{&quot;formatStyle&quot;:&quot;currency&quot;,&quot;currencyCode&quot;:&quot;USD&quot;,&quot;notation&quot;:&quot;compact&quot;},&quot;filterBindings&quot;:{&quot;status&quot;:&quot;IGNORE&quot;,&quot;priority&quot;:&quot;IGNORE&quot;}}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>Opportunity</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>orientation</name>
+                    <value>horizontal</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Pipeline by Stage and Type</value>
+                </componentInstanceProperties>
+                <componentName>boardBarWidget</componentName>
+                <identifier>pipelineByStage</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>region3</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;table&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Cases with Comments&quot;,&quot;objectApiName&quot;:&quot;Case&quot;,&quot;columns&quot;:[{&quot;id&quot;:&quot;caseNumber&quot;,&quot;fieldPath&quot;:&quot;CaseNumber&quot;,&quot;width&quot;:&quot;10rem&quot;},{&quot;id&quot;:&quot;subject&quot;,&quot;fieldPath&quot;:&quot;Subject&quot;,&quot;width&quot;:&quot;14rem&quot;,&quot;wrapText&quot;:true},{&quot;id&quot;:&quot;account&quot;,&quot;fieldPath&quot;:&quot;Account.Name&quot;,&quot;label&quot;:&quot;Account&quot;},{&quot;id&quot;:&quot;status&quot;,&quot;fieldPath&quot;:&quot;Status&quot;},{&quot;id&quot;:&quot;priority&quot;,&quot;fieldPath&quot;:&quot;Priority&quot;,&quot;hideOnNarrow&quot;:true},{&quot;id&quot;:&quot;owner&quot;,&quot;fieldPath&quot;:&quot;Owner.Name&quot;,&quot;label&quot;:&quot;Owner&quot;,&quot;hideOnNarrow&quot;:true},{&quot;id&quot;:&quot;created&quot;,&quot;fieldPath&quot;:&quot;CreatedDate&quot;,&quot;hideOnNarrow&quot;:true}],&quot;sortBy&quot;:&quot;CreatedDate&quot;,&quot;sortDirection&quot;:&quot;DESC&quot;,&quot;pageSize&quot;:25,&quot;baseFilters&quot;:[{&quot;id&quot;:&quot;bf1&quot;,&quot;fieldPath&quot;:&quot;CaseComment(ParentId).Id&quot;,&quot;operator&quot;:&quot;IS_NULL&quot;,&quot;value&quot;:false}],&quot;childRelationship&quot;:{&quot;relationshipName&quot;:&quot;CaseComments&quot;,&quot;childObjectApiName&quot;:&quot;CaseComment&quot;,&quot;foreignKeyField&quot;:&quot;ParentId&quot;,&quot;columns&quot;:[{&quot;id&quot;:&quot;body&quot;,&quot;fieldPath&quot;:&quot;CommentBody&quot;,&quot;wrapText&quot;:true},{&quot;id&quot;:&quot;author&quot;,&quot;fieldPath&quot;:&quot;CreatedBy.Name&quot;,&quot;label&quot;:&quot;Author&quot;},{&quot;id&quot;:&quot;created&quot;,&quot;fieldPath&quot;:&quot;CreatedDate&quot;}],&quot;sortBy&quot;:&quot;CreatedDate&quot;,&quot;sortDirection&quot;:&quot;DESC&quot;,&quot;limit&quot;:10}}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>Case</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Cases with Comments</value>
+                </componentInstanceProperties>
+                <componentName>boardTableWidget</componentName>
+                <identifier>caseComments</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>boardId</name>
+                    <value>serviceCommand</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>configJson</name>
+                    <value>{&quot;version&quot;:1,&quot;widgetType&quot;:&quot;table&quot;,&quot;boardId&quot;:&quot;serviceCommand&quot;,&quot;title&quot;:&quot;Cases with Feed Posts&quot;,&quot;objectApiName&quot;:&quot;Case&quot;,&quot;columns&quot;:[{&quot;id&quot;:&quot;caseNumber&quot;,&quot;fieldPath&quot;:&quot;CaseNumber&quot;,&quot;width&quot;:&quot;10rem&quot;},{&quot;id&quot;:&quot;subject&quot;,&quot;fieldPath&quot;:&quot;Subject&quot;,&quot;width&quot;:&quot;14rem&quot;,&quot;wrapText&quot;:true},{&quot;id&quot;:&quot;account&quot;,&quot;fieldPath&quot;:&quot;Account.Name&quot;,&quot;label&quot;:&quot;Account&quot;},{&quot;id&quot;:&quot;status&quot;,&quot;fieldPath&quot;:&quot;Status&quot;},{&quot;id&quot;:&quot;priority&quot;,&quot;fieldPath&quot;:&quot;Priority&quot;,&quot;hideOnNarrow&quot;:true},{&quot;id&quot;:&quot;owner&quot;,&quot;fieldPath&quot;:&quot;Owner.Name&quot;,&quot;label&quot;:&quot;Owner&quot;,&quot;hideOnNarrow&quot;:true},{&quot;id&quot;:&quot;created&quot;,&quot;fieldPath&quot;:&quot;CreatedDate&quot;,&quot;hideOnNarrow&quot;:true}],&quot;sortBy&quot;:&quot;CreatedDate&quot;,&quot;sortDirection&quot;:&quot;DESC&quot;,&quot;pageSize&quot;:25,&quot;childRelationship&quot;:{&quot;childObjectApiName&quot;:&quot;FeedItem&quot;,&quot;foreignKeyField&quot;:&quot;ParentId&quot;,&quot;columns&quot;:[{&quot;id&quot;:&quot;body&quot;,&quot;fieldPath&quot;:&quot;Body&quot;,&quot;wrapText&quot;:true},{&quot;id&quot;:&quot;type&quot;,&quot;fieldPath&quot;:&quot;Type&quot;},{&quot;id&quot;:&quot;author&quot;,&quot;fieldPath&quot;:&quot;CreatedBy.Name&quot;,&quot;label&quot;:&quot;Author&quot;},{&quot;id&quot;:&quot;created&quot;,&quot;fieldPath&quot;:&quot;CreatedDate&quot;}],&quot;sortBy&quot;:&quot;CreatedDate&quot;,&quot;sortDirection&quot;:&quot;DESC&quot;,&quot;limit&quot;:10}}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>Case</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Cases with Feed Posts</value>
+                </componentInstanceProperties>
+                <componentName>boardTableWidget</componentName>
+                <identifier>caseFeed</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>region4</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Service Command Board</masterLabel>
+    <template>
+        <name>flexipage:appHomeTemplateHeaderThreeColumns</name>
+    </template>
+    <type>AppPage</type>
+</FlexiPage>

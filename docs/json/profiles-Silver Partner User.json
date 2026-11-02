@@ -19807,7 +19807,7 @@
     ]
   },
   {
-    "text": "Tab Visibilities (259)",
+    "text": "Tab Visibilities (261)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -19891,6 +19891,52 @@
         "children": [
           {
             "text": "Tab: Proto_Board_App_Page",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Visibility: Hidden",
+            "icon": "fa-solid fa-eye-slash icon-error",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Proto_Table_Widget_Lab",
+        "icon": "fa-solid fa-eye-slash icon-error",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Tab: Proto_Table_Widget_Lab",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Visibility: Hidden",
+            "icon": "fa-solid fa-eye-slash icon-error",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "Service_Command_Board",
+        "icon": "fa-solid fa-eye-slash icon-error",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Tab: Service_Command_Board",
             "icon": "",
             "a_attr": {
               "href": null

@@ -1,0 +1,46 @@
+.c-picker-panel {
+    border: 1px solid var(--slds-g-color-border-1, #c9c9c9);
+    border-radius: var(--slds-g-radius-border-2, 0.25rem);
+    background: var(--slds-g-color-surface-container-1, #ffffff);
+}
+
+.c-picker-list {
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+.c-picker-option {
+    border-top: 1px solid var(--slds-g-color-border-1, #e5e5e5);
+    padding-right: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-picker-select {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    padding: var(--slds-g-spacing-1, 0.25rem) var(--slds-g-spacing-2, 0.5rem);
+    line-height: 1.25;
+}
+
+.c-picker-select:hover,
+.c-picker-select:focus {
+    background: var(--slds-g-color-surface-container-2, #f3f3f3);
+}
+
+.c-picker-meta {
+    font-size: 0.75rem;
+}
+
+.c-picker-value {
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.c-picker-loading {
+    min-height: 3rem;
+}
+
+.c-picker-crumb_current {
+    font-weight: 600;
+}

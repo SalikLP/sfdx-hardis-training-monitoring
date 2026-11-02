@@ -1,0 +1,104 @@
+/* Chart.js draws on <canvas>, which cannot resolve var(); boardChartUtils samples these with getComputedStyle(). */
+:host {
+    --board-chart-text: var(--slds-g-color-on-surface-1, #5c5c5c);
+    --board-chart-grid: var(--slds-g-color-border-1, #e5e5e5);
+    --board-chart-data-label: var(--slds-g-color-on-surface-2, #2e2e2e);
+    --board-chart-tooltip-background: var(--slds-g-color-surface-inverse-1, #032d60);
+    --board-chart-tooltip-text: var(--slds-g-color-on-surface-inverse-1, #ffffff);
+    --board-chart-font-family: var(
+        --slds-g-font-family-base,
+        -apple-system,
+        'Segoe UI',
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif
+    );
+    /* Mid-scale categorical palette, constant in light and dark mode; same values as boardChartUtils SLDS_COLOR_SAFE_PALETTE */
+    --board-chart-palette-1: var(--slds-g-color-palette-blue-50, #0176d3);
+    --board-chart-palette-2: var(--slds-g-color-palette-teal-50, #0b827c);
+    --board-chart-palette-3: var(--slds-g-color-palette-orange-50, #a96404);
+    --board-chart-palette-4: var(--slds-g-color-palette-pink-50, #e3066a);
+    --board-chart-palette-5: var(--slds-g-color-palette-indigo-50, #5867e8);
+    --board-chart-palette-6: var(--slds-g-color-palette-hot-orange-50, #d83a00);
+}
+
+.c-board-card {
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+    border-color: var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-board-bar-container {
+    container-type: inline-size;
+}
+
+.c-board-header-spinner {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+}
+
+.c-board-bar-subtitle,
+.c-board-bar-progress,
+.c-board-bar-partial {
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+    margin-bottom: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-board-bar-partial {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-board-bar-content {
+    opacity: 1;
+    transition: opacity 180ms ease-in-out;
+}
+
+.c-board-bar-content_refreshing {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.c-board-chart-canvas {
+    position: relative;
+    min-width: 0;
+    height: var(--board-chart-height, 18rem);
+}
+
+.c-board-bar-table-wrapper {
+    overflow-x: auto;
+}
+
+.c-board-bar-table {
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Narrow cards (mobile, sidebar columns): shorter vertical charts and tighter table cells keep data above the fold. */
+@container (max-width: 30rem) {
+    .c-board-bar-content[data-orientation='vertical'] .c-board-chart-canvas {
+        height: min(var(--board-chart-height, 18rem), 13rem);
+    }
+
+    .c-board-bar-table th,
+    .c-board-bar-table td {
+        padding-left: var(--slds-g-spacing-1, 0.25rem);
+        padding-right: var(--slds-g-spacing-1, 0.25rem);
+    }
+
+    .c-board-bar-subtitle,
+    .c-board-bar-progress,
+    .c-board-bar-partial {
+        margin-bottom: var(--slds-g-spacing-1, 0.25rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .c-board-bar-content {
+        transition: none;
+    }
+}

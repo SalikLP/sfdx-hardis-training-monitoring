@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Opens the Service Command Board reference App Page.</description>
+    <flexiPage>Service_Command_Board</flexiPage>
+    <label>Service Command Board</label>
+    <motif>Custom18: Form</motif>
+</CustomTab>

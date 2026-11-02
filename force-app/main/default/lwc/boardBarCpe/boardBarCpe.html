@@ -1,0 +1,147 @@
+<template>
+    <c-board-cpe-common
+        widget-type="bar"
+        input-variables={inputVariables}
+        builder-context={builderContext}
+        element-info={elementInfo}
+        onconfigchange={handleConfigChange}
+    >
+        <section class="c-cpe-section c-bar-dimensions slds-m-top_medium" aria-label="Dimensions">
+            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Dimensions</h3>
+            <c-board-cpe-object-field-picker
+                class="c-bar-group-by"
+                mode="field"
+                label="Group by"
+                object-api-name={objectApiName}
+                capability="groupable"
+                value={groupByField}
+                onchange={handleGroupBy}
+            ></c-board-cpe-object-field-picker>
+            <template lwc:if={showGranularity}>
+                <lightning-combobox
+                    class="c-bar-granularity slds-m-top_x-small"
+                    label="Date granularity"
+                    options={granularityOptions}
+                    value={dateGranularity}
+                    onchange={handleGranularity}
+                ></lightning-combobox>
+            </template>
+            <lightning-input
+                class="c-bar-include-null slds-m-top_x-small"
+                type="checkbox"
+                label='Include a "(Blank)" bar for empty values'
+                checked={includeNullBucket}
+                onchange={handleIncludeNull}
+            ></lightning-input>
+            <c-board-cpe-object-field-picker
+                class="c-bar-stack-by slds-m-top_x-small"
+                mode="field"
+                label="Stack by (optional)"
+                object-api-name={objectApiName}
+                capability="groupable"
+                value={stackByField}
+                onchange={handleStackBy}
+            ></c-board-cpe-object-field-picker>
+            <template lwc:if={hasStack}>
+                <lightning-radio-group
+                    class="c-bar-stack-mode slds-m-top_x-small"
+                    name="stackMode"
+                    label="Series layout"
+                    type="button"
+                    options={stackModeOptions}
+                    value={stackMode}
+                    onchange={handleStackMode}
+                ></lightning-radio-group>
+                <lightning-input
+                    class="c-bar-max-series slds-m-top_x-small"
+                    type="number"
+                    label="Maximum series"
+                    min="2"
+                    max="6"
+                    step="1"
+                    placeholder="6"
+                    value={maxSeries}
+                    onchange={handleMaxSeries}
+                ></lightning-input>
+            </template>
+        </section>
+
+        <section class="c-cpe-section c-bar-measure slds-m-top_medium" aria-label="Measure">
+            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Measure</h3>
+            <lightning-combobox
+                class="c-bar-aggregate"
+                label="Aggregate function"
+                options={aggregateOptions}
+                value={aggregateFunction}
+                onchange={handleAggregate}
+            ></lightning-combobox>
+            <template lwc:if={showValueField}>
+                <c-board-cpe-object-field-picker
+                    class="c-bar-value-field slds-m-top_x-small"
+                    mode="field"
+                    label="Value field"
+                    object-api-name={objectApiName}
+                    capability={valueCapability}
+                    value={valueFieldApiName}
+                    onchange={handleValueField}
+                ></c-board-cpe-object-field-picker>
+            </template>
+            <c-board-cpe-format-editor
+                class="c-bar-format slds-m-top_x-small"
+                value={format}
+                onchange={handleFormat}
+            ></c-board-cpe-format-editor>
+        </section>
+
+        <section class="c-cpe-section c-bar-display slds-m-top_medium" aria-label="Display">
+            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Display</h3>
+            <lightning-input
+                class="c-bar-subtitle"
+                label="Subtitle"
+                value={subtitle}
+                onchange={handleSubtitle}
+            ></lightning-input>
+            <lightning-combobox
+                class="c-bar-sort slds-m-top_x-small"
+                label="Sort bars by"
+                options={sortOptions}
+                value={sortBy}
+                onchange={handleSortBy}
+            ></lightning-combobox>
+            <lightning-input
+                class="c-bar-max-bars slds-m-top_x-small"
+                type="number"
+                label="Maximum bars"
+                min="3"
+                max="50"
+                step="1"
+                placeholder="10"
+                value={maxBars}
+                onchange={handleMaxBars}
+            ></lightning-input>
+            <lightning-radio-group
+                class="c-bar-overflow slds-m-top_x-small"
+                name="overflowMode"
+                label="Bars beyond the maximum"
+                options={overflowOptions}
+                value={overflowMode}
+                onchange={handleOverflow}
+            ></lightning-radio-group>
+            <p class="c-bar-overflow-help slds-text-body_small slds-text-color_weak">{overflowHelp}</p>
+            <lightning-combobox
+                class="c-bar-legend slds-m-top_x-small"
+                label="Legend"
+                options={legendOptions}
+                value={legendPosition}
+                onchange={handleLegend}
+            ></lightning-combobox>
+            <lightning-input
+                class="c-bar-data-labels slds-m-top_x-small"
+                type="checkbox"
+                label="Show data labels"
+                checked={showDataLabels}
+                onchange={handleDataLabels}
+            ></lightning-input>
+        </section>
+    </c-board-cpe-common>
+</template>

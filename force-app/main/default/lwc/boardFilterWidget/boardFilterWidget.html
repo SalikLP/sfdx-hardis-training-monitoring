@@ -1,0 +1,436 @@
+<template>
+    <article class={cardClass}>
+        <div class="slds-card__header slds-grid slds-wrap slds-grid_vertical-align-center">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_small slds-truncate" title={effectiveTitle}
+                            >{effectiveTitle}</span
+                        >
+                    </h2>
+                </div>
+            </header>
+            <div class="slds-no-flex slds-grid slds-grid_vertical-align-center c-board-filter-actions">
+                <span class="slds-text-body_small slds-m-right_small c-board-filter-updated">
+                    Updated
+                    <lightning-relative-date-time value={lastUpdatedValue}></lightning-relative-date-time>
+                </span>
+                <button
+                    type="button"
+                    class="slds-button c-board-filter-reset"
+                    title="Reset filters"
+                    onclick={handleReset}
+                >
+                    Reset
+                </button>
+                <button
+                    type="button"
+                    class="slds-button slds-button_icon slds-m-left_x-small c-board-filter-refresh"
+                    title="Refresh board"
+                    onclick={handleRefreshBoard}
+                >
+                    <lightning-icon
+                        icon-name="utility:refresh"
+                        size="x-small"
+                        alternative-text="Refresh board"
+                    ></lightning-icon>
+                </button>
+            </div>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+            <template lwc:if={bodyError}>
+                <c-board-widget-state state="ERROR" widget-type="filter" error={bodyError}></c-board-widget-state>
+            </template>
+            <template lwc:elseif={showSetupPlaceholder}>
+                <div
+                    class="slds-illustration slds-illustration_small slds-p-around_medium c-board-filter-setup"
+                    role="status"
+                >
+                    <lightning-icon icon-name="utility:setup" size="small" alternative-text="Setup"></lightning-icon>
+                    <h3 class="slds-m-top_x-small c-board-filter-setup-heading">No filters configured</h3>
+                    <p class="slds-text-body_small">
+                        Add filters in the property editor. Record context and Refresh board still apply to this Board.
+                    </p>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class={filterBarClass} data-scope-key={activeScopeKey}>
+                    <template lwc:if={isCompact}>
+                        <button
+                            type="button"
+                            class="slds-button slds-button_neutral c-board-filter-drawer-toggle"
+                            aria-expanded={drawerAriaExpanded}
+                            onclick={handleDrawerToggle}
+                        >
+                            <lightning-icon
+                                class="slds-m-right_x-small"
+                                icon-name={drawerIconName}
+                                size="x-small"
+                            ></lightning-icon>
+                            {drawerToggleLabel}
+                        </button>
+                    </template>
+                    <template lwc:if={showControls}>
+                        <div class="slds-grid slds-wrap slds-gutters_x-small c-board-filter-controls">
+                            <template for:each={filterViews} for:item="view">
+                                <div
+                                    key={view.key}
+                                    class="slds-col c-board-filter-slot"
+                                    data-filter-id={view.filterId}
+                                    data-filter-type={view.type}
+                                >
+                                    <template lwc:if={view.isPicklistSingle}>
+                                        <lightning-combobox
+                                            class="c-board-picklist-single"
+                                            label={view.label}
+                                            options={view.comboboxOptions}
+                                            value={view.comboboxValue}
+                                            disabled={view.locked}
+                                            data-filter-id={view.filterId}
+                                            onchange={handlePicklistSingleChange}
+                                        ></lightning-combobox>
+                                        <template lwc:if={view.optionsError}>
+                                            <p class="slds-text-color_error slds-text-body_small">
+                                                {view.optionsError}
+                                            </p>
+                                        </template>
+                                    </template>
+                                    <template lwc:if={view.isPicklistMulti}>
+                                        <div class="slds-form-element">
+                                            <span class="slds-form-element__label">{view.label}</span>
+                                            <div class="slds-form-element__control">
+                                                <div
+                                                    class={view.dropdownClass}
+                                                    data-filter-id={view.filterId}
+                                                    onfocusout={handlePicklistFocusOut}
+                                                    onkeydown={handlePicklistKeydown}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        class="slds-button slds-button_neutral c-board-picklist-trigger"
+                                                        aria-haspopup="listbox"
+                                                        aria-expanded={view.ariaExpanded}
+                                                        aria-label={view.triggerAriaLabel}
+                                                        title={view.summaryLabel}
+                                                        disabled={view.locked}
+                                                        data-filter-id={view.filterId}
+                                                        onclick={handlePicklistToggle}
+                                                    >
+                                                        <span class="slds-truncate c-board-picklist-summary"
+                                                            >{view.summaryLabel}</span
+                                                        >
+                                                        <lightning-icon
+                                                            class="slds-m-left_x-small"
+                                                            icon-name="utility:down"
+                                                            size="xx-small"
+                                                        ></lightning-icon>
+                                                    </button>
+                                                    <template lwc:if={view.isOpen}>
+                                                        <div
+                                                            class="slds-dropdown slds-dropdown_left c-board-picklist-dropdown"
+                                                            role="dialog"
+                                                            aria-label={view.label}
+                                                            tabindex="-1"
+                                                        >
+                                                            <template lwc:if={view.showSearch}>
+                                                                <div class="slds-p-horizontal_small slds-p-top_x-small">
+                                                                    <lightning-input
+                                                                        class="c-board-picklist-search"
+                                                                        type="search"
+                                                                        variant="label-hidden"
+                                                                        label="Search options"
+                                                                        placeholder="Search options…"
+                                                                        value={view.searchTerm}
+                                                                        data-filter-id={view.filterId}
+                                                                        onchange={handlePicklistSearch}
+                                                                    ></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <div
+                                                                class="slds-grid slds-grid_align-spread slds-p-horizontal_small slds-p-vertical_xx-small"
+                                                            >
+                                                                <button
+                                                                    type="button"
+                                                                    class="slds-button c-board-picklist-select-all"
+                                                                    data-filter-id={view.filterId}
+                                                                    onclick={handlePicklistSelectAll}
+                                                                >
+                                                                    Select All
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    class="slds-button c-board-picklist-clear"
+                                                                    data-filter-id={view.filterId}
+                                                                    onclick={handlePicklistClear}
+                                                                >
+                                                                    Clear
+                                                                </button>
+                                                            </div>
+                                                            <ul
+                                                                class="slds-listbox slds-listbox_vertical c-board-picklist-options"
+                                                                role="listbox"
+                                                                aria-label={view.label}
+                                                                aria-multiselectable="true"
+                                                            >
+                                                                <template for:each={view.optionItems} for:item="option">
+                                                                    <li
+                                                                        key={option.key}
+                                                                        class="slds-listbox__item slds-p-horizontal_small slds-p-vertical_xx-small"
+                                                                        role="option"
+                                                                        aria-selected={option.ariaSelected}
+                                                                    >
+                                                                        <div class="slds-checkbox">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                id={option.inputId}
+                                                                                checked={option.checked}
+                                                                                data-filter-id={view.filterId}
+                                                                                data-value={option.value}
+                                                                                onchange={handlePicklistCheckboxChange}
+                                                                            />
+                                                                            <label
+                                                                                class="slds-checkbox__label"
+                                                                                for={option.inputId}
+                                                                            >
+                                                                                <span class="slds-checkbox_faux"></span>
+                                                                                <span class="slds-form-element__label"
+                                                                                    >{option.label}</span
+                                                                                >
+                                                                            </label>
+                                                                        </div>
+                                                                    </li>
+                                                                </template>
+                                                            </ul>
+                                                            <template lwc:if={view.hasNoMatches}>
+                                                                <p
+                                                                    class="slds-p-around_small slds-text-color_weak slds-text-body_small"
+                                                                >
+                                                                    No matching options
+                                                                </p>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <template lwc:if={view.optionsError}>
+                                                <p class="slds-text-color_error slds-text-body_small">
+                                                    {view.optionsError}
+                                                </p>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={view.isLookup}>
+                                        <template lwc:if={view.hasTargetObject}>
+                                            <lightning-record-picker
+                                                class="c-board-lookup-picker"
+                                                label={view.label}
+                                                object-api-name={view.objectApiName}
+                                                placeholder={view.placeholder}
+                                                value={view.pickerValue}
+                                                disabled={view.locked}
+                                                data-filter-id={view.filterId}
+                                                onchange={handleLookupChange}
+                                            ></lightning-record-picker>
+                                        </template>
+                                        <template lwc:else>
+                                            <p class="slds-text-color_error slds-text-body_small">
+                                                {view.label}: lookup target object is not configured.
+                                            </p>
+                                        </template>
+                                    </template>
+                                    <template lwc:if={view.isUser}>
+                                        <div class="slds-form-element">
+                                            <span class="slds-form-element__label">{view.label}</span>
+                                            <div
+                                                class="slds-form-element__control slds-grid slds-grid_vertical-align-center c-board-user-control"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    class={view.meButtonClass}
+                                                    aria-pressed={view.meAriaPressed}
+                                                    aria-label={view.meAriaLabel}
+                                                    disabled={view.locked}
+                                                    data-filter-id={view.filterId}
+                                                    onclick={handleMeToggle}
+                                                >
+                                                    Me
+                                                </button>
+                                                <div
+                                                    class={view.userComboboxClass}
+                                                    data-filter-id={view.filterId}
+                                                    onfocusout={handleUserSearchFocusOut}
+                                                    onkeydown={handleUserSearchKeydown}
+                                                >
+                                                    <lightning-input
+                                                        class="c-board-user-search"
+                                                        type="search"
+                                                        variant="label-hidden"
+                                                        label={view.searchLabel}
+                                                        placeholder={view.searchPlaceholder}
+                                                        value={view.userSearchTerm}
+                                                        disabled={view.locked}
+                                                        data-filter-id={view.filterId}
+                                                        onchange={handleUserSearchChange}
+                                                        onfocus={handleUserSearchFocus}
+                                                    ></lightning-input>
+                                                    <template lwc:if={view.showUserResults}>
+                                                        <ul
+                                                            class="slds-dropdown slds-dropdown_fluid slds-listbox slds-listbox_vertical c-board-user-results"
+                                                            role="listbox"
+                                                            aria-label={view.searchLabel}
+                                                        >
+                                                            <template for:each={view.userResults} for:item="result">
+                                                                <li
+                                                                    key={result.id}
+                                                                    class="slds-listbox__item slds-media slds-media_center slds-p-around_x-small c-board-user-result"
+                                                                    role="option"
+                                                                    aria-selected="false"
+                                                                    tabindex="-1"
+                                                                    data-filter-id={view.filterId}
+                                                                    data-record-id={result.id}
+                                                                    onclick={handleUserResultSelect}
+                                                                >
+                                                                    <lightning-icon
+                                                                        class="slds-m-right_x-small"
+                                                                        icon-name={result.iconName}
+                                                                        size="x-small"
+                                                                        alternative-text={result.entityType}
+                                                                    ></lightning-icon>
+                                                                    <span class="slds-truncate">{result.label}</span>
+                                                                </li>
+                                                            </template>
+                                                        </ul>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={view.isText}>
+                                        <lightning-input
+                                            class="c-board-text-search"
+                                            type="search"
+                                            label={view.label}
+                                            placeholder={view.placeholder}
+                                            value={view.textValue}
+                                            disabled={view.locked}
+                                            data-filter-id={view.filterId}
+                                            onchange={handleTextSearchChange}
+                                            onkeydown={handleTextSearchKeydown}
+                                        ></lightning-input>
+                                        <template lwc:if={view.textHint}>
+                                            <p
+                                                class="c-board-text-search-hint slds-text-color_weak slds-text-body_small"
+                                                aria-live="polite"
+                                            >
+                                                {view.textHint}
+                                            </p>
+                                        </template>
+                                    </template>
+                                    <template lwc:if={view.isDateRange}>
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for={view.selectId}
+                                                >{view.label}</label
+                                            >
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-select_container">
+                                                    <select
+                                                        class="slds-select c-board-date-preset"
+                                                        id={view.selectId}
+                                                        disabled={view.locked}
+                                                        data-filter-id={view.filterId}
+                                                        onchange={handleDatePresetChange}
+                                                    >
+                                                        <option value="" selected={view.isAllTime}>All Time</option>
+                                                        <template lwc:if={view.extraPreset}>
+                                                            <option value={view.extraPreset.value} selected>
+                                                                {view.extraPreset.label}
+                                                            </option>
+                                                        </template>
+                                                        <template for:each={view.dateGroups} for:item="group">
+                                                            <optgroup key={group.key} label={group.label}>
+                                                                <template for:each={group.options} for:item="option">
+                                                                    <option
+                                                                        key={option.value}
+                                                                        value={option.value}
+                                                                        selected={option.selected}
+                                                                    >
+                                                                        {option.label}
+                                                                    </option>
+                                                                </template>
+                                                            </optgroup>
+                                                        </template>
+                                                        <option value="CUSTOM" selected={view.isCustomRange}>
+                                                            Custom Range…
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <template lwc:if={view.isCustomRange}>
+                                            <div class="slds-grid slds-gutters_xx-small slds-m-top_xx-small">
+                                                <div class="slds-col">
+                                                    <lightning-input
+                                                        class="c-board-date-from"
+                                                        type="date"
+                                                        label="From"
+                                                        value={view.fromValue}
+                                                        disabled={view.locked}
+                                                        data-filter-id={view.filterId}
+                                                        data-bound="from"
+                                                        onchange={handleDateInputChange}
+                                                    ></lightning-input>
+                                                </div>
+                                                <div class="slds-col">
+                                                    <lightning-input
+                                                        class="c-board-date-to"
+                                                        type="date"
+                                                        label="To"
+                                                        value={view.toValue}
+                                                        disabled={view.locked}
+                                                        data-filter-id={view.filterId}
+                                                        data-bound="to"
+                                                        onchange={handleDateInputChange}
+                                                    ></lightning-input>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:if={hasPills}>
+                        <div class="slds-m-top_x-small c-board-pill-strip" role="group" aria-label="Active filters">
+                            <template for:each={recordContextBadges} for:item="badge">
+                                <span key={badge.key} class="slds-badge c-board-locked-badge" title={badge.label}
+                                    >{badge.label}</span
+                                >
+                            </template>
+                            <template for:each={pillItems} for:item="pill">
+                                <span key={pill.key} class="slds-pill c-board-filter-pill">
+                                    <span class="slds-pill__label c-board-filter-pill-label" title={pill.label}
+                                        >{pill.label}</span
+                                    >
+                                    <button
+                                        type="button"
+                                        class="slds-button slds-button_icon slds-pill__remove c-board-filter-pill-remove"
+                                        title={pill.removeLabel}
+                                        data-filter-id={pill.filterId}
+                                        data-value={pill.value}
+                                        onclick={handlePillRemove}
+                                    >
+                                        <lightning-icon
+                                            icon-name="utility:close"
+                                            size="xx-small"
+                                            alternative-text={pill.removeLabel}
+                                        ></lightning-icon>
+                                    </button>
+                                </span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </article>
+</template>

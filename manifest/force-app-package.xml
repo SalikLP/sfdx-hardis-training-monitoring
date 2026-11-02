@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
+        <members>BoardDescribe</members>
+        <members>BoardErrors</members>
+        <members>BoardQueryService</members>
+        <members>BoardQueryServiceChildRowsTest</members>
+        <members>BoardQueryServiceSearchTest</members>
+        <members>BoardQueryServiceTableTest</members>
+        <members>BoardQueryServiceTest</members>
+        <members>BoardSchemaService</members>
+        <members>BoardSchemaServiceTest</members>
         <members>CrewCapacityBatch</members>
         <members>CrewCapacityBatchTest</members>
         <members>CrewSizeBackfillBatch</members>
         <members>CrewSizeBackfillBatchTest</members>
         <members>InstallationScheduler</members>
         <members>InstallationSchedulerTest</members>
+        <members>ProtoTableQueryService</members>
         <name>ApexClass</name>
     </types>
     <types>
@@ -285,6 +295,8 @@
         <members>Installation__c</members>
         <members>Panel_Batch__c</members>
         <members>Proto_Board_App_Page</members>
+        <members>Proto_Table_Widget_Lab</members>
+        <members>Service_Command_Board</members>
         <name>CustomTab</name>
     </types>
     <types>
@@ -390,8 +402,10 @@
         <members>MediaAdSalesManagement_UtilityBar</members>
         <members>Proto_Board_Account_Record_Page</members>
         <members>Proto_Board_App_Page</members>
+        <members>Proto_Table_Widget_Lab</members>
         <members>RevenueCloudConsole_UtilityBar</members>
         <members>SalesCloudMobile_UtilityBar</members>
+        <members>Service_Command_Board</members>
         <name>FlexiPage</name>
     </types>
     <types>
@@ -399,6 +413,7 @@
         <members>Installation_Close_Check</members>
         <members>Installation_Crew_Warning</members>
         <members>Proto_Board_Host_Flow</members>
+        <members>Service_Command_Board</members>
         <members>sfdc_default_ReportExport_Protection_Flow</members>
         <name>Flow</name>
     </types>
@@ -407,6 +422,7 @@
         <members>Installation_Close_Check</members>
         <members>Installation_Crew_Warning</members>
         <members>Proto_Board_Host_Flow</members>
+        <members>Service_Command_Board</members>
         <members>sfdc_default_ReportExport_Protection_Flow</members>
         <name>FlowDefinition</name>
     </types>
@@ -595,10 +611,28 @@
         <name>Layout</name>
     </types>
     <types>
+        <members>boardBarCpe</members>
+        <members>boardBarWidget</members>
+        <members>boardChartUtils</members>
+        <members>boardConfigUtils</members>
+        <members>boardContextStore</members>
+        <members>boardCpeColumnList</members>
+        <members>boardCpeCommon</members>
+        <members>boardCpeFormatEditor</members>
+        <members>boardCpeObjectFieldPicker</members>
+        <members>boardCpeUtils</members>
+        <members>boardFilterCpe</members>
+        <members>boardFilterWidget</members>
+        <members>boardMetricCpe</members>
+        <members>boardMetricWidget</members>
+        <members>boardTableCpe</members>
+        <members>boardTableWidget</members>
+        <members>boardWidgetState</members>
         <members>installationTimeline</members>
         <members>protoBoardStore</members>
         <members>protoBoardWidget</members>
         <members>protoFilterWidget</members>
+        <members>protoTableHarness</members>
         <members>protoWidgetCpe</members>
         <name>LightningComponentBundle</name>
     </types>
@@ -669,6 +703,7 @@
         <members>Helios_Delivery_Crew</members>
         <members>Helios_Delivery_Manager</members>
         <members>Proto_Board_Access</members>
+        <members>Service_Command_Board</members>
         <members>sfdcInternalInt__sfdc_platformmetabolism_slagent</members>
         <members>sfdcInternalInt__sfdc_scrt2</members>
         <members>sfdc_aiplanner_service_permset</members>
@@ -1355,6 +1390,10 @@
         <members>AddressStateCode-zh_CN</members>
         <members>AddressStateCode-zh_TW</members>
         <name>StandardValueSetTranslation</name>
+    </types>
+    <types>
+        <members>chartjs</members>
+        <name>StaticResource</name>
     </types>
     <types>
         <members>Account</members>

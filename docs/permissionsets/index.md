@@ -6,6 +6,7 @@
 | [Helios_Delivery_Crew](Helios_Delivery_Crew.md) | None |
 | [Helios_Delivery_Manager](Helios_Delivery_Manager.md) | None |
 | [Proto_Board_Access](Proto_Board_Access.md) | None |
+| [Service_Command_Board](Service_Command_Board.md) | None |
 | [sfdc_aiplanner_service_permset](sfdc_aiplanner_service_permset.md) | None |
 | [sfdcInternalInt__sfdc_platformmetabolism_slagent](sfdcInternalInt__sfdc_platformmetabolism_slagent.md) | None |
 | [sfdcInternalInt__sfdc_scrt2](sfdcInternalInt__sfdc_scrt2.md) | None |

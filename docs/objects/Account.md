@@ -69,6 +69,11 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 | YearStarted |  |  | <!-- --> |
 
 
+## Related Flows
+
+| Object | Name | Type | Description | Status |
+| :----  | :-------- | :--: | :---------- | :----- |
+| 💻 | [Service_Command_Board](../flows/Service_Command_Board.md) [🕒](../flows/Service_Command_Board-history.md) | Screen Flow | Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page. | Active |
 
 
 
@@ -83,8 +88,26 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 
 
 
+## Related Apex Classes
+
+| Apex Class | Type |
+| :----      | :--: | 
+| [BoardQueryService](../apex/BoardQueryService.md) | Lightning Controller |
+| [BoardQueryServiceChildRowsTest](../apex/BoardQueryServiceChildRowsTest.md) | Test |
+| [BoardQueryServiceSearchTest](../apex/BoardQueryServiceSearchTest.md) | Test |
+| [BoardQueryServiceTableTest](../apex/BoardQueryServiceTableTest.md) | Test |
+| [BoardQueryServiceTest](../apex/BoardQueryServiceTest.md) | Test |
+| [BoardSchemaServiceTest](../apex/BoardSchemaServiceTest.md) | Test |
+| [ProtoTableQueryService](../apex/ProtoTableQueryService.md) | Lightning Controller |
 
 
+## Related Lightning Web Components
+
+| Component | Description | Exposed | Targets |
+| :-------- | :---------- | :-----: | :------------- |
+| [boardConfigUtils](../lwc/boardConfigUtils.md) | Board Config Utils | ❌ |  |
+| [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
+| [protoTableHarness](../lwc/protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 
 
 
@@ -96,6 +119,7 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 | Lightning Page | Type |
 | :----      | :--: | 
 | [Proto_Board_Account_Record_Page](../pages/Proto_Board_Account_Record_Page.md) | Record Page |
+| [Service_Command_Board](../pages/Service_Command_Board.md) | App Page |
 
 
 ## Related Profiles

@@ -22,7 +22,7 @@
         <headerColor>#0070D2</headerColor>
         <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
     </brand>
-    <description>Throwaway prototype Lightning App for Board Host Comparison</description>
+    <description>Throwaway prototype Lightning App for Board Library Prototypes</description>
     <formFactors>Small</formFactors>
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
@@ -31,7 +31,9 @@
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>Proto Board Lab</label>
     <navType>Standard</navType>
+    <tabs>Proto_Table_Widget_Lab</tabs>
     <tabs>Proto_Board_App_Page</tabs>
+    <tabs>standard-Case</tabs>
     <tabs>standard-Account</tabs>
     <uiType>Lightning</uiType>
 </CustomApplication>

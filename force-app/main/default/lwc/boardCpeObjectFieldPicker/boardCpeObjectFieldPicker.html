@@ -1,0 +1,117 @@
+<template>
+    <div class="c-picker" onkeydown={handleKeyDown}>
+        <lightning-input
+            type="search"
+            class="c-picker-search"
+            label={label}
+            value={searchTerm}
+            placeholder={inputPlaceholder}
+            disabled={isInputDisabled}
+            onfocus={handleFocus}
+            onchange={handleSearch}
+        ></lightning-input>
+        <template lwc:if={hasValue}>
+            <div class="slds-grid slds-grid_vertical-align-center slds-m-top_xx-small">
+                <span class="c-picker-value slds-truncate" title={value}>{value}</span>
+                <lightning-button-icon
+                    class="c-picker-clear slds-m-left_xx-small"
+                    icon-name="utility:close"
+                    size="x-small"
+                    variant="bare"
+                    alternative-text="Clear selection"
+                    onclick={handleClear}
+                ></lightning-button-icon>
+            </div>
+        </template>
+        <template lwc:if={isOpen}>
+            <div class="c-picker-panel slds-m-top_xx-small">
+                <div class="slds-grid slds-grid_vertical-align-center slds-p-around_xx-small">
+                    <template lwc:if={showBreadcrumbs}>
+                        <ol class="c-picker-crumbs slds-grid slds-wrap slds-col" aria-label="Relationship path">
+                            <template for:each={breadcrumbs} for:item="crumb">
+                                <li key={crumb.key} class="slds-m-right_xx-small">
+                                    <template lwc:if={crumb.isCurrent}>
+                                        <span class="c-picker-crumb_current" aria-current="location"
+                                            >{crumb.label}</span
+                                        >
+                                    </template>
+                                    <template lwc:else>
+                                        <button
+                                            type="button"
+                                            class="slds-button c-picker-crumb"
+                                            data-level={crumb.level}
+                                            onclick={handleCrumbClick}
+                                        >
+                                            {crumb.label}</button
+                                        ><span aria-hidden="true"> ›</span>
+                                    </template>
+                                </li>
+                            </template>
+                        </ol>
+                        <span class="c-picker-hops slds-text-color_weak slds-text-body_small slds-m-right_x-small"
+                            >{hopStatus}</span
+                        >
+                    </template>
+                    <template lwc:else>
+                        <span class="slds-col"></span>
+                    </template>
+                    <lightning-button-icon
+                        class="c-picker-close"
+                        icon-name="utility:close"
+                        size="x-small"
+                        variant="bare"
+                        alternative-text="Close list"
+                        onclick={handleClose}
+                    ></lightning-button-icon>
+                </div>
+                <template lwc:if={isLoading}>
+                    <div class="slds-is-relative c-picker-loading">
+                        <lightning-spinner size="small" alternative-text="Loading schema"></lightning-spinner>
+                    </div>
+                </template>
+                <template lwc:if={errorMessage}>
+                    <p class="c-picker-error slds-text-color_error slds-p-around_x-small" role="alert">
+                        {errorMessage}
+                    </p>
+                </template>
+                <template lwc:if={hasOptions}>
+                    <ul class="c-picker-list" aria-label={label}>
+                        <template for:each={options} for:item="option">
+                            <li key={option.key} class="c-picker-option slds-grid slds-grid_vertical-align-center">
+                                <button
+                                    type="button"
+                                    class="slds-button c-picker-select slds-col slds-text-align_left"
+                                    data-key={option.key}
+                                    onclick={handleOptionClick}
+                                >
+                                    <span class="slds-truncate">{option.label}</span>
+                                    <span class="c-picker-meta slds-truncate slds-text-color_weak">{option.meta}</span>
+                                </button>
+                                <template lwc:if={option.traversable}>
+                                    <lightning-button-icon
+                                        class="c-picker-traverse"
+                                        icon-name="utility:chevronright"
+                                        size="small"
+                                        variant="bare"
+                                        alternative-text={option.traverseLabel}
+                                        title={option.traverseLabel}
+                                        data-key={option.key}
+                                        onclick={handleTraverseClick}
+                                    ></lightning-button-icon>
+                                </template>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:if={isTruncated}>
+                    <p class="slds-text-body_small slds-text-color_weak slds-p-around_x-small">{truncatedMessage}</p>
+                </template>
+                <template lwc:if={showEmpty}>
+                    <p class="c-picker-empty slds-text-body_small slds-text-color_weak slds-p-around_x-small">
+                        No matches.
+                    </p>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

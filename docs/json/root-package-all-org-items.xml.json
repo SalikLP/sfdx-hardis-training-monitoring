@@ -1,11 +1,74 @@
 [
   {
-    "text": "Apex Class (10)",
+    "text": "Apex Class (20)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
     },
     "children": [
+      {
+        "text": "BoardDescribe",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardErrors",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryService",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceChildRowsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceSearchTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTableTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardSchemaService",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardSchemaServiceTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
       {
         "text": "CrewCapacityBatch",
         "icon": "fa-solid fa-circle-check icon-success",
@@ -71,6 +134,13 @@
       },
       {
         "text": "InstallationSchedulerTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "ProtoTableQueryService",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -3897,7 +3967,7 @@
     ]
   },
   {
-    "text": "Custom Tab (9)",
+    "text": "Custom Tab (11)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -3961,6 +4031,20 @@
       },
       {
         "text": "Proto_Board_App_Page",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "Proto_Table_Widget_Lab",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "Service_Command_Board",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4443,7 +4527,7 @@
     ]
   },
   {
-    "text": "Flexi Page (18)",
+    "text": "Flexi Page (20)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -4562,6 +4646,13 @@
         }
       },
       {
+        "text": "Proto_Table_Widget_Lab",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "RevenueCloudConsole_UtilityBar",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
@@ -4574,11 +4665,18 @@
         "a_attr": {
           "href": null
         }
+      },
+      {
+        "text": "Service_Command_Board",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
       }
     ]
   },
   {
-    "text": "Flow (5)",
+    "text": "Flow (6)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -4607,6 +4705,13 @@
       },
       {
         "text": "Proto_Board_Host_Flow",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "Service_Command_Board",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4622,7 +4727,7 @@
     ]
   },
   {
-    "text": "Flow Definition (5)",
+    "text": "Flow Definition (6)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -4651,6 +4756,13 @@
       },
       {
         "text": "Proto_Board_Host_Flow",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "Service_Command_Board",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -5922,12 +6034,131 @@
     ]
   },
   {
-    "text": "Lightning Component Bundle (12)",
+    "text": "Lightning Component Bundle (30)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
     },
     "children": [
+      {
+        "text": "boardBarCpe",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardBarWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartUtils",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardConfigUtils",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardContextStore",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeColumnList",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeCommon",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeFormatEditor",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeObjectFieldPicker",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeUtils",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardFilterCpe",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardFilterWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardMetricCpe",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardMetricWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardTableCpe",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardTableWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardWidgetState",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
       {
         "text": "devedapp__getStartedAgentforce",
         "icon": "fa-solid fa-circle-check icon-success",
@@ -6000,6 +6231,13 @@
       },
       {
         "text": "protoFilterWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "protoTableHarness",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -9466,7 +9704,7 @@
     ]
   },
   {
-    "text": "Permission Set (8)",
+    "text": "Permission Set (9)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -9502,6 +9740,13 @@
       },
       {
         "text": "Proto_Board_Access",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "Service_Command_Board",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -14337,6 +14582,22 @@
     ]
   },
   {
+    "text": "Static Resource (1)",
+    "icon": "fa-solid fa-folder icon-blue",
+    "a_attr": {
+      "href": null
+    },
+    "children": [
+      {
+        "text": "chartjs",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      }
+    ]
+  },
+  {
     "text": "Topics For Objects (39)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
@@ -14651,7 +14912,7 @@
     ]
   },
   {
-    "text": "Ui View Definition (3)",
+    "text": "Ui View Definition (5)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -14673,6 +14934,20 @@
       },
       {
         "text": "Proto_Board_App_Page",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "Proto_Table_Widget_Lab",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "Service_Command_Board",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null

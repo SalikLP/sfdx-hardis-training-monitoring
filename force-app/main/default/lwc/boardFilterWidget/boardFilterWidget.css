@@ -1,0 +1,123 @@
+.c-board-card {
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+    border-color: var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-board-filter-updated,
+.c-board-filter-setup {
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+}
+
+.c-board-filter-updated lightning-relative-date-time {
+    margin-left: var(--slds-g-spacing-1, 0.25rem);
+}
+
+.c-board-filter-reset,
+.c-board-filter-refresh {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.c-board-filter-slot {
+    min-width: 12rem;
+    max-width: 18rem;
+    flex: 1 1 14rem;
+    margin-bottom: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-board-picklist,
+.c-board-user-combobox {
+    display: block;
+    position: relative;
+}
+
+.c-board-picklist-trigger {
+    width: 100%;
+    justify-content: space-between;
+}
+
+.c-board-picklist-summary {
+    min-width: 0;
+}
+
+.c-board-picklist-dropdown {
+    min-width: 100%;
+    max-width: 20rem;
+}
+
+.c-board-picklist-options,
+.c-board-user-results {
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+.c-board-user-control {
+    gap: var(--slds-g-spacing-1, 0.25rem);
+}
+
+.c-board-me-chip {
+    flex-shrink: 0;
+    border-radius: var(--slds-g-radius-border-pill, 15rem);
+}
+
+.c-board-user-combobox {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.c-board-user-result {
+    cursor: pointer;
+}
+
+.c-board-user-result:hover,
+.c-board-user-result:focus {
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+}
+
+.c-board-pill-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--slds-g-spacing-1, 0.25rem);
+}
+
+.c-board-locked-badge {
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+}
+
+.c-board-filter-drawer-toggle {
+    width: 100%;
+    min-height: 2.75rem;
+    justify-content: flex-start;
+    margin-bottom: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-board-filter-bar_compact .c-board-filter-slot {
+    max-width: none;
+    flex-basis: 100%;
+}
+
+.c-board-filter-bar_compact .c-board-pill-strip {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+/* 44px touch targets (story 60) on every native control, including the header Reset / Refresh and pill remove buttons */
+.c-board-card_compact .slds-button,
+.c-board-card_compact .slds-select,
+.c-board-card_compact .c-board-user-result,
+.c-board-card_compact .slds-listbox__item {
+    min-height: 2.75rem;
+}
+
+.c-board-card_compact .c-board-filter-refresh,
+.c-board-card_compact .c-board-filter-pill-remove {
+    min-width: 2.75rem;
+}
+
+.c-board-card_compact .c-board-filter-pill {
+    min-height: 2.75rem;
+}

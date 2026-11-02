@@ -1,0 +1,53 @@
+.c-board-state-heading {
+    font-size: var(--slds-g-font-scale-2, 1rem);
+    font-weight: var(--slds-g-font-weight-6, 600);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+}
+
+.c-board-skeleton {
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+    border-radius: var(--slds-g-radius-border-2, 0.25rem);
+}
+
+.c-board-skeleton_kpi {
+    height: 2.5rem;
+    width: 60%;
+}
+
+.c-board-skeleton_subtitle {
+    height: 0.875rem;
+    width: 40%;
+}
+
+.c-board-skeleton-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+    height: 8rem;
+}
+
+.c-board-skeleton-bars_horizontal {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.c-board-skeleton_bar {
+    flex: 1;
+    height: 75%;
+}
+
+.c-board-skeleton_row {
+    height: 1.5rem;
+    width: 100%;
+}
+
+.c-board-error-banner {
+    background-color: var(--slds-g-color-error-container-1, #fddde3);
+    color: var(--slds-g-color-on-error-1, #b60554);
+    border-left: 4px solid var(--slds-g-color-error-1, #b60554);
+    border-radius: var(--slds-g-radius-border-2, 0.25rem);
+}
+
+.c-board-error-message {
+    font-weight: var(--slds-g-font-weight-6, 600);
+}

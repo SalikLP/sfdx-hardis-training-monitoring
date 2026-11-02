@@ -1,0 +1,27 @@
+/* Every section after the Board header, including those after the slot (slotted CPE sections style themselves). */
+.c-cpe-section ~ .c-cpe-section {
+    border-top: 1px solid var(--slds-g-color-border-1, #e5e5e5);
+    padding-top: var(--slds-g-spacing-3, 0.75rem);
+}
+
+.c-cpe-binding-row,
+.c-cpe-base-filter {
+    border-bottom: 1px solid var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-cpe-binding-id,
+.c-cpe-binding-convention,
+.c-cpe-binding-effective {
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.c-cpe-drawer-toggle {
+    font-weight: 600;
+}
+
+.c-cpe-json {
+    font-family: monospace;
+    font-size: 0.75rem;
+    min-height: 12rem;
+}

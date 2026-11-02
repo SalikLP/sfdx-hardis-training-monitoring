@@ -2969,6 +2969,14 @@
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>
+        <tab>Proto_Table_Widget_Lab</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Service_Command_Board</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
         <tab>devedapp__Get_Started_Agentforce</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>

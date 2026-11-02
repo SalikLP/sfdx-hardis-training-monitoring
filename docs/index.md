@@ -27,7 +27,7 @@ What runs on its own when a record is created or changed.
 
 <div class="sfdx-hardis-home-card__links" markdown>
 
-[Assignment Rules (2)](assignmentRules/index.md) [Escalation Rules (1)](escalationRules/index.md) [Flows (5)](flows/index.md)
+[Assignment Rules (2)](assignmentRules/index.md) [Escalation Rules (1)](escalationRules/index.md) [Flows (6)](flows/index.md)
 
 </div>
 
@@ -41,7 +41,7 @@ Who is allowed to see what, and who is allowed to do what.
 
 <div class="sfdx-hardis-home-card__links" markdown>
 
-[Profiles (45)](profiles/index.md) [Permission Set Groups (22)](permissionsetgroups/index.md) [Permission Sets (7)](permissionsets/index.md)
+[Profiles (45)](profiles/index.md) [Permission Set Groups (22)](permissionsetgroups/index.md) [Permission Sets (8)](permissionsets/index.md)
 
 </div>
 
@@ -55,7 +55,7 @@ The custom code written on top of the standard platform.
 
 <div class="sfdx-hardis-home-card__links" markdown>
 
-[Apex (6)](apex/index.md) [Lightning Web Components (5)](lwc/index.md) [Aura Components (2)](aura/index.md)
+[Apex (16)](apex/index.md) [Lightning Web Components (23)](lwc/index.md) [Aura Components (2)](aura/index.md)
 
 </div>
 
@@ -63,7 +63,7 @@ The custom code written on top of the standard platform.
 
 <div class="sfdx-hardis-home-card" markdown>
 
-[Lightning Pages](pages/index.md){ .sfdx-hardis-home-card__title } <span class="sfdx-hardis-home-card__count">17</span>
+[Lightning Pages](pages/index.md){ .sfdx-hardis-home-card__title } <span class="sfdx-hardis-home-card__count">19</span>
 
 The screens users work on, and the components placed on them.
 
@@ -116,4 +116,4 @@ _Documentation generated from branch monitoring_orgfarm_42750320ff_dev_ed_develo
 
 [![SFDX-Hardis is provided by Cloudity](https://raw.githubusercontent.com/hardisgroupcom/sfdx-hardis/refs/heads/main/docs/assets/images/cloudity-banner.png)](https://cloudity.com?ref=sfdxhardis)
 
-<!-- sfdx-hardis-home-page: 72ae00c761e7f458ed97fe4aee74fbc6fd1fdb9aa031fab5e41a6fd79f9ba4ec -->
+<!-- sfdx-hardis-home-page: 925aced20be29acb1251fea0e7ee355f05f0ac7be1efce72657d6879d157efa6 -->

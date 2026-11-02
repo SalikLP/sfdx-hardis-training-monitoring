@@ -1,0 +1,138 @@
+<template>
+    <template lwc:if={hasColumns}>
+        <ol class="c-columns">
+            <template for:each={rows} for:item="row">
+                <li key={row.key} class="c-column slds-p-vertical_x-small" data-index={row.index}>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread">
+                        <span class="slds-text-title slds-truncate">
+                            {row.title}: <code class="c-column-path">{row.fieldPath}</code>
+                        </span>
+                        <div class="slds-shrink-none">
+                            <lightning-button-icon
+                                class="c-column-up"
+                                icon-name="utility:arrowup"
+                                size="small"
+                                variant="bare"
+                                alternative-text="Move column up"
+                                disabled={row.isFirst}
+                                data-index={row.index}
+                                onclick={handleMoveUp}
+                            ></lightning-button-icon>
+                            <lightning-button-icon
+                                class="c-column-down"
+                                icon-name="utility:arrowdown"
+                                size="small"
+                                variant="bare"
+                                alternative-text="Move column down"
+                                disabled={row.isLast}
+                                data-index={row.index}
+                                onclick={handleMoveDown}
+                            ></lightning-button-icon>
+                            <lightning-button-icon
+                                class="c-column-remove"
+                                icon-name="utility:delete"
+                                size="small"
+                                variant="bare"
+                                alternative-text="Remove column"
+                                data-index={row.index}
+                                onclick={handleRemove}
+                            ></lightning-button-icon>
+                        </div>
+                    </div>
+                    <c-board-cpe-object-field-picker
+                        class="c-column-field"
+                        mode="field"
+                        label="Field"
+                        object-api-name={objectApiName}
+                        value={row.fieldPath}
+                        data-index={row.index}
+                        onchange={handleField}
+                    ></c-board-cpe-object-field-picker>
+                    <div class="slds-grid slds-gutters_xx-small slds-wrap">
+                        <lightning-input
+                            class="c-column-label slds-col slds-size_1-of-2"
+                            label="Label"
+                            placeholder="Field label"
+                            value={row.label}
+                            data-index={row.index}
+                            data-name="label"
+                            onchange={handleText}
+                        ></lightning-input>
+                        <lightning-input
+                            class="c-column-width slds-col slds-size_1-of-2"
+                            label="Width"
+                            placeholder="auto (e.g. 12rem)"
+                            value={row.width}
+                            data-index={row.index}
+                            data-name="width"
+                            onchange={handleText}
+                        ></lightning-input>
+                        <lightning-combobox
+                            class="c-column-display slds-col slds-size_1-of-2"
+                            label="Display as"
+                            options={displayAsOptions}
+                            value={row.displayAs}
+                            data-index={row.index}
+                            data-name="displayAs"
+                            onchange={handleChoice}
+                        ></lightning-combobox>
+                        <lightning-combobox
+                            class="c-column-link slds-col slds-size_1-of-2"
+                            label="Link to record"
+                            options={linkOptions}
+                            value={row.linkToRecord}
+                            data-index={row.index}
+                            data-name="linkToRecord"
+                            onchange={handleChoice}
+                        ></lightning-combobox>
+                        <lightning-combobox
+                            class="c-column-align slds-col slds-size_1-of-2"
+                            label="Align"
+                            options={alignOptions}
+                            value={row.align}
+                            data-index={row.index}
+                            data-name="align"
+                            onchange={handleChoice}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-grid slds-gutters_xx-small slds-m-top_xx-small">
+                        <lightning-input
+                            class="c-column-wrap slds-col"
+                            type="checkbox"
+                            label="Wrap text"
+                            checked={row.wrapText}
+                            data-index={row.index}
+                            data-name="wrapText"
+                            onchange={handleToggle}
+                        ></lightning-input>
+                        <lightning-input
+                            class="c-column-narrow slds-col"
+                            type="checkbox"
+                            label="Hide on narrow screens"
+                            checked={row.hideOnNarrow}
+                            data-index={row.index}
+                            data-name="hideOnNarrow"
+                            onchange={handleToggle}
+                        ></lightning-input>
+                    </div>
+                    <template lwc:if={row.showFormat}>
+                        <c-board-cpe-format-editor
+                            class="c-column-format slds-m-top_xx-small"
+                            label="Number format"
+                            value={row.format}
+                            data-index={row.index}
+                            onchange={handleFormat}
+                        ></c-board-cpe-format-editor>
+                    </template>
+                </li>
+            </template>
+        </ol>
+    </template>
+    <c-board-cpe-object-field-picker
+        class="c-column-add slds-m-top_x-small"
+        mode="field"
+        label={addLabel}
+        object-api-name={objectApiName}
+        onchange={handleAdd}
+    ></c-board-cpe-object-field-picker>
+</template>

@@ -1,0 +1,82 @@
+<template>
+    <template lwc:if={isUnconfigured}>
+        <div class="slds-illustration slds-illustration_small slds-p-around_medium" role="status">
+            <div class="slds-m-bottom_x-small">
+                <lightning-icon
+                    icon-name="utility:setup"
+                    size="small"
+                    alternative-text="Setup required"
+                ></lightning-icon>
+            </div>
+            <div class="slds-text-longform">
+                <h3 class="c-board-state-heading">Configure this widget</h3>
+                <p class="slds-text-body_small">
+                    Select an Object API Name or configure this widget in the property editor to display data.
+                </p>
+            </div>
+        </div>
+    </template>
+
+    <template lwc:elseif={isInitialLoading}>
+        <div class="c-board-skeleton-wrapper slds-p-around_medium" aria-busy="true" role="status">
+            <span class="slds-assistive-text">{loadingText}</span>
+            <template lwc:if={isMetricSkeleton}>
+                <div class="c-board-skeleton c-board-skeleton_kpi"></div>
+                <div class="c-board-skeleton c-board-skeleton_subtitle slds-m-top_x-small"></div>
+            </template>
+            <template lwc:elseif={isBarSkeleton}>
+                <div class={barContainerClass}>
+                    <div class="c-board-skeleton c-board-skeleton_bar"></div>
+                    <div class="c-board-skeleton c-board-skeleton_bar"></div>
+                    <div class="c-board-skeleton c-board-skeleton_bar"></div>
+                    <div class="c-board-skeleton c-board-skeleton_bar"></div>
+                    <div class="c-board-skeleton c-board-skeleton_bar"></div>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="c-board-skeleton c-board-skeleton_row"></div>
+                <div class="c-board-skeleton c-board-skeleton_row slds-m-top_xx-small"></div>
+                <div class="c-board-skeleton c-board-skeleton_row slds-m-top_xx-small"></div>
+                <div class="c-board-skeleton c-board-skeleton_row slds-m-top_xx-small"></div>
+                <div class="c-board-skeleton c-board-skeleton_row slds-m-top_xx-small"></div>
+            </template>
+        </div>
+    </template>
+
+    <template lwc:elseif={isEmpty}>
+        <div class="slds-illustration slds-illustration_small slds-p-around_medium" role="status">
+            <div class="slds-text-longform">
+                <h3 class="c-board-state-heading">No matching records</h3>
+                <p class="slds-text-body_small">{emptySubtext}</p>
+            </div>
+        </div>
+    </template>
+
+    <template lwc:elseif={isError}>
+        <div class="c-board-error-banner slds-p-around_small" role="alert">
+            <div class="slds-grid slds-grid_vertical-align-center">
+                <lightning-icon
+                    icon-name="utility:error"
+                    variant="error"
+                    size="small"
+                    alternative-text="Error"
+                    class="slds-m-right_x-small"
+                ></lightning-icon>
+                <div class="slds-col">
+                    <p class="c-board-error-message">{errorMessage}</p>
+                    <template lwc:if={errorDetails}>
+                        <p class="c-board-error-details slds-text-body_small">{errorDetails}</p>
+                    </template>
+                </div>
+                <template lwc:if={isRetryable}>
+                    <lightning-button
+                        label="Retry"
+                        variant="neutral"
+                        onclick={handleRetry}
+                        class="slds-m-left_small"
+                    ></lightning-button>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,8 @@
+.c-cpe-section {
+    border-top: 1px solid var(--slds-g-color-border-1, #e5e5e5);
+    padding-top: var(--slds-g-spacing-3, 0.75rem);
+}
+
+.c-filter-row {
+    border-bottom: 1px solid var(--slds-g-color-border-1, #e5e5e5);
+}

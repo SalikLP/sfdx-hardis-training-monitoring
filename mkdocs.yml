@@ -140,6 +140,7 @@ nav:
           - Installation_Close_Check: flows/Installation_Close_Check.md
           - Installation_Crew_Warning: flows/Installation_Crew_Warning.md
           - Proto_Board_Host_Flow: flows/Proto_Board_Host_Flow.md
+          - Service_Command_Board: flows/Service_Command_Board.md
           - sfdc_default_ReportExport_Protection_Flow: flows/sfdc_default_ReportExport_Protection_Flow.md
   - Authorizations:
       - Profiles:
@@ -219,24 +220,53 @@ nav:
           - Helios_Delivery_Crew: permissionsets/Helios_Delivery_Crew.md
           - Helios_Delivery_Manager: permissionsets/Helios_Delivery_Manager.md
           - Proto_Board_Access: permissionsets/Proto_Board_Access.md
+          - Service_Command_Board: permissionsets/Service_Command_Board.md
           - sfdc_aiplanner_service_permset: permissionsets/sfdc_aiplanner_service_permset.md
           - sfdcInternalInt__sfdc_platformmetabolism_slagent: permissionsets/sfdcInternalInt__sfdc_platformmetabolism_slagent.md
           - sfdcInternalInt__sfdc_scrt2: permissionsets/sfdcInternalInt__sfdc_scrt2.md
   - Code:
       - Apex:
           - All Apex Classes: apex/index.md
+          - BoardDescribe: apex/BoardDescribe.md
+          - BoardErrors: apex/BoardErrors.md
+          - BoardQueryService: apex/BoardQueryService.md
+          - BoardQueryServiceChildRowsTest: apex/BoardQueryServiceChildRowsTest.md
+          - BoardQueryServiceSearchTest: apex/BoardQueryServiceSearchTest.md
+          - BoardQueryServiceTableTest: apex/BoardQueryServiceTableTest.md
+          - BoardQueryServiceTest: apex/BoardQueryServiceTest.md
+          - BoardSchemaService: apex/BoardSchemaService.md
+          - BoardSchemaServiceTest: apex/BoardSchemaServiceTest.md
           - CrewCapacityBatch: apex/CrewCapacityBatch.md
           - CrewCapacityBatchTest: apex/CrewCapacityBatchTest.md
           - CrewSizeBackfillBatch: apex/CrewSizeBackfillBatch.md
           - CrewSizeBackfillBatchTest: apex/CrewSizeBackfillBatchTest.md
           - InstallationScheduler: apex/InstallationScheduler.md
           - InstallationSchedulerTest: apex/InstallationSchedulerTest.md
+          - ProtoTableQueryService: apex/ProtoTableQueryService.md
       - Lightning Web Components:
           - All Lightning Web Components: lwc/index.md
+          - boardBarCpe: lwc/boardBarCpe.md
+          - boardBarWidget: lwc/boardBarWidget.md
+          - boardChartUtils: lwc/boardChartUtils.md
+          - boardConfigUtils: lwc/boardConfigUtils.md
+          - boardContextStore: lwc/boardContextStore.md
+          - boardCpeColumnList: lwc/boardCpeColumnList.md
+          - boardCpeCommon: lwc/boardCpeCommon.md
+          - boardCpeFormatEditor: lwc/boardCpeFormatEditor.md
+          - boardCpeObjectFieldPicker: lwc/boardCpeObjectFieldPicker.md
+          - boardCpeUtils: lwc/boardCpeUtils.md
+          - boardFilterCpe: lwc/boardFilterCpe.md
+          - boardFilterWidget: lwc/boardFilterWidget.md
+          - boardMetricCpe: lwc/boardMetricCpe.md
+          - boardMetricWidget: lwc/boardMetricWidget.md
+          - boardTableCpe: lwc/boardTableCpe.md
+          - boardTableWidget: lwc/boardTableWidget.md
+          - boardWidgetState: lwc/boardWidgetState.md
           - installationTimeline: lwc/installationTimeline.md
           - protoBoardStore: lwc/protoBoardStore.md
           - protoBoardWidget: lwc/protoBoardWidget.md
           - protoFilterWidget: lwc/protoFilterWidget.md
+          - protoTableHarness: lwc/protoTableHarness.md
           - protoWidgetCpe: lwc/protoWidgetCpe.md
       - Aura Components:
           - All Aura Components: aura/index.md
@@ -259,8 +289,10 @@ nav:
       - MediaAdSalesManagement_UtilityBar: pages/MediaAdSalesManagement_UtilityBar.md
       - Proto_Board_Account_Record_Page: pages/Proto_Board_Account_Record_Page.md
       - Proto_Board_App_Page: pages/Proto_Board_App_Page.md
+      - Proto_Table_Widget_Lab: pages/Proto_Table_Widget_Lab.md
       - RevenueCloudConsole_UtilityBar: pages/RevenueCloudConsole_UtilityBar.md
       - SalesCloudMobile_UtilityBar: pages/SalesCloudMobile_UtilityBar.md
+      - Service_Command_Board: pages/Service_Command_Board.md
   - Packages:
       - All Packages: packages/index.md
       - Developer Edition: packages/Developer Edition.md

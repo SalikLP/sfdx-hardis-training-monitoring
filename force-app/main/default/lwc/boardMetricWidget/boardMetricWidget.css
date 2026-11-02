@@ -1,0 +1,70 @@
+.c-board-card {
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+    border-color: var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-board-metric-container {
+    container-type: inline-size;
+}
+
+.c-board-header-spinner {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+}
+
+.c-board-metric-content {
+    opacity: 1;
+    transition: opacity 180ms ease-in-out;
+}
+
+.c-board-metric-content_refreshing {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.c-board-metric-kpi {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-board-metric-value {
+    font-size: clamp(1.5rem, 6cqi, 2.25rem);
+    font-weight: var(--slds-g-font-weight-7, 700);
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    color: var(--slds-g-color-on-surface-3, #03234d);
+}
+
+.c-board-metric-value_success {
+    color: var(--slds-g-color-success-1, #2e844a);
+}
+
+.c-board-metric-value_warning {
+    color: var(--slds-g-color-warning-1, #8c4b02);
+}
+
+.c-board-metric-value_error {
+    color: var(--slds-g-color-error-1, #b60554);
+}
+
+.c-board-metric-subtitle,
+.c-board-metric-progress {
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+    margin-top: var(--slds-g-spacing-1, 0.25rem);
+}
+
+@container (max-width: 360px) {
+    .c-board-metric-status {
+        flex-basis: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .c-board-metric-content {
+        transition: none;
+    }
+}
