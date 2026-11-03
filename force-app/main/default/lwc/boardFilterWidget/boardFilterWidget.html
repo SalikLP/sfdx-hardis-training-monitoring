@@ -17,7 +17,7 @@
                 </span>
                 <button
                     type="button"
-                    class="slds-button c-board-filter-reset"
+                    class="slds-button c-board-touch-target c-board-filter-reset"
                     title="Reset filters"
                     onclick={handleReset}
                 >
@@ -25,7 +25,7 @@
                 </button>
                 <button
                     type="button"
-                    class="slds-button slds-button_icon slds-m-left_x-small c-board-filter-refresh"
+                    class="slds-button c-board-touch-target slds-button_icon slds-m-left_x-small c-board-filter-refresh"
                     title="Refresh board"
                     onclick={handleRefreshBoard}
                 >
@@ -58,7 +58,7 @@
                     <template lwc:if={isCompact}>
                         <button
                             type="button"
-                            class="slds-button slds-button_neutral c-board-filter-drawer-toggle"
+                            class="slds-button c-board-touch-target slds-button_neutral c-board-filter-drawer-toggle"
                             aria-expanded={drawerAriaExpanded}
                             onclick={handleDrawerToggle}
                         >
@@ -107,7 +107,7 @@
                                                 >
                                                     <button
                                                         type="button"
-                                                        class="slds-button slds-button_neutral c-board-picklist-trigger"
+                                                        class="slds-button c-board-touch-target slds-button_neutral c-board-picklist-trigger"
                                                         aria-haspopup="listbox"
                                                         aria-expanded={view.ariaExpanded}
                                                         aria-label={view.triggerAriaLabel}
@@ -151,7 +151,7 @@
                                                             >
                                                                 <button
                                                                     type="button"
-                                                                    class="slds-button c-board-picklist-select-all"
+                                                                    class="slds-button c-board-touch-target c-board-picklist-select-all"
                                                                     data-filter-id={view.filterId}
                                                                     onclick={handlePicklistSelectAll}
                                                                 >
@@ -159,7 +159,7 @@
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    class="slds-button c-board-picklist-clear"
+                                                                    class="slds-button c-board-touch-target c-board-picklist-clear"
                                                                     data-filter-id={view.filterId}
                                                                     onclick={handlePicklistClear}
                                                                 >
@@ -334,7 +334,7 @@
                                             <div class="slds-form-element__control">
                                                 <div class="slds-select_container">
                                                     <select
-                                                        class="slds-select c-board-date-preset"
+                                                        class="slds-select c-board-touch-target c-board-date-preset"
                                                         id={view.selectId}
                                                         disabled={view.locked}
                                                         data-filter-id={view.filterId}
@@ -413,7 +413,7 @@
                                     >
                                     <button
                                         type="button"
-                                        class="slds-button slds-button_icon slds-pill__remove c-board-filter-pill-remove"
+                                        class="slds-button c-board-touch-target slds-button_icon slds-pill__remove c-board-filter-pill-remove"
                                         title={pill.removeLabel}
                                         data-filter-id={pill.filterId}
                                         data-value={pill.value}

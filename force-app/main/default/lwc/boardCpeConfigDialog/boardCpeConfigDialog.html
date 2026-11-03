@@ -1,0 +1,27 @@
+<template>
+    <lightning-modal-header label={label}></lightning-modal-header>
+    <lightning-modal-body>
+        <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
+            Changes apply to the Widget only when you save. Cancel discards them.
+        </p>
+        <lightning-textarea
+            class="c-dialog-draft"
+            label="Draft (JSON)"
+            value={draftText}
+            onchange={handleDraftChange}
+        ></lightning-textarea>
+        <template lwc:if={errorMessage}>
+            <p class="c-dialog-error slds-text-color_error slds-m-top_x-small" role="alert">{errorMessage}</p>
+        </template>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button class="c-dialog-cancel" label="Cancel" onclick={handleCancel}></lightning-button>
+        <lightning-button
+            class="c-dialog-save slds-m-left_x-small"
+            variant="brand"
+            label="Save"
+            disabled={isSaveDisabled}
+            onclick={handleSave}
+        ></lightning-button>
+    </lightning-modal-footer>
+</template>

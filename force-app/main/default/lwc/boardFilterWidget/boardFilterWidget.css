@@ -44,7 +44,7 @@
 
 .c-board-picklist-dropdown {
     min-width: 100%;
-    max-width: 20rem;
+    max-width: var(--slds-g-sizing-15, 20rem);
 }
 
 .c-board-picklist-options,
@@ -106,8 +106,7 @@
 }
 
 /* 44px touch targets (story 60) on every native control, including the header Reset / Refresh and pill remove buttons */
-.c-board-card_compact .slds-button,
-.c-board-card_compact .slds-select,
+.c-board-card_compact .c-board-touch-target,
 .c-board-card_compact .c-board-user-result,
 .c-board-card_compact .slds-listbox__item {
     min-height: 2.75rem;

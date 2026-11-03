@@ -18,6 +18,9 @@ import {
 import { subscribeFilterContext, publishFilterContext, acceptExternalFilterContext } from 'c/boardContextStore';
 
 const ZERO_WHEN_EMPTY = new Set(['COUNT', 'COUNT_DISTINCT', 'SUM']);
+/** Schema.DisplayType names whose aggregate may arrive as a numeric string (high-precision Decimal). */
+const NUMERIC_VALUE_TYPES = new Set(['CURRENCY', 'DOUBLE', 'INTEGER', 'LONG', 'PERCENT']);
+const DECIMAL_STRING = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?$/;
 const THRESHOLD_ICONS = {
     success: { iconName: 'utility:success', label: 'Status: success' },
     warning: { iconName: 'utility:warning', label: 'Status: warning' },
@@ -489,8 +492,14 @@ export default class BoardMetricWidget extends LightningElement {
         if (this.hasNoValue) {
             return 0;
         }
-        const numeric = Number(this.metricResult.value);
-        return Number.isFinite(numeric) && typeof this.metricResult.value !== 'string' ? numeric : null;
+        const { value, valueType } = this.metricResult;
+        // Apex serializes high-precision Decimals as strings; accept those for numeric fields only, so
+        // MIN/MAX over Text values such as "00123" still render verbatim.
+        if (typeof value === 'string' && !(NUMERIC_VALUE_TYPES.has(valueType) && DECIMAL_STRING.test(value.trim()))) {
+            return null;
+        }
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? numeric : null;
     }
 
     get formatConfig() {

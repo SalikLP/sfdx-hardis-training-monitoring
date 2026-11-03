@@ -349,14 +349,18 @@ public with sharing class BoardQueryService {
             );
         }
         String fieldName = fieldApiName.trim();
-        if (fieldName.contains('.') || fieldName.contains('(')) {
+        if (fieldName.contains('(')) {
             throw BoardErrors.error(
                 BoardErrors.CONFIG_ERROR,
-                'The value field must be a field on ' + objectDescribe.getName() + ': ' + fieldName,
+                'The value field must be a field on ' +
+                    objectDescribe.getName() +
+                    ' or a parent path, not a child relationship: ' +
+                    fieldName,
                 null,
                 fieldName
             );
         }
+        // Direct field or 1–5 hop parent path (`Account.AnnualRevenue`); each hop is FLS-checked.
         return resolveFieldPath(objectDescribe, fieldName, null, fieldName);
     }
 
@@ -377,8 +381,9 @@ public with sharing class BoardQueryService {
         }
     }
 
+    /** Value-field value of a queried row; parent paths traverse the queried relationships. */
     private static Object readValue(SObject row, String path) {
-        return row.isSet(path) ? row.get(path) : null;
+        return readPath(row, path);
     }
 
     private static BoardErrors.BoardException limitExceeded(Integer totalRows) {
@@ -412,6 +417,9 @@ public with sharing class BoardQueryService {
     /** Row cap of the page-scoped child count query (`FeedItem` disallows `COUNT(Id)` + `GROUP BY`). */
     @TestVisible
     private static Integer CHILD_COUNT_QUERY_LIMIT = 2001;
+    /** Count queries per page: each saturated query re-queries only the parents it did not reach. */
+    @TestVisible
+    private static Integer CHILD_COUNT_MAX_QUERIES = 3;
 
     /**
      * Opens a Table Widget `Database.PaginationCursor` and returns its first page.
@@ -789,38 +797,55 @@ public with sharing class BoardQueryService {
         }
 
         /**
-         * Sets `childCount` (capped at the row limit) and `childCountCapped` on every row with one
-         * `SELECT Id, <fk> ... WHERE <fk> IN :parentIds LIMIT 2001` query. A saturated query marks every row
-         * with children as capped, since its counts may be partial.
+         * Sets `childCount` (capped at the row limit) and `childCountCapped` on every row with
+         * `SELECT Id, <fk> ... WHERE <fk> IN :parentIds LIMIT 2001` queries. A saturated query may omit parents
+         * entirely, so it marks the parents it saw as capped (their counts may be partial) and re-queries only the
+         * unseen ones, up to `CHILD_COUNT_MAX_QUERIES`. Parents still unresolved get an unknown count
+         * (`childCount` null, `childCountCapped` true) and stay expandable.
          */
         void applyCounts(List<TableRow> rows) {
             if (rows.isEmpty()) {
                 return;
             }
-            List<Id> parentIds = parentIdsOf(rows);
-            List<SObject> children = Database.queryWithBinds(
-                'SELECT Id, ' +
-                    foreignKeyField +
-                    ' FROM ' +
-                    childDescribe.getName() +
-                    ' WHERE ' +
-                    foreignKeyField +
-                    ' IN :parentIds LIMIT ' +
-                    CHILD_COUNT_QUERY_LIMIT,
-                new Map<String, Object>{ 'parentIds' => parentIds },
-                AccessLevel.USER_MODE
-            );
-            Boolean saturated = children.size() >= CHILD_COUNT_QUERY_LIMIT;
+            Set<Id> unresolved = new Set<Id>(parentIdsOf(rows));
             Map<Id, Integer> counts = new Map<Id, Integer>();
-            for (SObject childRecord : children) {
-                Id parentId = (Id) childRecord.get(foreignKeyField);
-                Integer current = counts.get(parentId);
-                counts.put(parentId, current == null ? 1 : current + 1);
+            Set<Id> partial = new Set<Id>();
+            Boolean saturated = true;
+            for (
+                Integer attempt = 0; attempt < CHILD_COUNT_MAX_QUERIES && saturated && !unresolved.isEmpty(); attempt++
+            ) {
+                List<SObject> children = Database.queryWithBinds(
+                    'SELECT Id, ' +
+                        foreignKeyField +
+                        ' FROM ' +
+                        childDescribe.getName() +
+                        ' WHERE ' +
+                        foreignKeyField +
+                        ' IN :parentIds LIMIT ' +
+                        CHILD_COUNT_QUERY_LIMIT,
+                    new Map<String, Object>{ 'parentIds' => unresolved },
+                    AccessLevel.USER_MODE
+                );
+                saturated = children.size() >= CHILD_COUNT_QUERY_LIMIT;
+                for (SObject childRecord : children) {
+                    Id parentId = (Id) childRecord.get(foreignKeyField);
+                    Integer current = counts.get(parentId);
+                    counts.put(parentId, current == null ? 1 : current + 1);
+                }
+                if (saturated) {
+                    partial.addAll(counts.keySet());
+                }
+                unresolved.removeAll(counts.keySet());
             }
             for (TableRow row : rows) {
+                if (saturated && unresolved.contains(row.id)) {
+                    row.childCount = null;
+                    row.childCountCapped = true;
+                    continue;
+                }
                 Integer count = counts.containsKey(row.id) ? counts.get(row.id) : 0;
                 row.childCount = Math.min(count, rowLimit);
-                row.childCountCapped = count > rowLimit || (saturated && count > 0);
+                row.childCountCapped = count > rowLimit || partial.contains(row.id);
             }
         }
 
@@ -2834,7 +2859,10 @@ public with sharing class BoardQueryService {
         public Id id;
         @AuraEnabled
         public Map<String, Object> values = new Map<String, Object>();
-        /** Child records (capped at the child row limit); null when the Table has no `childRelationship`. */
+        /**
+         * Child records (capped at the child row limit); null when the Table has no `childRelationship`, or when
+         * the count is unknown (`childCountCapped` true: too many children on the page to count them all).
+         */
         @AuraEnabled
         public Integer childCount;
         /** True when the parent has more children than `childCount` shows (the badge renders `N+`). */

@@ -725,12 +725,15 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
     }
 
     buildChildView(row, colspan, highlight) {
+        // A null count with `childCountCapped` means the server could not count this parent's children.
+        const unknownCount = row.childCountCapped === true && (row.childCount === null || row.childCount === undefined);
         const childCount = row.childCount || 0;
+        const canExpand = childCount > 0 || unknownCount;
         const state = this.childState[row.id];
-        const expanded = Boolean(state?.expanded) && childCount > 0;
+        const expanded = Boolean(state?.expanded) && canExpand;
         const view = {
-            childBadgeLabel: `${childCount}${row.childCountCapped ? '+' : ''}`,
-            canExpand: childCount > 0,
+            childBadgeLabel: unknownCount ? '?' : `${childCount}${row.childCountCapped ? '+' : ''}`,
+            canExpand,
             ariaExpanded: expanded ? 'true' : 'false',
             chevron: expanded ? '▾' : '▸',
             expandLabel: `${expanded ? 'Collapse' : 'Expand'} ${this.childLabel}`

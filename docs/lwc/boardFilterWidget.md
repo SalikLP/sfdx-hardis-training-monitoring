@@ -97,6 +97,14 @@ never activates the filter (an already active search is cleared after the deboun
 
 **Kind**: instance method of <code>BoardFilterWidget</code>  
 
+#### reconcileTextInput(ctx)
+
+Drops typed text that no longer matches the published search (a Flow input or another Widget changed it),
+so the box never shows a term other than the active one. A pending debounce keeps its text: it is about
+to publish it.
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
+
 #### handlePageRefresh()
 
 lightning/refresh handler (page-action edits, Board Refresh): renews the "Updated" timestamp and re-reads the

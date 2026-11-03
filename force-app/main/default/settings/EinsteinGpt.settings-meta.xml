@@ -6,6 +6,7 @@
     <disableAIProvVertexGemini>false</disableAIProvVertexGemini>
     <disableAIProviderRegionFallback>false</disableAIProviderRegionFallback>
     <enableAIModelBeta>false</enableAIModelBeta>
+    <enableAiSkillRoleHierarchy>false</enableAiSkillRoleHierarchy>
     <enableDeployOnlyActivePromptTemplateVersion>false</enableDeployOnlyActivePromptTemplateVersion>
     <enableEinsteinGPTDeployPromptTemplatesAsActive>false</enableEinsteinGPTDeployPromptTemplatesAsActive>
     <enableEinsteinGptAllowUnsafePTInputChanges>false</enableEinsteinGptAllowUnsafePTInputChanges>

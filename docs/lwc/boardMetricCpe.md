@@ -14,7 +14,13 @@ value format, subtitle, and ordered thresholds, inside the shared `c-board-cpe-c
 bindings, Base filters, Config JSON).
 
 **Kind**: global class  
-**Extends**: <code>LightningElement</code>
+**Extends**: <code>LightningElement</code>  
+
+#### handleEditThresholdsInDialog()
+
+Ticket 07 spike: edit the thresholds in a Config dialog; Save applies one config change, dismiss none.
+
+**Kind**: instance async method of <code>BoardMetricCpe</code>
 
 ## Files
 

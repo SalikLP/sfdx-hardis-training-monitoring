@@ -7,6 +7,13 @@
 
 ## JS Documentation
 
+### MIN_SEARCH_CHARACTERS
+
+Mirrors BoardQueryService.MIN_SEARCH_CHARACTERS.
+
+**Kind**: global constant  
+**Default**: <code>2</code>  
+
 ### cleanString(value)
 
 Trimmed non-empty string, else null.
@@ -209,6 +216,14 @@ Parses pasted `configJson` text and checks it with the same rules as `validate()
 
 `validate()` of an exposed CPE: the mounted shell's errors, or (fail-closed, before the shell renders) the errors
 of the config read straight from Flow `inputVariables`.
+
+**Kind**: global function  
+
+### openConfigDialog(Dialog, { value, ...props } = {})
+
+Opens a Config dialog (a `LightningModal` subclass such as `c/boardCpeConfigDialog`) at size large with a deep copy
+of `value`, and resolves with `{ action: 'save', draft }` or `{ action: 'dismiss' }` (Cancel, header X, Escape).
+The caller applies a saved draft as exactly one config change and does nothing on dismiss.
 
 **Kind**: global function
 

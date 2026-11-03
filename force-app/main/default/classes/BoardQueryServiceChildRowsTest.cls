@@ -139,9 +139,33 @@ private class BoardQueryServiceChildRowsTest {
         BoardQueryService.TableResult result = BoardQueryService.queryTable(
             JSON.serialize(caseRequest(caseCommentConfig()))
         );
-        for (BoardQueryService.TableRow row : result.rows) {
-            Assert.areEqual(row.childCount > 0, row.childCountCapped, String.valueOf(row.values));
+        Map<String, BoardQueryService.TableRow> bySubject = rowsBySubject(result.rows);
+        for (String subject : new List<String>{ 'Child A', 'Child C' }) {
+            BoardQueryService.TableRow row = bySubject.get(subject);
+            Assert.isTrue(row.childCount > 0, subject + ' is re-queried, never reported childless');
+            Assert.isTrue(row.childCountCapped, subject + ' count may be partial');
         }
+        Assert.areEqual(0, bySubject.get('Child B').childCount, 'A final unsaturated query proves zero children');
+        Assert.isFalse(bySubject.get('Child B').childCountCapped);
+    }
+
+    @IsTest
+    static void exhaustedCountQueriesReportUnknownCounts() {
+        BoardQueryService.CHILD_COUNT_QUERY_LIMIT = 2;
+        BoardQueryService.CHILD_COUNT_MAX_QUERIES = 1;
+        BoardQueryService.TableResult result = BoardQueryService.queryTable(
+            JSON.serialize(caseRequest(caseCommentConfig()))
+        );
+        Integer unknown = 0;
+        for (BoardQueryService.TableRow row : result.rows) {
+            Assert.isTrue(row.childCountCapped, 'No row may claim an exact count: ' + String.valueOf(row.values));
+            if (row.childCount == null) {
+                unknown++;
+            } else {
+                Assert.isTrue(row.childCount > 0, 'Seen parents keep their partial count');
+            }
+        }
+        Assert.isTrue(unknown > 0, 'Parents the saturated query never reached have an unknown count');
     }
 
     // ---------------------------------------------------------------------------------------------------------

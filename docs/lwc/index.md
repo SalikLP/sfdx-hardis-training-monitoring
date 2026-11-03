@@ -9,6 +9,7 @@
 | [boardContextStore](boardContextStore.md) | Board Context Store | ❌ |  |
 | [boardCpeColumnList](boardCpeColumnList.md) | Board CPE Column List | ❌ |  |
 | [boardCpeCommon](boardCpeCommon.md) | Shared Board Flow CPE shell: header, builderContext filter bindings, base filters, and Config JSON drawer | ❌ |  |
+| [boardCpeConfigDialog](boardCpeConfigDialog.md) | Board Config dialog: LightningModal that edits a draft of one Config part and resolves save/dismiss | ❌ |  |
 | [boardCpeFormatEditor](boardCpeFormatEditor.md) | Board CPE Format Editor | ❌ |  |
 | [boardCpeObjectFieldPicker](boardCpeObjectFieldPicker.md) | Board CPE searchable object picker, capability-filtered field picker, and relationship path builder | ❌ |  |
 | [boardCpeUtils](boardCpeUtils.md) | Board CPE Utils | ❌ |  |

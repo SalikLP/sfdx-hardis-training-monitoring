@@ -10,8 +10,8 @@
 
 .c-board-header-spinner {
     position: relative;
-    width: 1rem;
-    height: 1rem;
+    width: var(--slds-g-sizing-5, 1rem);
+    height: var(--slds-g-sizing-5, 1rem);
 }
 
 .c-board-table-content {
@@ -63,13 +63,13 @@
     float: left;
     display: inline-flex;
     align-items: center;
-    margin-right: 0.5rem;
+    margin-right: var(--slds-g-spacing-2, 0.5rem);
 }
 
 /* 24px minimum target (WCAG 2.2 target size) without inflating dense row height. */
 .c-board-table-expand {
-    min-width: 1.5rem;
-    min-height: 1.5rem;
+    min-width: var(--slds-g-sizing-7, 1.5rem);
+    min-height: var(--slds-g-sizing-7, 1.5rem);
     justify-content: center;
     color: var(--slds-g-color-accent-2, #0b5cab);
 }
@@ -85,13 +85,13 @@
 }
 
 .c-board-table-child-cell {
-    padding-left: 2rem;
+    padding-left: var(--slds-g-spacing-6, 2rem);
     background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
 }
 
 .c-board-table-child-spinner {
     position: relative;
-    height: 2rem;
+    height: var(--slds-g-sizing-9, 2rem);
 }
 
 .c-board-child-table {
@@ -131,7 +131,7 @@
 
 .c-board-table-footer-spinner {
     position: relative;
-    height: 2rem;
+    height: var(--slds-g-sizing-9, 2rem);
 }
 
 /* Responsive columns: hide `hideOnNarrow` columns when the table container is narrower than 480px. */

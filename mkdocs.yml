@@ -252,6 +252,7 @@ nav:
           - boardContextStore: lwc/boardContextStore.md
           - boardCpeColumnList: lwc/boardCpeColumnList.md
           - boardCpeCommon: lwc/boardCpeCommon.md
+          - boardCpeConfigDialog: lwc/boardCpeConfigDialog.md
           - boardCpeFormatEditor: lwc/boardCpeFormatEditor.md
           - boardCpeObjectFieldPicker: lwc/boardCpeObjectFieldPicker.md
           - boardCpeUtils: lwc/boardCpeUtils.md

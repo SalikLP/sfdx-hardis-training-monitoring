@@ -128,6 +128,8 @@ const DATE_PRESET_VALUES = new Set(optionValues(DATE_PRESETS));
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const FILTER_ID = /^[A-Za-z][A-Za-z0-9_]*$/;
 const CURRENCY_CODE = /^[A-Za-z]{3}$/;
+/** Mirrors BoardQueryService.MIN_SEARCH_CHARACTERS. */
+export const MIN_SEARCH_CHARACTERS = 2;
 const RECORD_ID = /^[a-zA-Z0-9]{15}(?:[a-zA-Z0-9]{3})?$/;
 const STRING_KEYS = ['boardId', 'title', 'subtitle'];
 
@@ -422,6 +424,7 @@ function aggregateErrors(config, widgetLabel, numericOnly) {
         const kind = fn === 'COUNT_DISTINCT' || !numericOnly ? 'a field' : 'a numeric field';
         errors.push(error('valueFieldApiName', `Choose ${kind} to aggregate with ${fn} on this ${widgetLabel}.`));
     } else if (cleanString(config.valueFieldApiName) && !isParentFieldPath(config.valueFieldApiName)) {
+        // Direct field or 1–5 hop parent path, matching BoardQueryService.resolveValueField.
         errors.push(error('valueFieldApiName', `Value field "${config.valueFieldApiName}" is not a valid field path.`));
     }
     return errors;
@@ -570,8 +573,9 @@ function filterDefinitionErrors(filter, index, seenIds) {
             if (hasValue(filter.matchMode) && !TEXT_MATCH_MODES.includes(filter.matchMode)) {
                 errors.push(`${label}: match mode must be SOSL, CONTAINS, or STARTS_WITH.`);
             }
-            if (hasValue(filter.minCharacters) && !isIntegerInRange(filter.minCharacters, 1, 50)) {
-                errors.push(`${label}: minimum characters must be a whole number from 1 to 50.`);
+            // Mirrors BoardQueryService.MIN_SEARCH_CHARACTERS: the server never searches shorter terms.
+            if (hasValue(filter.minCharacters) && !isIntegerInRange(filter.minCharacters, MIN_SEARCH_CHARACTERS, 50)) {
+                errors.push(`${label}: minimum characters must be a whole number from ${MIN_SEARCH_CHARACTERS} to 50.`);
             }
             break;
         case 'USER':
@@ -1001,4 +1005,25 @@ export function validateCpe(shell, widgetType, inputVariables) {
     const state = readCpeState(widgetType, inputVariables);
     const stored = state.storedJsonError ? [error('configJson', state.storedJsonError)] : [];
     return [...stored, ...configErrors(widgetType, state.config, state.references)];
+}
+
+// ---- Config dialog ---------------------------------------------------------------------------------------------
+
+export const DIALOG_SAVE = 'save';
+export const DIALOG_DISMISS = 'dismiss';
+
+/**
+ * Opens a Config dialog (a `LightningModal` subclass such as `c/boardCpeConfigDialog`) at size large with a deep copy
+ * of `value`, and resolves with `{ action: 'save', draft }` or `{ action: 'dismiss' }` (Cancel, header X, Escape).
+ * The caller applies a saved draft as exactly one config change and does nothing on dismiss.
+ */
+export async function openConfigDialog(Dialog, { value, ...props } = {}) {
+    const result = await Dialog.open({
+        ...props,
+        size: 'large',
+        value: value === undefined ? undefined : JSON.parse(JSON.stringify(value))
+    });
+    return result && result.action === DIALOG_SAVE
+        ? { action: DIALOG_SAVE, draft: result.draft }
+        : { action: DIALOG_DISMISS };
 }

@@ -310,6 +310,7 @@ export default class BoardFilterWidget extends LightningElement {
         );
         this.filterContext = initializingCtx;
         this._unsubscribe = subscribeFilterContext(effectiveBoardId, cleanRecordId, (ctx) => {
+            this.reconcileTextInput(ctx);
             this.filterContext = ctx;
             if (ctx.status === 'READY' || ctx.error) {
                 this.syncContextOutput(ctx);
@@ -1378,6 +1379,35 @@ export default class BoardFilterWidget extends LightningElement {
             return;
         }
         this.applyFilterValueNow(filterId, { text });
+    }
+
+    /**
+     * Drops typed text that no longer matches the published search (a Flow input or another Widget changed it),
+     * so the box never shows a term other than the active one. A pending debounce keeps its text: it is about
+     * to publish it.
+     */
+    reconcileTextInput(ctx) {
+        const filterIds = Object.keys(this._textInput);
+        if (!filterIds.length) {
+            return;
+        }
+        const next = { ...this._textInput };
+        let changed = false;
+        filterIds.forEach((filterId) => {
+            const def = this.defFor(filterId);
+            if (!def || this._debounceTimers[filterId]) {
+                return;
+            }
+            const value = ctx?.filters?.[filterId];
+            const published = (value?.active && (value.text || '').trim()) || null;
+            if (published !== this.effectiveSearchText(def, next[filterId])) {
+                delete next[filterId];
+                changed = true;
+            }
+        });
+        if (changed) {
+            this._textInput = next;
+        }
     }
 
     clearTextInput(filterId) {

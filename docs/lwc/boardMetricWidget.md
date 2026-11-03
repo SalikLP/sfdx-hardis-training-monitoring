@@ -7,6 +7,13 @@
 
 ## JS Documentation
 
+### NUMERIC_VALUE_TYPES
+
+Schema.DisplayType names whose aggregate may arrive as a numeric string (high-precision Decimal).
+
+**Kind**: global constant  
+**Default**: <code>new Set(['CURRENCY', 'DOUBLE', 'INTEGER', 'LONG', 'PERCENT'])</code>  
+
 #### metricResult
 
 Last rendered aggregate: `{ aggregateFunction, value, valueType, isComplete, processedRows, totalRows }`.

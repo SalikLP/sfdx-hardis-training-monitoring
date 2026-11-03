@@ -1,12 +1,23 @@
 import { LightningElement, api } from 'lwc';
+import BoardCpeConfigDialog from 'c/boardCpeConfigDialog';
 import {
     AGGREGATE_OPTIONS,
+    DIALOG_SAVE,
     THRESHOLD_OPERATOR_OPTIONS,
     THRESHOLD_VARIANT_OPTIONS,
+    isPlainObject,
     moveItem,
+    openConfigDialog,
     parseNumber,
     validateCpe
 } from 'c/boardCpeUtils';
+
+function thresholdsDraftError(draft) {
+    if (!Array.isArray(draft)) {
+        return 'Thresholds must be a JSON array.';
+    }
+    return draft.every(isPlainObject) ? null : 'Each threshold rule must be an object.';
+}
 
 const VALUE_CAPABILITY = {
     COUNT_DISTINCT: '',
@@ -169,6 +180,19 @@ export default class BoardMetricCpe extends LightningElement {
         this.setThresholds(
             this.thresholds.map((rule, position) => (position === index ? { ...rule, ...patch } : rule))
         );
+    }
+
+    /** Ticket 07 spike: edit the thresholds in a Config dialog; Save applies one config change, dismiss none. */
+    async handleEditThresholdsInDialog() {
+        const result = await openConfigDialog(BoardCpeConfigDialog, {
+            label: 'Edit thresholds',
+            description: 'Edit the Metric threshold rules',
+            value: this.thresholds,
+            validator: thresholdsDraftError
+        });
+        if (result.action === DIALOG_SAVE) {
+            this.setThresholds(result.draft);
+        }
     }
 
     setThresholds(thresholds) {

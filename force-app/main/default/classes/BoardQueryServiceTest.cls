@@ -60,8 +60,18 @@ private class BoardQueryServiceTest {
             insert new PermissionSetAssignment(AssigneeId = restrictedUser.Id, PermissionSetId = permissionSet.Id);
         }
 
-        Account alpha = new Account(Name = 'Board Alpha', Industry = 'Banking', OwnerId = restrictedUser.Id);
-        Account beta = new Account(Name = 'Board Beta', Industry = 'Energy', OwnerId = restrictedUser.Id);
+        Account alpha = new Account(
+            Name = 'Board Alpha',
+            Industry = 'Banking',
+            AnnualRevenue = 1000,
+            OwnerId = restrictedUser.Id
+        );
+        Account beta = new Account(
+            Name = 'Board Beta',
+            Industry = 'Energy',
+            AnnualRevenue = 500,
+            OwnerId = restrictedUser.Id
+        );
         insert new List<Account>{ alpha, beta };
         Account alphaChild = new Account(
             Name = 'Board Alpha Child',
@@ -300,13 +310,86 @@ private class BoardQueryServiceTest {
         expectError(metricRequest('Opportunity', 'MEDIAN', 'Amount'), 'CONFIG_ERROR');
         expectError(metricRequest('Opportunity', 'SUM', null), 'CONFIG_ERROR');
         expectError(metricRequest('Opportunity', 'SUM', 'Name'), 'CONFIG_ERROR');
-        expectError(metricRequest('Opportunity', 'SUM', 'Account.AnnualRevenue'), 'CONFIG_ERROR');
+        expectError(metricRequest('Opportunity', 'SUM', 'Account.Nope__c'), 'CONFIG_ERROR');
+        expectError(metricRequest('Opportunity', 'SUM', 'Account.Name'), 'CONFIG_ERROR');
+        expectError(metricRequest('Account', 'SUM', 'Opportunity(AccountId).Amount'), 'CONFIG_ERROR');
         expectError(metricRequest('Opportunity', 'AVG', 'Nope__c'), 'CONFIG_ERROR');
     }
 
     // ---------------------------------------------------------------------------------------------------------
-    // Operators
+    // Parent-path value fields
     // ---------------------------------------------------------------------------------------------------------
+
+    // Opportunities: Alpha x2 (revenue 1000), Beta x2 (500), Alpha Child x1 (no revenue).
+
+    @IsTest
+    static void metricAggregatesParentPathValueFields() {
+        BoardQueryService.MetricResult sum = run(metricRequest('Opportunity', 'SUM', 'Account.AnnualRevenue'));
+        Assert.areEqual(3000, sum.value);
+        Assert.areEqual('CURRENCY', sum.valueType);
+        Assert.areEqual(750, run(metricRequest('Opportunity', 'AVG', 'Account.AnnualRevenue')).value);
+        Assert.areEqual(500, run(metricRequest('Opportunity', 'MIN', 'account.annualrevenue')).value);
+        Assert.areEqual(1000, run(metricRequest('Opportunity', 'MAX', 'Account.AnnualRevenue')).value);
+        Assert.areEqual(2, run(metricRequest('Opportunity', 'COUNT_DISTINCT', 'Account.AnnualRevenue')).value);
+        Assert.areEqual(
+            1,
+            run(metricRequest('Opportunity', 'COUNT_DISTINCT', 'Account.Parent.Industry')).value,
+            'Two-hop path: only Alpha Child has a parent account'
+        );
+    }
+
+    @IsTest
+    static void cursorChunksReadParentPathValueFields() {
+        BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 2;
+        BoardQueryService.CURSOR_CHUNK_SIZE = 2;
+        Map<String, Object> request = metricRequest('Opportunity', 'SUM', 'Account.AnnualRevenue');
+        BoardQueryService.MetricResult first = run(request);
+        Assert.areEqual('CURSOR', first.mode);
+
+        Decimal sum = 0;
+        Integer count = 0;
+        BoardQueryService.AggregateChunk chunk = first.chunk;
+        while (true) {
+            sum += chunk.buckets[0].sum;
+            count += chunk.buckets[0].count;
+            if (chunk.isComplete) {
+                break;
+            }
+            Map<String, Object> next = request.clone();
+            next.put('cursor', chunk.cursor);
+            next.put('offset', chunk.nextOffset);
+            chunk = BoardQueryService.fetchAggregateChunk(JSON.serialize(next));
+        }
+        Assert.areEqual(3000, sum);
+        Assert.areEqual(4, count, 'Alpha Child has no revenue');
+    }
+
+    @IsTest
+    static void barAggregatesParentPathValueFieldsInBothTiers() {
+        Map<String, Object> request = barRequest('Opportunity', 'SUM', 'Account.AnnualRevenue', 'AccountId');
+        Map<String, BoardQueryService.BarBucket> buckets = bucketsByLabel(runBar(request));
+        Assert.areEqual(2000, buckets.get('Board Alpha').value);
+        Assert.areEqual(1000, buckets.get('Board Beta').value);
+
+        BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 2;
+        BoardQueryService.CURSOR_CHUNK_SIZE = 2;
+        BoardQueryService.BarResult first = runBar(request);
+        Assert.areEqual('CURSOR', first.mode);
+        Map<String, Decimal> merged = mergeChunks(request, first);
+        Assert.areEqual(2000, merged.get('Board Alpha'));
+        Assert.areEqual(1000, merged.get('Board Beta'));
+        Assert.areEqual(0, merged.get('Board Alpha Child'));
+    }
+
+    @IsTest
+    static void parentPathValueFieldsRequireFieldAccessOnEveryHop() {
+        Map<String, Object> payload;
+        System.runAs(restrictedUser()) {
+            // The restricted user reads Case, Case.AccountId, and Account.Industry, but not Account.AnnualRevenue.
+            payload = expectError(metricRequest('Case', 'SUM', 'Account.AnnualRevenue'), 'ACCESS_ERROR');
+        }
+        Assert.areEqual('Account.AnnualRevenue', payload.get('fieldPath'));
+    }
 
     @IsTest
     static void dateRangesPassLiteralsAndExpandIsoDatesToDayBoundaries() {

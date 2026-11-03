@@ -1135,7 +1135,7 @@
     ]
   },
   {
-    "text": "Custom Object (398)",
+    "text": "Custom Object (399)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -1199,6 +1199,13 @@
       },
       {
         "text": "Address",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "AgentSession",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4090,6 +4097,22 @@
     ]
   },
   {
+    "text": "Debug Level (1)",
+    "icon": "fa-solid fa-folder icon-blue",
+    "a_attr": {
+      "href": null
+    },
+    "children": [
+      {
+        "text": "SFDC_DevConsole",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      }
+    ]
+  },
+  {
     "text": "Digital Experience (1)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
@@ -6034,7 +6057,7 @@
     ]
   },
   {
-    "text": "Lightning Component Bundle (30)",
+    "text": "Lightning Component Bundle (31)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -6084,6 +6107,13 @@
       },
       {
         "text": "boardCpeCommon",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeConfigDialog",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -12427,7 +12457,7 @@
     ]
   },
   {
-    "text": "Sharing Rules (212)",
+    "text": "Sharing Rules (213)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -12484,6 +12514,13 @@
       },
       {
         "text": "ActvTgtPlatformFieldValue",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "AgentSession",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null

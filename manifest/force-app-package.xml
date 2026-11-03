@@ -305,6 +305,10 @@
         <name>Dashboard</name>
     </types>
     <types>
+        <members>SFDC_DevConsole</members>
+        <name>DebugLevel</name>
+    </types>
+    <types>
         <members>enablement/sfdcEnablement_EnablementWorkspace.sfdc_cms__languageSettings/languages</members>
         <name>DigitalExperience</name>
     </types>
@@ -618,6 +622,7 @@
         <members>boardContextStore</members>
         <members>boardCpeColumnList</members>
         <members>boardCpeCommon</members>
+        <members>boardCpeConfigDialog</members>
         <members>boardCpeFormatEditor</members>
         <members>boardCpeObjectFieldPicker</members>
         <members>boardCpeUtils</members>
@@ -1092,6 +1097,7 @@
         <members>ActivityRecurrence2</members>
         <members>ActivityRecurrence2Exception</members>
         <members>ActvTgtPlatformFieldValue</members>
+        <members>AgentSession</members>
         <members>AgentWork</members>
         <members>AiEvaluation</members>
         <members>AiGroundingFileRef</members>

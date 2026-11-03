@@ -9,7 +9,7 @@ Contains the entire list of metadatas that are present in the monitored org (not
 
 <div id="jstree-container"></div>
 
-Metadatas: 2043
+Metadatas: 2047
 
 <details><summary>ApexClass (20)</summary>
 
@@ -225,7 +225,7 @@ Metadatas: 2043
 
 </details>
 
-<details><summary>CustomObject (398)</summary>
+<details><summary>CustomObject (399)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">Account</a><br/>
@@ -237,6 +237,7 @@ Metadatas: 2043
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">Activity</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">ActvTgtPlatformFieldValue</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">Address</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">AgentSession</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">AgentWork</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">AiEvalCopilotTestCaseRslt</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/ObjectManager//Details/view" target="_blank">AiEvalPrmptRagTestCsRslt</a><br/>
@@ -666,6 +667,13 @@ Metadatas: 2043
 
 </details>
 
+<details><summary>DebugLevel (1)</summary>
+
+
+  • SFDC_DevConsole<br/>
+
+</details>
+
 <details><summary>DigitalExperience (1)</summary>
 
 
@@ -1038,7 +1046,7 @@ Metadatas: 2043
 
 </details>
 
-<details><summary>LightningComponentBundle (30)</summary>
+<details><summary>LightningComponentBundle (31)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardBarCpe</a><br/>
@@ -1048,6 +1056,7 @@ Metadatas: 2043
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardContextStore</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeColumnList</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeCommon</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeConfigDialog</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeFormatEditor</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeObjectFieldPicker</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeUtils</a><br/>
@@ -2055,7 +2064,7 @@ Metadatas: 2043
 
 </details>
 
-<details><summary>SharingRules (212)</summary>
+<details><summary>SharingRules (213)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">Account</a><br/>
@@ -2066,6 +2075,7 @@ Metadatas: 2043
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">ActivityRecurrence2</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">ActivityRecurrence2Exception</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">ActvTgtPlatformFieldValue</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">AgentSession</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">AgentWork</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">AiEvaluation</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">AiGroundingFileRef</a><br/>

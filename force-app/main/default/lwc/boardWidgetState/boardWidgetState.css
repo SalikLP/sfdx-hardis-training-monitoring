@@ -37,7 +37,7 @@
 }
 
 .c-board-skeleton_row {
-    height: 1.5rem;
+    height: var(--slds-g-sizing-7, 1.5rem);
     width: 100%;
 }
 

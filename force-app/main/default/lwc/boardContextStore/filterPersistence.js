@@ -143,7 +143,8 @@ export function normalizeFilterDefinitions(rawFilters, errors = null) {
             options,
             includeQueues: raw.includeQueues === true,
             matchMode: TEXT_MATCH_MODES.includes(raw.matchMode) ? raw.matchMode : 'SOSL',
-            minCharacters: Number.isInteger(raw.minCharacters) && raw.minCharacters > 0 ? raw.minCharacters : 2,
+            // BoardQueryService never searches terms shorter than 2 characters, so neither does the UI.
+            minCharacters: Number.isInteger(raw.minCharacters) ? Math.max(2, raw.minCharacters) : 2,
             placeholder: cleanString(raw.placeholder),
             defaultValue: raw.defaultValue && typeof raw.defaultValue === 'object' ? raw.defaultValue : null
         });

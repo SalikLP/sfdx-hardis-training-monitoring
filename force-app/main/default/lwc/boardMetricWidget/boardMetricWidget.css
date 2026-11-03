@@ -10,8 +10,8 @@
 
 .c-board-header-spinner {
     position: relative;
-    width: 1rem;
-    height: 1rem;
+    width: var(--slds-g-sizing-5, 1rem);
+    height: var(--slds-g-sizing-5, 1rem);
 }
 
 .c-board-metric-content {

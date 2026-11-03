@@ -9,7 +9,7 @@ Package.xml generated from content of SFDX package force-app (folder force-app)
 
 <div id="jstree-container"></div>
 
-Metadatas: 1267
+Metadatas: 1270
 
 <details><summary>ApexClass (16)</summary>
 
@@ -363,6 +363,13 @@ Metadatas: 1267
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/Dashboards/home" target="_blank">Enablement_sfdcSESv60/</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/Dashboards/home" target="_blank">Enablement_sfdcSESv61/</a><br/>
+
+</details>
+
+<details><summary>DebugLevel (1)</summary>
+
+
+  • SFDC_DevConsole<br/>
 
 </details>
 
@@ -729,7 +736,7 @@ Metadatas: 1267
 
 </details>
 
-<details><summary>LightningComponentBundle (23)</summary>
+<details><summary>LightningComponentBundle (24)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardBarCpe</a><br/>
@@ -739,6 +746,7 @@ Metadatas: 1267
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardContextStore</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeColumnList</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeCommon</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeConfigDialog</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeFormatEditor</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeObjectFieldPicker</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeUtils</a><br/>
@@ -1256,7 +1264,7 @@ Metadatas: 1267
 
 </details>
 
-<details><summary>SharingRules (212)</summary>
+<details><summary>SharingRules (213)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">Account</a><br/>
@@ -1267,6 +1275,7 @@ Metadatas: 1267
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">ActivityRecurrence2</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">ActivityRecurrence2Exception</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">ActvTgtPlatformFieldValue</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">AgentSession</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">AgentWork</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">AiEvaluation</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/SharingRules/home" target="_blank">AiGroundingFileRef</a><br/>
