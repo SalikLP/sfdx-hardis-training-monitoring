@@ -7,20 +7,49 @@
 
 ## JS Documentation
 
+### SECTIONS
+
+Config sections of the Metric Config editor (see `sectionStates` in `c/boardCpeUtils`).
+
+**Kind**: global constant  
+**Default**: <code>[...]</code>  
+
 ### BoardMetricCpe
 
 Flow Custom Property Editor for the Board Metric widget: aggregate function + capability-filtered value field,
 value format, subtitle, and ordered thresholds, inside the shared `c-board-cpe-common` shell (Board, Object, Filter
-bindings, Base filters, Config JSON).
+bindings, Base filters, Config JSON). Its own Config sections are Measure and Thresholds.
 
 **Kind**: global class  
 **Extends**: <code>LightningElement</code>  
 
-#### handleEditThresholdsInDialog()
+#### configLoaded
 
-Ticket 07 spike: edit the thresholds in a Config dialog; Save applies one config change, dismiss none.
+Set once the shell has sent its first `configchange`; section errors wait for it (no flash of errors).
 
-**Kind**: instance async method of <code>BoardMetricCpe</code>
+**Kind**: instance property of <code>BoardMetricCpe</code>  
+**Default**: <code>false</code>  
+
+#### defaultNotation
+
+Widget default notation, shown by the format editor.
+
+**Kind**: instance property of <code>BoardMetricCpe</code>  
+**Default**: <code>defaultNotationFor('metric')</code>  
+
+#### sectionOpen
+
+Open state of the Config sections: set once on load (a new Widget opens Measure), then by the Admin.
+
+**Kind**: instance property of <code>BoardMetricCpe</code>  
+**Default**: <code>null</code>  
+
+#### drag
+
+Drag-to-reorder state of the threshold rules (see the drag helpers in c/boardCpeUtils).
+
+**Kind**: instance property of <code>BoardMetricCpe</code>  
+**Default**: <code>NO_DRAG</code>
 
 ## Files
 

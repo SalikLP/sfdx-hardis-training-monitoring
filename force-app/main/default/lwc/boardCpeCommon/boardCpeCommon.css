@@ -1,9 +1,3 @@
-/* Every section after the Board header, including those after the slot (slotted CPE sections style themselves). */
-.c-cpe-section ~ .c-cpe-section {
-    border-top: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
-    padding-top: var(--slds-g-spacing-3, 0.75rem);
-}
-
 .c-cpe-binding-row,
 .c-cpe-base-filter {
     border-bottom: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
@@ -16,12 +10,14 @@
     font-size: var(--slds-g-font-scale-neg-1, 0.75rem);
 }
 
-.c-cpe-drawer-toggle {
-    font-weight: var(--slds-g-font-weight-6, 600);
-}
-
 .c-cpe-json {
     font-family: monospace;
     font-size: var(--slds-g-font-scale-neg-1, 0.75rem);
     min-height: 12rem;
+}
+
+/* The condition text takes the remaining row width and truncates; the operator badge and error icon keep their size. */
+.c-cpe-base-filter-text {
+    flex: 1 1 auto;
+    min-width: 0;
 }

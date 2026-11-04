@@ -9,7 +9,7 @@ Package.xml generated from content of SFDX package force-app (folder force-app)
 
 <div id="jstree-container"></div>
 
-Metadatas: 1270
+Metadatas: 1275
 
 <details><summary>ApexClass (16)</summary>
 
@@ -736,21 +736,26 @@ Metadatas: 1270
 
 </details>
 
-<details><summary>LightningComponentBundle (24)</summary>
+<details><summary>LightningComponentBundle (29)</summary>
 
 
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardBarCpe</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardBarWidget</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardBaseFilterDialog</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardChartUtils</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardConfigUtils</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardContextStore</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeColumnList</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeCommon</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeConfigDialog</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeDragStyles</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeFormatEditor</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeMasterDetail</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeObjectFieldPicker</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeSection</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardCpeUtils</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardFilterCpe</a><br/>
+  • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardFilterDialog</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardFilterWidget</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardMetricCpe</a><br/>
   • <a href="https://orgfarm-42750320ff-dev-ed.develop.my.salesforce.com/lightning/setup/LightningComponents/home" target="_blank">boardMetricWidget</a><br/>

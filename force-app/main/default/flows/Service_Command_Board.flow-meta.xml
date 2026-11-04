@@ -3,6 +3,11 @@
     <apiVersion>68.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <description>Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page.</description>
+    <ends>
+        <name>END_ELEMENT_2</name>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+    </ends>
     <environments>Default</environments>
     <interviewLabel>Service Command Board {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Service Command Board</label>
@@ -33,11 +38,14 @@
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
+        <connector>
+            <targetReference>END_ELEMENT_2</targetReference>
+        </connector>
         <fields>
-            <name>FilterSection</name>
+            <name>Board_Section1</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>FilterSection_Column1</name>
+                <name>Board_Section1_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>filterBar</name>
@@ -99,10 +107,10 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>MetricSection</name>
+            <name>Board_Section2</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>MetricSection_Column1</name>
+                <name>Board_Section2_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>openCases</name>
@@ -153,7 +161,7 @@
                 <isRequired>false</isRequired>
             </fields>
             <fields>
-                <name>MetricSection_Column2</name>
+                <name>Board_Section2_Column2</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>escalatedCases</name>
@@ -204,7 +212,7 @@
                 <isRequired>false</isRequired>
             </fields>
             <fields>
-                <name>MetricSection_Column3</name>
+                <name>Board_Section2_Column3</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>accountsAffected</name>
@@ -255,7 +263,7 @@
                 <isRequired>false</isRequired>
             </fields>
             <fields>
-                <name>MetricSection_Column4</name>
+                <name>Board_Section2_Column4</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>openPipeline</name>
@@ -317,10 +325,10 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>ChartSection</name>
+            <name>Board_Section3</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>ChartSection_Column1</name>
+                <name>Board_Section3_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>casesByStatus</name>
@@ -377,7 +385,7 @@
                 <isRequired>false</isRequired>
             </fields>
             <fields>
-                <name>ChartSection_Column2</name>
+                <name>Board_Section3_Column2</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>pipelineByStage</name>
@@ -445,10 +453,10 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>TableSection</name>
+            <name>Board_Section4</name>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>TableSection_Column1</name>
+                <name>Board_Section4_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>caseComments</name>
@@ -499,7 +507,7 @@
                 <isRequired>false</isRequired>
             </fields>
             <fields>
-                <name>TableSection_Column2</name>
+                <name>Board_Section4_Column2</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>caseFeed</name>
@@ -570,7 +578,7 @@
             <targetReference>Board</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Draft</status>
     <variables>
         <name>recordId</name>
         <dataType>String</dataType>

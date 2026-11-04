@@ -1,23 +1,23 @@
 import { LightningElement, api } from 'lwc';
-import BoardCpeConfigDialog from 'c/boardCpeConfigDialog';
 import {
     AGGREGATE_OPTIONS,
-    DIALOG_SAVE,
     THRESHOLD_OPERATOR_OPTIONS,
     THRESHOLD_VARIANT_OPTIONS,
-    isPlainObject,
+    countLabel,
+    defaultNotationFor,
+    dragRowClass,
+    dropRowDrag,
+    initialSectionOpen,
+    measureSummary,
     moveItem,
-    openConfigDialog,
+    NO_DRAG,
+    overRowDrag,
     parseNumber,
-    validateCpe
+    startRowDrag,
+    toggleSectionOpen,
+    validateCpe,
+    widgetSectionStates
 } from 'c/boardCpeUtils';
-
-function thresholdsDraftError(draft) {
-    if (!Array.isArray(draft)) {
-        return 'Thresholds must be a JSON array.';
-    }
-    return draft.every(isPlainObject) ? null : 'Each threshold rule must be an object.';
-}
 
 const VALUE_CAPABILITY = {
     COUNT_DISTINCT: '',
@@ -27,10 +27,33 @@ const VALUE_CAPABILITY = {
     MAX: 'numeric|date'
 };
 
+/** Config sections of the Metric Config editor (see `sectionStates` in `c/boardCpeUtils`). */
+const SECTIONS = [
+    {
+        name: 'measure',
+        errorKeys: ['aggregateFunction', 'valueFieldApiName', 'subtitle', 'format'],
+        summary: (cpe) => measureSummary('metric', cpe.config),
+        openWhenNew: true
+    },
+    {
+        name: 'thresholds',
+        errorKeys: ['thresholds'],
+        // `None` or the number of rules.
+        summary: (cpe) => (cpe.thresholds.length ? countLabel(cpe.thresholds.length, 'rule') : 'None')
+    }
+];
+
+// Short labels for the compact threshold row, so the chosen values aren't truncated in the narrow panel. The option
+// values (the config contract) come from the shared options.
+const OPERATOR_SYMBOLS = { gt: '>', gte: '≥', lt: '<', lte: '≤' };
+const VARIANT_LABELS = { success: 'Success', warning: 'Warning', error: 'Error' };
+const THRESHOLD_OPERATORS = THRESHOLD_OPERATOR_OPTIONS.map(({ value }) => ({ label: OPERATOR_SYMBOLS[value], value }));
+const THRESHOLD_VARIANTS = THRESHOLD_VARIANT_OPTIONS.map(({ value }) => ({ label: VARIANT_LABELS[value], value }));
+
 /**
  * Flow Custom Property Editor for the Board Metric widget: aggregate function + capability-filtered value field,
  * value format, subtitle, and ordered thresholds, inside the shared `c-board-cpe-common` shell (Board, Object, Filter
- * bindings, Base filters, Config JSON).
+ * bindings, Base filters, Config JSON). Its own Config sections are Measure and Thresholds.
  */
 export default class BoardMetricCpe extends LightningElement {
     @api inputVariables = [];
@@ -38,9 +61,23 @@ export default class BoardMetricCpe extends LightningElement {
     @api elementInfo = {};
 
     config = {};
+    /** Set once the shell has sent its first `configchange`; section errors wait for it (no flash of errors). */
+    configLoaded = false;
+    /** Widget default notation, shown by the format editor. */
+    defaultNotation = defaultNotationFor('metric');
     aggregateOptions = AGGREGATE_OPTIONS;
-    thresholdOperatorOptions = THRESHOLD_OPERATOR_OPTIONS;
-    thresholdVariantOptions = THRESHOLD_VARIANT_OPTIONS;
+    thresholdOperatorOptions = THRESHOLD_OPERATORS;
+    thresholdVariantOptions = THRESHOLD_VARIANTS;
+    /** Open state of the Config sections: set once on load (a new Widget opens Measure), then by the Admin. */
+    sectionOpen = null;
+    /** Drag-to-reorder state of the threshold rules (see the drag helpers in c/boardCpeUtils). */
+    drag = NO_DRAG;
+
+    connectedCallback() {
+        if (!this.sectionOpen) {
+            this.sectionOpen = initialSectionOpen(SECTIONS, 'metric', this.inputVariables);
+        }
+    }
 
     @api
     validate() {
@@ -53,11 +90,24 @@ export default class BoardMetricCpe extends LightningElement {
 
     handleConfigChange(event) {
         this.config = event.detail.config;
+        this.configLoaded = true;
     }
 
     update(patch) {
         this.shell.updateConfig(patch);
     }
+
+    // ---- Config sections -----------------------------------------------------------------------------------------
+
+    get sections() {
+        return widgetSectionStates('metric', SECTIONS, this);
+    }
+
+    handleSectionToggle(event) {
+        this.sectionOpen = toggleSectionOpen(this.sectionOpen, event);
+    }
+
+    // ---- Measure -------------------------------------------------------------------------------------------------
 
     get objectApiName() {
         return this.config.objectApiName || null;
@@ -137,13 +187,39 @@ export default class BoardMetricCpe extends LightningElement {
         return this.thresholds.map((rule, index) => ({
             key: `threshold-${index}`,
             index,
-            title: `Rule ${index + 1}`,
+            operatorLabel: `Rule ${index + 1}: when value is`,
+            valueLabel: `Rule ${index + 1}: value`,
+            variantLabel: `Rule ${index + 1}: status`,
+            moveUpLabel: `Move rule ${index + 1} up`,
+            moveDownLabel: `Move rule ${index + 1} down`,
+            removeLabel: `Remove rule ${index + 1}`,
             operator: rule && rule.operator ? rule.operator : '',
             value: rule && rule.value !== null && rule.value !== undefined ? String(rule.value) : '',
             variant: rule && rule.variant ? rule.variant : '',
             isFirst: index === 0,
-            isLast: index === last
+            isLast: index === last,
+            rowClass: `c-metric-threshold slds-p-vertical_xx-small${dragRowClass(this.drag, index)}`
         }));
+    }
+
+    handleThresholdDragStart(event) {
+        this.drag = startRowDrag(event);
+    }
+
+    handleThresholdDragOver(event) {
+        this.drag = overRowDrag(event, this.drag);
+    }
+
+    handleThresholdDrop(event) {
+        const move = dropRowDrag(event, this.drag);
+        this.drag = NO_DRAG;
+        if (move) {
+            this.setThresholds(moveItem(this.thresholds, move.index, move.offset));
+        }
+    }
+
+    handleThresholdDragEnd() {
+        this.drag = NO_DRAG;
     }
 
     handleAddThreshold() {
@@ -180,19 +256,6 @@ export default class BoardMetricCpe extends LightningElement {
         this.setThresholds(
             this.thresholds.map((rule, position) => (position === index ? { ...rule, ...patch } : rule))
         );
-    }
-
-    /** Ticket 07 spike: edit the thresholds in a Config dialog; Save applies one config change, dismiss none. */
-    async handleEditThresholdsInDialog() {
-        const result = await openConfigDialog(BoardCpeConfigDialog, {
-            label: 'Edit thresholds',
-            description: 'Edit the Metric threshold rules',
-            value: this.thresholds,
-            validator: thresholdsDraftError
-        });
-        if (result.action === DIALOG_SAVE) {
-            this.setThresholds(result.draft);
-        }
     }
 
     setThresholds(thresholds) {

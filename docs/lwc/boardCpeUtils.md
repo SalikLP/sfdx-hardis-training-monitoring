@@ -20,6 +20,18 @@ Trimmed non-empty string, else null.
 
 **Kind**: global function  
 
+### hasText(value)
+
+True for a non-blank string, or any other value that is not null/undefined.
+
+**Kind**: global function  
+
+### deepCopy(value)
+
+Deep copy of a JSON-compatible value (undefined stays undefined).
+
+**Kind**: global function  
+
 ### applyPatch(target, patch)
 
 Shallow copy of `target` with `patch` merged in; a null/undefined patch value deletes the key.
@@ -92,6 +104,37 @@ Moves `items[index]` by `offset`, returning a new array (or the same array when 
 
 **Kind**: global function  
 
+### NO_DRAG
+
+Idle drag state: `{ from, over }` are row indexes, or null.
+
+**Kind**: global constant  
+**Default**: <code>Object.freeze({ from: null, over: null })</code>  
+
+### startRowDrag(event)
+
+`dragstart` on a row handle: starts a move of that row, using the whole row as the drag image.
+
+**Kind**: global function  
+
+### overRowDrag(event, drag)
+
+`dragover` on a row: accepts the drop while a row of this list is being dragged; returns the next state.
+
+**Kind**: global function  
+
+### dropRowDrag(event, drag)
+
+`drop` on a row: the `{ index, offset }` move to apply (see `moveItem`), or null when nothing moves.
+
+**Kind**: global function  
+
+### dragRowClass(drag, index)
+
+Extra row classes: the dragged row is dimmed; the hovered row shows a marker on the side the row will land.
+
+**Kind**: global function  
+
 ### loadQueryableObjects()
 
 `BoardSchemaService.getQueryableObjects` (slow on a cold cache, so shared by every picker).
@@ -138,6 +181,29 @@ Effective PICKLIST options source, matching `normalizeFilterDefinitions` (option
 ### choiceDefaultErrors(filter, defaultValue, label)
 
 PICKLIST / LOOKUP / USER `defaultValue { values?, token? }` (spec §5), checked as `buildFilterValue` reads it.
+
+**Kind**: global function  
+
+### recordContextErrors(recordContext, filterTypes)
+
+Problems of a Filter widget's `recordContext` (`[{ key: 'recordContext', errorString }]`) given the filterId → type
+map of its valid filters (`validateFilterDefinitions(filters).filterTypes`). Shared by `validateFilterConfig` and
+the Filter definitions Config dialog's Save check.
+
+**Kind**: global function  
+
+### validateFilterDefinitions(filters)
+
+Problems of each filter definition, in list order (`[[message, …], …]`; an empty list means the filter is valid),
+plus the filterId → type map of the valid ids. A repeated filterId flags the later filter. The rules behind the
+Filter widget's `validate()`, its read-only filter list, and the Filter definitions Config dialog.
+
+**Kind**: global function  
+
+### compactRecordContext(recordContext)
+
+`{ mode, overrideFilterId?, overrideFieldPath? }` of a Filter widget, or null for the default (IMPLICIT without
+overrides), so an untouched Record context stays out of the config.
 
 **Kind**: global function  
 
@@ -198,6 +264,20 @@ First problem with a Base filter condition, or null when it compiles.
 
 **Kind**: global function  
 
+### baseFilterErrorsByIndex(baseFilters)
+
+Messages per Base filter condition (`string[][]`, parallel to `baseFilters`): the condition's own problem
+(`baseFilterError`) plus a missing or duplicate `id`. Shared by `configErrors` and the Base filters Config dialog.
+
+**Kind**: global function  
+
+### baseFilterSummary(condition, index)
+
+Read-only description of a Base filter condition: `{ label, operatorLabel, valueText }`, e.g.
+`Status` · `Not in list` · `Closed, Duplicate`. `label` falls back to `Condition N` without a field.
+
+**Kind**: global function  
+
 ### configErrors(widgetType, config, [references])
 
 Design-time errors of a config envelope (`[{ key, errorString }]`): the rules behind both `validate()` and pasted
@@ -219,11 +299,117 @@ of the config read straight from Flow `inputVariables`.
 
 **Kind**: global function  
 
+### isNewWidget(widgetType, inputVariables)
+
+True when the Widget being edited counts as new for the Config sections' default open state: its config is empty,
+or it has no object (data Widgets, unless `objectApiName` is bound to a Flow resource) / no filters (Filter widget).
+Call once on load (e.g. `connectedCallback`); open state must not follow later edits.
+
+**Kind**: global function  
+
+### hasErrorFor(errors, keys)
+
+True when any `[{ key, errorString }]` error belongs to one of `keys` (a Config section's config keys).
+
+**Kind**: global function  
+
+### SUMMARY_SEPARATOR
+
+Separator between the parts of a Config section summary (`default · Account`).
+
+**Kind**: global constant  
+**Default**: <code>' · '</code>  
+
+### joinSummary(parts)
+
+Joins the non-empty parts of a Config section summary.
+
+**Kind**: global function  
+
+### countLabel(count, noun, [plural])
+
+`1 rule`, `3 rules` (`plural` for irregular nouns).
+
+**Kind**: global function  
+
+### initialSectionOpen(sections, widgetType, inputVariables)
+
+Default open state of a Config editor's sections (`{ [name]: boolean }`): a new Widget (`isNewWidget`) opens the
+`openWhenNew` sections, an existing one starts collapsed. Call once on load; open state must not follow edits.
+
+**Kind**: global function  
+
+### toggleSectionOpen(sectionOpen, event)
+
+The open state after a `c-board-cpe-section` `toggle` event (`detail: { name, open }`).
+
+**Kind**: global function  
+
+### sectionStates(sections, cpe, sectionOpen, errors)
+
+Header state of each Config section, keyed by name: `{ name, open, hasError, summary }`. The values are lazy, so a
+template binding only computes what it reads. `errors()` returns the `validate()`-style errors the sections check.
+
+**Kind**: global function  
+
+### widgetSectionStates(widgetType, sections, cpe)
+
+`sectionStates` of a widget Config editor (`cpe` with `sectionOpen`, `config`, and `configLoaded`). Errors wait for
+the shell's first `configchange` (`configLoaded`), so the placeholder config never flashes errors on first render.
+
+**Kind**: global function  
+
+### defaultNotationFor(widgetType)
+
+The notation a Widget formats values with when `format.notation` is unset: Metric is compact, the rest standard.
+
+**Kind**: global function  
+
+### measureSummary(widgetType, config)
+
+Measure section summary of the Metric and Bar Config editors: the aggregate and the value notation, e.g.
+`Count of records · compact` or `Sum of Amount · standard`.
+
+**Kind**: global function  
+
 ### openConfigDialog(Dialog, { value, ...props } = {})
 
-Opens a Config dialog (a `LightningModal` subclass such as `c/boardCpeConfigDialog`) at size large with a deep copy
-of `value`, and resolves with `{ action: 'save', draft }` or `{ action: 'dismiss' }` (Cancel, header X, Escape).
+Opens a Config dialog (a `LightningModal` subclass such as `c/boardFilterDialog`) at size large with a deep copy of
+`value`, and resolves with `{ action: 'save', draft }` or `{ action: 'dismiss' }` (Cancel, header X, Escape).
 The caller applies a saved draft as exactly one config change and does nothing on dismiss.
+
+**Kind**: global function  
+
+### ConfigDialogMixin(Base)
+
+Keyed draft list shared by the Config dialogs: `class MyDialog extends ConfigDialogMixin(LightningModal)`.
+
+Owns the stable row keys parallel to the draft items (`_rowKeys`, `nextRowKey()`), the selection (`selectedKey`,
+`selectedIndex`), one-time draft initialization in `connectedCallback`, the master-detail event handlers
+(`handleItemSelect`, `handleItemMove`, `handleItemRemove`, plus `addDraftItem(item)`), focus after a remove, and
+the Cancel / Save footer handlers (`handleCancel`, `handleSave`).
+
+The dialog provides:
+- `rowKeyPrefix`: prefix of the row keys (e.g. `filter`)
+- `initDraft(value)`: sets up its draft from the deep copy of `@api value`
+- `draftItems` / `setDraftItems(items, change)`: the master list and its replacement; `change` is
+  `{ removed, removedKey }` after a remove, so dependent draft state can follow
+- `errorsByIndex`: messages per draft item; Save stays disabled while any item has one (override `isSaveDisabled`
+  to add draft-level checks)
+- `draft`: what Save resolves with (deep-copied)
+
+**Kind**: global function  
+
+#### _rowKeys
+
+Stable keys parallel to `draftItems` (labels and ids change while the Admin types).
+
+**Kind**: global property  
+**Default**: <code>[]</code>  
+
+#### addDraftItem(item)
+
+Appends `item` to the draft and selects it.
 
 **Kind**: global function
 

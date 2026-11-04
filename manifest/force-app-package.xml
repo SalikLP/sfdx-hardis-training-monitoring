@@ -617,16 +617,21 @@
     <types>
         <members>boardBarCpe</members>
         <members>boardBarWidget</members>
+        <members>boardBaseFilterDialog</members>
         <members>boardChartUtils</members>
         <members>boardConfigUtils</members>
         <members>boardContextStore</members>
         <members>boardCpeColumnList</members>
         <members>boardCpeCommon</members>
         <members>boardCpeConfigDialog</members>
+        <members>boardCpeDragStyles</members>
         <members>boardCpeFormatEditor</members>
+        <members>boardCpeMasterDetail</members>
         <members>boardCpeObjectFieldPicker</members>
+        <members>boardCpeSection</members>
         <members>boardCpeUtils</members>
         <members>boardFilterCpe</members>
+        <members>boardFilterDialog</members>
         <members>boardFilterWidget</members>
         <members>boardMetricCpe</members>
         <members>boardMetricWidget</members>

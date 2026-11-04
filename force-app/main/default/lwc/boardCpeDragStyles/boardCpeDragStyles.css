@@ -1,0 +1,26 @@
+/* Shared drag-to-reorder styles for ordered CPE lists (see the drag helpers in c/boardCpeUtils). */
+.c-drag-handle {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--slds-g-sizing-9, 2rem);
+    cursor: grab;
+    --slds-c-icon-color-foreground-default: var(--slds-g-color-on-surface-1, #747474);
+}
+
+.c-drag-handle:active {
+    cursor: grabbing;
+}
+
+.c-drag-source {
+    opacity: 0.5;
+}
+
+.c-drop-before {
+    box-shadow: inset 0 var(--slds-g-sizing-border-2, 2px) 0 var(--slds-g-color-accent-1, #0176d3);
+}
+
+.c-drop-after {
+    box-shadow: inset 0 calc(-1 * var(--slds-g-sizing-border-2, 2px)) 0 var(--slds-g-color-accent-1, #0176d3);
+}

@@ -73,7 +73,7 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 
 | Object | Name | Type | Description | Status |
 | :----  | :-------- | :--: | :---------- | :----- |
-| 💻 | [Service_Command_Board](../flows/Service_Command_Board.md) [🕒](../flows/Service_Command_Board-history.md) | Screen Flow | Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page. | Active |
+| 💻 | [Service_Command_Board](../flows/Service_Command_Board.md) [🕒](../flows/Service_Command_Board-history.md) | Screen Flow | Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page. | Draft |
 
 
 
@@ -106,7 +106,9 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 | Component | Description | Exposed | Targets |
 | :-------- | :---------- | :-----: | :------------- |
 | [boardConfigUtils](../lwc/boardConfigUtils.md) | Board Config Utils | ❌ |  |
+| [boardCpeCommon](../lwc/boardCpeCommon.md) | Shared Board Flow CPE shell: header, builderContext filter bindings, base filters, and Config JSON drawer | ❌ |  |
 | [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
+| [boardFilterCpe](../lwc/boardFilterCpe.md) | Board Filter CPE | ✅ |  |
 | [protoTableHarness](../lwc/protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 
 

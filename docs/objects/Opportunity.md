@@ -55,7 +55,7 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 
 | Object | Name | Type | Description | Status |
 | :----  | :-------- | :--: | :---------- | :----- |
-| 💻 | [Service_Command_Board](../flows/Service_Command_Board.md) [🕒](../flows/Service_Command_Board-history.md) | Screen Flow | Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page. | Active |
+| 💻 | [Service_Command_Board](../flows/Service_Command_Board.md) [🕒](../flows/Service_Command_Board-history.md) | Screen Flow | Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page. | Draft |
 
 
 

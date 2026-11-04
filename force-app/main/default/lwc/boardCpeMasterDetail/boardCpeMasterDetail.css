@@ -1,0 +1,63 @@
+@import 'c/boardCpeDragStyles';
+
+/*
+ * Fill the large modal body: the viewport minus the modal's outer padding, header, and footer. Each pane scrolls on
+ * its own so the list and the selected item's editor stay visible together.
+ */
+.c-master-detail {
+    height: calc(100vh - 18rem);
+    min-height: 20rem;
+}
+
+.c-master-detail-master {
+    min-height: 0;
+    border-right: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-master-detail-list-scroller,
+.c-master-detail-detail {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.c-master-detail-actions {
+    border-top: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-master-detail-item {
+    align-items: center;
+    padding-left: var(--slds-g-spacing-1, 0.25rem);
+    padding-right: var(--slds-g-spacing-2, 0.5rem);
+    border-left: var(--slds-g-sizing-border-3, 3px) solid transparent;
+}
+
+.c-master-detail-item_selected {
+    background: var(--slds-g-color-surface-container-2, #f3f3f3);
+    border-left-color: var(--slds-g-color-accent-2, #0176d3);
+}
+
+/* A plain (non-SLDS) button: the whole row is the select target, left-aligned like a list item. */
+.c-master-detail-select {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    min-width: 0;
+    margin: 0;
+    padding: var(--slds-g-spacing-2, 0.5rem) var(--slds-g-spacing-3, 0.75rem);
+    border: 0;
+    background: transparent;
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+    font: inherit;
+    line-height: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.c-master-detail-select:focus-visible {
+    outline: 0;
+    box-shadow: var(--slds-g-shadow-outline-focus-1, 0 0 3px #0176d3);
+}
+
+.c-master-detail-label {
+    min-width: 0;
+}

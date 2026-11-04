@@ -1,5 +1,15 @@
 import { LightningElement, api } from 'lwc';
-import { applyPatch, isPlainObject, moveItem, nextSequentialId } from 'c/boardCpeUtils';
+import {
+    NO_DRAG,
+    applyPatch,
+    dragRowClass,
+    dropRowDrag,
+    isPlainObject,
+    moveItem,
+    nextSequentialId,
+    overRowDrag,
+    startRowDrag
+} from 'c/boardCpeUtils';
 
 const DISPLAY_AS_OPTIONS = [
     { label: 'Auto (from field type)', value: 'auto' },
@@ -40,6 +50,8 @@ export default class BoardCpeColumnList extends LightningElement {
     linkOptions = LINK_OPTIONS;
     alignOptions = ALIGN_OPTIONS;
     _columns = [];
+    /** Drag-to-reorder state (see the drag helpers in c/boardCpeUtils). */
+    drag = NO_DRAG;
 
     @api
     get columns() {
@@ -72,7 +84,8 @@ export default class BoardCpeColumnList extends LightningElement {
                 format: column.format || null,
                 showFormat: NUMERIC_DISPLAY.has(displayAs),
                 isFirst: index === 0,
-                isLast: index === last
+                isLast: index === last,
+                rowClass: `c-column slds-p-vertical_x-small${dragRowClass(this.drag, index)}`
             };
         });
     }
@@ -96,6 +109,26 @@ export default class BoardCpeColumnList extends LightningElement {
 
     handleMoveDown(event) {
         this.emit(moveItem(this._columns, Number(event.currentTarget.dataset.index), 1));
+    }
+
+    handleDragStart(event) {
+        this.drag = startRowDrag(event);
+    }
+
+    handleDragOver(event) {
+        this.drag = overRowDrag(event, this.drag);
+    }
+
+    handleDrop(event) {
+        const move = dropRowDrag(event, this.drag);
+        this.drag = NO_DRAG;
+        if (move) {
+            this.emit(moveItem(this._columns, move.index, move.offset));
+        }
+    }
+
+    handleDragEnd() {
+        this.drag = NO_DRAG;
     }
 
     handleField(event) {

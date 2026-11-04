@@ -22,7 +22,14 @@ Prefix of generated column ids (`col1`, `col2`, …).
 
 **Kind**: instance property of <code>BoardCpeColumnList</code>  
 **Decorators**: <code>@api</code>  
-**Default**: <code>'col'</code>
+**Default**: <code>'col'</code>  
+
+#### drag
+
+Drag-to-reorder state (see the drag helpers in c/boardCpeUtils).
+
+**Kind**: instance property of <code>BoardCpeColumnList</code>  
+**Default**: <code>NO_DRAG</code>
 
 ## Files
 

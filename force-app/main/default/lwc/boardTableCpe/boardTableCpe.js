@@ -1,9 +1,28 @@
 import { LightningElement, api } from 'lwc';
-import { applyPatch, isPlainObject, parseNumber, validateCpe } from 'c/boardCpeUtils';
+import {
+    applyPatch,
+    countLabel,
+    initialSectionOpen,
+    isPlainObject,
+    joinSummary,
+    parseNumber,
+    toggleSectionOpen,
+    validateCpe,
+    widgetSectionStates
+} from 'c/boardCpeUtils';
 
 const DIRECTION_OPTIONS = [
     { label: 'Ascending', value: 'ASC' },
     { label: 'Descending', value: 'DESC' }
+];
+
+const DEFAULT_PAGE_SIZE = 25;
+
+/** Config sections of the Table Config editor (see `sectionStates` in `c/boardCpeUtils`). */
+const SECTIONS = [
+    { name: 'columns', errorKeys: ['columns'], summary: (cpe) => cpe.columnsSummary, openWhenNew: true },
+    { name: 'sorting', errorKeys: ['sortBy', 'pageSize'], summary: (cpe) => cpe.sortingSummary },
+    { name: 'child', errorKeys: ['childRelationship'], summary: (cpe) => cpe.childSummary }
 ];
 
 /**
@@ -17,7 +36,18 @@ export default class BoardTableCpe extends LightningElement {
     @api elementInfo = {};
 
     config = {};
+    /** Set by the shell's first `configchange`; until then `config` is a placeholder and must not flag errors. */
+    configLoaded = false;
     directionOptions = DIRECTION_OPTIONS;
+
+    /** Open state of the Config sections: set once on load (a new Widget opens Columns), then by the Admin. */
+    sectionOpen = null;
+
+    connectedCallback() {
+        if (!this.sectionOpen) {
+            this.sectionOpen = initialSectionOpen(SECTIONS, 'table', this.inputVariables);
+        }
+    }
 
     @api
     validate() {
@@ -30,10 +60,47 @@ export default class BoardTableCpe extends LightningElement {
 
     handleConfigChange(event) {
         this.config = event.detail.config;
+        this.configLoaded = true;
     }
 
     update(patch) {
         this.shell.updateConfig(patch);
+    }
+
+    // ---- Config sections -----------------------------------------------------------------------------------------
+
+    get sections() {
+        return widgetSectionStates('table', SECTIONS, this);
+    }
+
+    /** `3 columns`, or `No columns`. */
+    get columnsSummary() {
+        const count = this.columns.length;
+        return count ? countLabel(count, 'column') : 'No columns';
+    }
+
+    /** `CreatedDate desc · 50 per page`, plus `No row count` when hidden. */
+    get sortingSummary() {
+        const sort = this.sortBy ? `${this.sortBy} ${this.sortDirection.toLowerCase()}` : 'Default sort';
+        const parts = [sort, `${this.config.pageSize ?? DEFAULT_PAGE_SIZE} per page`];
+        if (!this.showRowCount) {
+            parts.push('No row count');
+        }
+        return joinSummary(parts);
+    }
+
+    /** `None`, or the child relationship and its column count (e.g. `CaseComments · 2 columns`). */
+    get childSummary() {
+        const child = this.child;
+        if (!child) {
+            return 'None';
+        }
+        const relationship = child.relationshipName || child.childObjectApiName || 'No relationship';
+        return joinSummary([relationship, countLabel(this.childColumns.length, 'column')]);
+    }
+
+    handleSectionToggle(event) {
+        this.sectionOpen = toggleSectionOpen(this.sectionOpen, event);
     }
 
     get objectApiName() {

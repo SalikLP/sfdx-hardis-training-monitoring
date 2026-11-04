@@ -6,9 +6,14 @@ import {
     DATE_GRANULARITY_OPTIONS,
     PICKLIST_FIELD_TYPES,
     ROLLUP_FUNCTIONS,
+    initialSectionOpen,
+    joinSummary,
+    measureSummary,
     parseNumber,
     resolveFieldDescribe,
-    validateCpe
+    toggleSectionOpen,
+    validateCpe,
+    widgetSectionStates
 } from 'c/boardCpeUtils';
 
 const STACK_MODE_OPTIONS = [
@@ -23,6 +28,29 @@ const LEGEND_OPTIONS = [
 ];
 const SORT_LABELS = new Map(BAR_SORT_OPTIONS.map((option) => [option.value, option.label]));
 const CHRONOLOGICAL_SORTS = ['CHRONOLOGICAL_ASC', 'CHRONOLOGICAL_DESC'];
+const GRANULARITY_LABELS = new Map([
+    ...DATE_GRANULARITY_OPTIONS.map((option) => [option.value, option.label]),
+    ['DAY', 'Day']
+]);
+/** Config sections of the Bar Config editor (see `sectionStates` in `c/boardCpeUtils`). */
+const SECTIONS = [
+    {
+        name: 'dimensions',
+        errorKeys: ['groupByField', 'dateGranularity', 'stackByField', 'maxSeries'],
+        summary: (cpe) => cpe.dimensionsSummary,
+        openWhenNew: true
+    },
+    {
+        name: 'measure',
+        errorKeys: ['aggregateFunction', 'valueFieldApiName', 'format'],
+        summary: (cpe) => measureSummary('bar', cpe.config)
+    },
+    {
+        name: 'display',
+        errorKeys: ['subtitle', 'sortBy', 'maxBars', 'overflowMode'],
+        summary: (cpe) => cpe.displaySummary
+    }
+];
 
 /**
  * Flow Custom Property Editor for the Board Bar Chart widget: Group by (+ date granularity for Date/DateTime fields),
@@ -35,6 +63,8 @@ export default class BoardBarCpe extends LightningElement {
     @api elementInfo = {};
 
     config = {};
+    /** Set once the shell has sent its first `configchange`; section errors wait for it (no flash of errors). */
+    configLoaded = false;
     /** `Schema.DisplayType` of the Group by leaf field, once known. */
     groupByType = null;
 
@@ -44,6 +74,14 @@ export default class BoardBarCpe extends LightningElement {
     legendOptions = LEGEND_OPTIONS;
 
     _typedKey = null;
+    /** Open state of the Config sections: set once on load (a new Widget opens Dimensions), then by the Admin. */
+    sectionOpen = null;
+
+    connectedCallback() {
+        if (!this.sectionOpen) {
+            this.sectionOpen = initialSectionOpen(SECTIONS, 'bar', this.inputVariables);
+        }
+    }
 
     @api
     validate() {
@@ -56,6 +94,7 @@ export default class BoardBarCpe extends LightningElement {
 
     handleConfigChange(event) {
         this.config = event.detail.config;
+        this.configLoaded = true;
         this.resolveGroupByType();
     }
 
@@ -93,6 +132,46 @@ export default class BoardBarCpe extends LightningElement {
 
     get objectApiName() {
         return this.config.objectApiName || null;
+    }
+
+    // ---- Config sections -----------------------------------------------------------------------------------------
+
+    get sections() {
+        return widgetSectionStates('bar', SECTIONS, this);
+    }
+
+    /** `CreatedDate · Calendar month · Stacked by Status`. */
+    get dimensionsSummary() {
+        if (!this.groupByField) {
+            return 'No Group by field';
+        }
+        const parts = [this.groupByField];
+        if (this.showGranularity) {
+            parts.push(GRANULARITY_LABELS.get(this.dateGranularity) || this.dateGranularity);
+        }
+        if (this.hasStack) {
+            const mode = this.stackMode === 'grouped' ? 'Grouped' : 'Stacked';
+            parts.push(`${mode} by ${this.stackByField}`);
+        }
+        return joinSummary(parts);
+    }
+
+    /** `Value (high to low) · Max 10 bars`, plus the "Other" bar and data labels when on. */
+    get displaySummary() {
+        const fallback = this.showGranularity ? 'CHRONOLOGICAL_ASC' : 'VALUE_DESC';
+        const sortBy = this.sortBy || fallback;
+        const parts = [SORT_LABELS.get(sortBy) || sortBy, `Max ${this.config.maxBars ?? 10} bars`];
+        if (this.overflowMode === 'OTHER') {
+            parts.push('"Other" bar');
+        }
+        if (this.showDataLabels) {
+            parts.push('Data labels');
+        }
+        return joinSummary(parts);
+    }
+
+    handleSectionToggle(event) {
+        this.sectionOpen = toggleSectionOpen(this.sectionOpen, event);
     }
 
     // ---- Dimensions ----------------------------------------------------------------------------------------------

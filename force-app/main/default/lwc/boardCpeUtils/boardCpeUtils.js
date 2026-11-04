@@ -160,6 +160,16 @@ export function isPlainObject(value) {
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** True for a non-blank string, or any other value that is not null/undefined. */
+export function hasText(value) {
+    return typeof value === 'string' ? value.trim() !== '' : value !== null && value !== undefined;
+}
+
+/** Deep copy of a JSON-compatible value (undefined stays undefined). */
+export function deepCopy(value) {
+    return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+}
+
 function hasValue(value) {
     return value !== null && value !== undefined && value !== '';
 }
@@ -298,6 +308,68 @@ export function moveItem(items, index, offset) {
     const [item] = next.splice(index, 1);
     next.splice(target, 0, item);
     return next;
+}
+
+// ---- Drag to reorder (shared by every ordered CPE list) ------------------------------------------------------------
+//
+// Pattern: each row has a handle (`draggable="true"`, `data-index`, `ondragstart` / `ondragend`); the row itself is the
+// drop target (`data-index`, `ondragover` / `ondrop`). The component keeps the state in one field it reassigns
+// (`drag = NO_DRAG`) so re-renders are reactive, and adds `dragRowClass(drag, index)` to each row's class.
+// Styles: `@import 'c/boardCpeDragStyles';`. Up/down buttons stay as the keyboard-accessible alternative.
+
+/** Idle drag state: `{ from, over }` are row indexes, or null. */
+export const NO_DRAG = Object.freeze({ from: null, over: null });
+
+/** `dragstart` on a row handle: starts a move of that row, using the whole row as the drag image. */
+export function startRowDrag(event) {
+    const from = Number(event.currentTarget.dataset.index);
+    const { dataTransfer } = event;
+    if (dataTransfer) {
+        dataTransfer.effectAllowed = 'move';
+        dataTransfer.setData('text/plain', String(from));
+        const row = event.currentTarget.closest('li');
+        if (row && typeof dataTransfer.setDragImage === 'function') {
+            dataTransfer.setDragImage(row, 0, 0);
+        }
+    }
+    return { from, over: null };
+}
+
+/** `dragover` on a row: accepts the drop while a row of this list is being dragged; returns the next state. */
+export function overRowDrag(event, drag) {
+    if (drag.from === null) {
+        return drag;
+    }
+    event.preventDefault();
+    if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'move';
+    }
+    const over = Number(event.currentTarget.dataset.index);
+    return over === drag.over ? drag : { from: drag.from, over };
+}
+
+/** `drop` on a row: the `{ index, offset }` move to apply (see `moveItem`), or null when nothing moves. */
+export function dropRowDrag(event, drag) {
+    if (drag.from === null) {
+        return null;
+    }
+    event.preventDefault();
+    const offset = Number(event.currentTarget.dataset.index) - drag.from;
+    return offset ? { index: drag.from, offset } : null;
+}
+
+/** Extra row classes: the dragged row is dimmed; the hovered row shows a marker on the side the row will land. */
+export function dragRowClass(drag, index) {
+    if (drag.from === null) {
+        return '';
+    }
+    if (index === drag.from) {
+        return ' c-drag-source';
+    }
+    if (index === drag.over) {
+        return index < drag.from ? ' c-drop-before' : ' c-drop-after';
+    }
+    return '';
 }
 
 // ---- Describe loaders (org-wide results memoized per page; failed calls are evicted) ------------------------------
@@ -592,7 +664,12 @@ function filterDefinitionErrors(filter, index, seenIds) {
     return errors;
 }
 
-function recordContextErrors(recordContext, filterTypes) {
+/**
+ * Problems of a Filter widget's `recordContext` (`[{ key: 'recordContext', errorString }]`) given the filterId → type
+ * map of its valid filters (`validateFilterDefinitions(filters).filterTypes`). Shared by `validateFilterConfig` and
+ * the Filter definitions Config dialog's Save check.
+ */
+export function recordContextErrors(recordContext, filterTypes) {
     if (recordContext === undefined || recordContext === null) {
         return [];
     }
@@ -623,17 +700,43 @@ function recordContextErrors(recordContext, filterTypes) {
     return errors;
 }
 
+/**
+ * Problems of each filter definition, in list order (`[[message, …], …]`; an empty list means the filter is valid),
+ * plus the filterId → type map of the valid ids. A repeated filterId flags the later filter. The rules behind the
+ * Filter widget's `validate()`, its read-only filter list, and the Filter definitions Config dialog.
+ */
+export function validateFilterDefinitions(filters) {
+    const filterTypes = new Map();
+    const byIndex = (Array.isArray(filters) ? filters : []).map((filter, index) =>
+        filterDefinitionErrors(filter, index, filterTypes)
+    );
+    return { byIndex, filterTypes };
+}
+
+/**
+ * `{ mode, overrideFilterId?, overrideFieldPath? }` of a Filter widget, or null for the default (IMPLICIT without
+ * overrides), so an untouched Record context stays out of the config.
+ */
+export function compactRecordContext(recordContext) {
+    const source = isPlainObject(recordContext) ? recordContext : {};
+    const next = applyPatch(
+        { mode: source.mode || 'IMPLICIT' },
+        {
+            overrideFilterId: cleanString(source.overrideFilterId),
+            overrideFieldPath: cleanString(source.overrideFieldPath)
+        }
+    );
+    return next.mode === 'IMPLICIT' && Object.keys(next).length === 1 ? null : next;
+}
+
 /** Filter widget design-time errors: filter definitions, the recordContext override, and persistence. */
 export function validateFilterConfig(config) {
     const errors = [];
     if (hasValue(config.filters) && !Array.isArray(config.filters)) {
         errors.push(error('filters', 'Filters must be a list.'));
     }
-    const filters = Array.isArray(config.filters) ? config.filters : [];
-    const filterTypes = new Map();
-    filters.forEach((filter, index) => {
-        filterDefinitionErrors(filter, index, filterTypes).forEach((message) => errors.push(error('filters', message)));
-    });
+    const { byIndex, filterTypes } = validateFilterDefinitions(config.filters);
+    byIndex.forEach((messages) => messages.forEach((message) => errors.push(error('filters', message))));
     errors.push(...recordContextErrors(config.recordContext, filterTypes));
     if (hasValue(config.persistence) && !PERSISTENCE_MODES.includes(config.persistence)) {
         errors.push(error('persistence', `Persistence must be one of ${PERSISTENCE_MODES.join(', ')}.`));
@@ -918,6 +1021,56 @@ function bindingErrors(bindings) {
         .map((filterId) => error('filterBindings', `Filter binding "${filterId}" is invalid. ${BINDING_PATH_HELP}`));
 }
 
+/**
+ * Messages per Base filter condition (`string[][]`, parallel to `baseFilters`): the condition's own problem
+ * (`baseFilterError`) plus a missing or duplicate `id`. Shared by `configErrors` and the Base filters Config dialog.
+ */
+export function baseFilterErrorsByIndex(baseFilters) {
+    const ids = new Set();
+    return (Array.isArray(baseFilters) ? baseFilters : []).map((condition) => {
+        const messages = [];
+        const problem = baseFilterError(condition);
+        if (problem) {
+            messages.push(problem);
+        }
+        const id = isPlainObject(condition) ? cleanString(condition.id) : null;
+        if (isPlainObject(condition) && !id) {
+            messages.push('id is required.');
+        } else if (id && ids.has(id)) {
+            messages.push(`duplicate id "${id}".`);
+        }
+        ids.add(id);
+        return messages;
+    });
+}
+
+const BASE_FILTER_OPERATOR_LABELS = Object.fromEntries(
+    BASE_FILTER_OPERATOR_OPTIONS.map((option) => [option.value, option.label])
+);
+
+/**
+ * Read-only description of a Base filter condition: `{ label, operatorLabel, valueText }`, e.g.
+ * `Status` · `Not in list` · `Closed, Duplicate`. `label` falls back to `Condition N` without a field.
+ */
+export function baseFilterSummary(condition, index) {
+    const safe = isPlainObject(condition) ? condition : {};
+    const operator = safe.operator;
+    const value = safe.value;
+    let valueText = '';
+    if (operator === 'IS_NULL') {
+        valueText = value === false || value === 'false' ? 'is not null' : 'is null';
+    } else if (Array.isArray(value)) {
+        valueText = value.join(', ');
+    } else if (hasValue(value)) {
+        valueText = String(value);
+    }
+    return {
+        label: cleanString(safe.fieldPath) || `Condition ${index + 1}`,
+        operatorLabel: operator === 'IS_NULL' ? 'Null check' : BASE_FILTER_OPERATOR_LABELS[operator] || 'No operator',
+        valueText
+    };
+}
+
 function baseFilterErrors(baseFilters) {
     if (baseFilters === undefined || baseFilters === null) {
         return [];
@@ -926,21 +1079,9 @@ function baseFilterErrors(baseFilters) {
         return [error('baseFilters', 'Base filters must be a list.')];
     }
     const errors = [];
-    const ids = new Set();
-    baseFilters.forEach((condition, index) => {
-        const label = `Base filter ${index + 1}`;
-        const problem = baseFilterError(condition);
-        if (problem) {
-            errors.push(error('baseFilters', `${label}: ${problem}`));
-        }
-        const id = isPlainObject(condition) ? cleanString(condition.id) : null;
-        if (isPlainObject(condition) && !id) {
-            errors.push(error('baseFilters', `${label}: id is required.`));
-        } else if (id && ids.has(id)) {
-            errors.push(error('baseFilters', `${label}: duplicate id "${id}".`));
-        }
-        ids.add(id);
-    });
+    baseFilterErrorsByIndex(baseFilters).forEach((messages, index) =>
+        messages.forEach((message) => errors.push(error('baseFilters', `Base filter ${index + 1}: ${message}`)))
+    );
     return errors;
 }
 
@@ -1007,23 +1148,251 @@ export function validateCpe(shell, widgetType, inputVariables) {
     return [...stored, ...configErrors(widgetType, state.config, state.references)];
 }
 
+/**
+ * True when the Widget being edited counts as new for the Config sections' default open state: its config is empty,
+ * or it has no object (data Widgets, unless `objectApiName` is bound to a Flow resource) / no filters (Filter widget).
+ * Call once on load (e.g. `connectedCallback`); open state must not follow later edits.
+ */
+export function isNewWidget(widgetType, inputVariables) {
+    const { config, references } = readCpeState(widgetType, inputVariables);
+    const keys = Object.keys(config).filter((key) => key !== 'version' && key !== 'widgetType');
+    if (!keys.length && !Object.keys(references).length) {
+        return true;
+    }
+    if (specFor(widgetType).dataWidget) {
+        return !cleanString(config.objectApiName) && !references.objectApiName;
+    }
+    return !(Array.isArray(config.filters) && config.filters.length);
+}
+
+/** True when any `[{ key, errorString }]` error belongs to one of `keys` (a Config section's config keys). */
+export function hasErrorFor(errors, keys) {
+    return Array.isArray(errors) && errors.some((item) => item && keys.includes(item.key));
+}
+
+// ---- Config sections -------------------------------------------------------------------------------------------
+//
+// Each Config editor describes its Config sections once, as a list of descriptors:
+//   `{ name, errorKeys, summary(cpe), openWhenNew?, hasError?(cpe) }`
+// `name` is the `c-board-cpe-section` name (echoed by its `toggle` event), `errorKeys` the `validate()` error keys
+// that belong to the section, `summary` the collapsed one-line summary, `openWhenNew` opens the section for a new
+// Widget, and the optional `hasError` adds a section-specific error check. The template then binds
+// `name={sections.x.name} summary={sections.x.summary} open={sections.x.open} has-error={sections.x.hasError}`.
+
+/** Separator between the parts of a Config section summary (`default · Account`). */
+export const SUMMARY_SEPARATOR = ' · ';
+
+/** Joins the non-empty parts of a Config section summary. */
+export function joinSummary(parts) {
+    return parts.filter((part) => part !== null && part !== undefined && part !== '').join(SUMMARY_SEPARATOR);
+}
+
+/** `1 rule`, `3 rules` (`plural` for irregular nouns). */
+export function countLabel(count, noun, plural = `${noun}s`) {
+    return `${count} ${count === 1 ? noun : plural}`;
+}
+
+/**
+ * Default open state of a Config editor's sections (`{ [name]: boolean }`): a new Widget (`isNewWidget`) opens the
+ * `openWhenNew` sections, an existing one starts collapsed. Call once on load; open state must not follow edits.
+ */
+export function initialSectionOpen(sections, widgetType, inputVariables) {
+    const isNew = isNewWidget(widgetType, inputVariables);
+    return Object.fromEntries(sections.map((section) => [section.name, Boolean(isNew && section.openWhenNew)]));
+}
+
+/** The open state after a `c-board-cpe-section` `toggle` event (`detail: { name, open }`). */
+export function toggleSectionOpen(sectionOpen, event) {
+    const { name, open } = event.detail;
+    return { ...sectionOpen, [name]: open };
+}
+
+/**
+ * Header state of each Config section, keyed by name: `{ name, open, hasError, summary }`. The values are lazy, so a
+ * template binding only computes what it reads. `errors()` returns the `validate()`-style errors the sections check.
+ */
+export function sectionStates(sections, cpe, sectionOpen, errors) {
+    let cached;
+    const sectionErrors = () => {
+        if (!cached) {
+            cached = errors();
+        }
+        return cached;
+    };
+    return Object.fromEntries(
+        sections.map((section) => [
+            section.name,
+            {
+                name: section.name,
+                get open() {
+                    return Boolean(sectionOpen && sectionOpen[section.name]);
+                },
+                get hasError() {
+                    return (
+                        hasErrorFor(sectionErrors(), section.errorKeys || []) ||
+                        Boolean(section.hasError && section.hasError(cpe))
+                    );
+                },
+                get summary() {
+                    return section.summary ? section.summary(cpe) : '';
+                }
+            }
+        ])
+    );
+}
+
+/**
+ * `sectionStates` of a widget Config editor (`cpe` with `sectionOpen`, `config`, and `configLoaded`). Errors wait for
+ * the shell's first `configchange` (`configLoaded`), so the placeholder config never flashes errors on first render.
+ */
+export function widgetSectionStates(widgetType, sections, cpe) {
+    return sectionStates(sections, cpe, cpe.sectionOpen, () => {
+        return cpe.configLoaded ? configErrors(widgetType, cpe.config) : [];
+    });
+}
+
+const AGGREGATE_LABELS = new Map(AGGREGATE_OPTIONS.map((option) => [option.value, option.label]));
+
+/** The notation a Widget formats values with when `format.notation` is unset: Metric is compact, the rest standard. */
+export function defaultNotationFor(widgetType) {
+    return widgetType === 'metric' ? 'compact' : 'standard';
+}
+
+/**
+ * Measure section summary of the Metric and Bar Config editors: the aggregate and the value notation, e.g.
+ * `Count of records · compact` or `Sum of Amount · standard`.
+ */
+export function measureSummary(widgetType, config) {
+    const fn = config.aggregateFunction || 'COUNT';
+    const label = AGGREGATE_LABELS.get(fn) || fn;
+    let measure = label;
+    if (fn !== 'COUNT') {
+        measure = config.valueFieldApiName ? `${label} of ${config.valueFieldApiName}` : `${label} (no value field)`;
+    }
+    const format = isPlainObject(config.format) ? config.format : {};
+    return joinSummary([measure, format.notation || defaultNotationFor(widgetType)]);
+}
+
 // ---- Config dialog ---------------------------------------------------------------------------------------------
 
 export const DIALOG_SAVE = 'save';
 export const DIALOG_DISMISS = 'dismiss';
 
 /**
- * Opens a Config dialog (a `LightningModal` subclass such as `c/boardCpeConfigDialog`) at size large with a deep copy
- * of `value`, and resolves with `{ action: 'save', draft }` or `{ action: 'dismiss' }` (Cancel, header X, Escape).
+ * Opens a Config dialog (a `LightningModal` subclass such as `c/boardFilterDialog`) at size large with a deep copy of
+ * `value`, and resolves with `{ action: 'save', draft }` or `{ action: 'dismiss' }` (Cancel, header X, Escape).
  * The caller applies a saved draft as exactly one config change and does nothing on dismiss.
  */
 export async function openConfigDialog(Dialog, { value, ...props } = {}) {
-    const result = await Dialog.open({
-        ...props,
-        size: 'large',
-        value: value === undefined ? undefined : JSON.parse(JSON.stringify(value))
-    });
+    const result = await Dialog.open({ ...props, size: 'large', value: deepCopy(value) });
     return result && result.action === DIALOG_SAVE
         ? { action: DIALOG_SAVE, draft: result.draft }
         : { action: DIALOG_DISMISS };
+}
+
+/**
+ * Keyed draft list shared by the Config dialogs: `class MyDialog extends ConfigDialogMixin(LightningModal)`.
+ *
+ * Owns the stable row keys parallel to the draft items (`_rowKeys`, `nextRowKey()`), the selection (`selectedKey`,
+ * `selectedIndex`), one-time draft initialization in `connectedCallback`, the master-detail event handlers
+ * (`handleItemSelect`, `handleItemMove`, `handleItemRemove`, plus `addDraftItem(item)`), focus after a remove, and
+ * the Cancel / Save footer handlers (`handleCancel`, `handleSave`).
+ *
+ * The dialog provides:
+ * - `rowKeyPrefix`: prefix of the row keys (e.g. `filter`)
+ * - `initDraft(value)`: sets up its draft from the deep copy of `@api value`
+ * - `draftItems` / `setDraftItems(items, change)`: the master list and its replacement; `change` is
+ *   `{ removed, removedKey }` after a remove, so dependent draft state can follow
+ * - `errorsByIndex`: messages per draft item; Save stays disabled while any item has one (override `isSaveDisabled`
+ *   to add draft-level checks)
+ * - `draft`: what Save resolves with (deep-copied)
+ */
+export function ConfigDialogMixin(Base) {
+    return class extends Base {
+        selectedKey = null;
+        rowKeyPrefix = 'item';
+        /** Stable keys parallel to `draftItems` (labels and ids change while the Admin types). */
+        _rowKeys = [];
+        _keySeq = 0;
+        _draftInitialized = false;
+        _focusSelected = false;
+
+        connectedCallback() {
+            if (this._draftInitialized) {
+                return;
+            }
+            this._draftInitialized = true;
+            this.initDraft(deepCopy(this.value));
+            this._rowKeys = this.draftItems.map(() => this.nextRowKey());
+            this.selectedKey = this._rowKeys[0] || null;
+        }
+
+        renderedCallback() {
+            if (this._focusSelected) {
+                this._focusSelected = false;
+                const masterDetail = this.template.querySelector('c-board-cpe-master-detail');
+                if (masterDetail) {
+                    masterDetail.focusSelected();
+                }
+            }
+        }
+
+        nextRowKey() {
+            this._keySeq += 1;
+            return `${this.rowKeyPrefix}-${this._keySeq}`;
+        }
+
+        get selectedIndex() {
+            return this._rowKeys.indexOf(this.selectedKey);
+        }
+
+        get isSaveDisabled() {
+            return this.errorsByIndex.some((messages) => messages.length > 0);
+        }
+
+        /** Appends `item` to the draft and selects it. */
+        addDraftItem(item) {
+            const key = this.nextRowKey();
+            this._rowKeys = [...this._rowKeys, key];
+            this.selectedKey = key;
+            this.setDraftItems([...this.draftItems, item]);
+        }
+
+        handleItemSelect(event) {
+            this.selectedKey = event.detail.key;
+        }
+
+        handleItemMove(event) {
+            const { index, offset } = event.detail;
+            this._rowKeys = moveItem(this._rowKeys, index, offset);
+            this.setDraftItems(moveItem(this.draftItems, index, offset));
+        }
+
+        handleItemRemove(event) {
+            const index = event.detail.index;
+            const removed = this.draftItems[index];
+            const removedKey = this._rowKeys[index];
+            this._rowKeys = this._rowKeys.filter((key, position) => position !== index);
+            if (removedKey === this.selectedKey) {
+                this.selectedKey = this._rowKeys[Math.min(index, this._rowKeys.length - 1)] || null;
+            }
+            this.setDraftItems(
+                this.draftItems.filter((item, position) => position !== index),
+                { removed, removedKey }
+            );
+            // The removed item's button had focus; move it to the newly selected item once the list re-renders.
+            this._focusSelected = true;
+        }
+
+        handleCancel() {
+            this.close({ action: DIALOG_DISMISS });
+        }
+
+        handleSave() {
+            if (this.isSaveDisabled) {
+                return;
+            }
+            this.close({ action: DIALOG_SAVE, draft: deepCopy(this.draft) });
+        }
+    };
 }

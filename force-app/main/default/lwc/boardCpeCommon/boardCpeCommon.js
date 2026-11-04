@@ -1,27 +1,33 @@
 import { LightningElement, api } from 'lwc';
-import { IGNORE_BINDING, RECORD_CONTEXT_FILTER_ID, DATE_PRESETS, normalizeBoardError } from 'c/boardConfigUtils';
+import BoardBaseFilterDialog from 'c/boardBaseFilterDialog';
+import { IGNORE_BINDING, RECORD_CONTEXT_FILTER_ID, normalizeBoardError } from 'c/boardConfigUtils';
 import {
-    BASE_FILTER_OPERATOR_OPTIONS,
     BINDING_PATH_HELP,
+    DIALOG_SAVE,
     FILTER_TYPE_LABELS,
-    LIST_OPERATORS,
     ORIENTATION_OPTIONS,
     WIDGET_TYPES,
     applyPatch,
-    baseFilterError,
+    baseFilterErrorsByIndex,
+    baseFilterSummary,
     configErrors,
+    countLabel,
+    deepCopy,
     formatConfig,
+    hasText,
+    initialSectionOpen,
     isDataWidget,
-    isDatePreset,
     isIgnoreBinding,
     isPlainObject,
-    isRelativeDateLiteral,
     isValidBindingPath,
     loadObjectFields,
-    nextSequentialId,
+    openConfigDialog,
     orderConfig,
+    joinSummary,
     readCpeState,
+    sectionStates,
     serializeConfig,
+    toggleSectionOpen,
     topLevelKeysFor,
     validateConfigText
 } from 'c/boardCpeUtils';
@@ -32,33 +38,41 @@ const DELETED_EVENT = 'configuration_editor_input_value_deleted';
 const MODE_CONVENTION = 'CONVENTION';
 const MODE_PATH = 'PATH';
 const MODE_IGNORE = 'IGNORE';
-const CUSTOM_LITERAL = '__CUSTOM__';
 
 const BINDING_MODE_OPTIONS = [
     { label: 'By convention', value: MODE_CONVENTION },
     { label: 'Field path', value: MODE_PATH },
     { label: 'Ignore', value: MODE_IGNORE }
 ];
-const NULL_OPTIONS = [
-    { label: 'Is null', value: 'true' },
-    { label: 'Is not null', value: 'false' }
+const RESOLVED_CONVENTION = ['BOUND', 'RUNTIME', 'SOSL'];
+
+/** The shell's own Config sections (see `sectionStates` in `c/boardCpeUtils`). */
+const SECTIONS = [
+    {
+        name: 'board',
+        errorKeys: ['boardId', 'title', 'objectApiName', 'orientation'],
+        summary: (cpe) => cpe.boardSummary,
+        openWhenNew: true
+    },
+    {
+        name: 'bindings',
+        errorKeys: ['filterBindings'],
+        summary: (cpe) => cpe.bindingsSummary,
+        hasError: (cpe) => cpe.hasBindingDraftErrors
+    },
+    { name: 'baseFilters', errorKeys: ['baseFilters'], summary: (cpe) => cpe.baseFiltersSummary },
+    // Advanced: Config JSON; always collapsed on load.
+    { name: 'advanced', summary: (cpe) => cpe.advancedSummary, hasError: (cpe) => cpe.hasDraftErrors }
 ];
-const LITERAL_OPTIONS = [...DATE_PRESETS, { label: 'Custom literal (e.g. LAST_N_DAYS:45)', value: CUSTOM_LITERAL }];
-
-function clone(value) {
-    return JSON.parse(JSON.stringify(value));
-}
-
-function hasText(value) {
-    return typeof value === 'string' ? value.trim() !== '' : value !== null && value !== undefined;
-}
 
 /**
  * Shared Flow Custom Property Editor shell composed by every Board CPE.
  *
- * Renders the Board id/title header (plus the Object Picker for data Widgets and orientation for Bar), a default
- * slot for widget-specific sections, the `builderContext` Filter widget discovery + `filterBindings` override table
- * and visual Base filter builder (data Widgets), and the "View / Copy Config JSON" portability drawer.
+ * Renders the Board Config section (Board id/title, plus the Object Picker for data Widgets and orientation for Bar),
+ * a default slot for widget-specific Config sections, the Filter bindings (`builderContext` Filter widget discovery +
+ * `filterBindings` overrides) and Base filters Config sections (data Widgets), and the "Advanced: Config JSON"
+ * portability section. Each is a `c-board-cpe-section`: Board starts open for a new Widget, everything else starts
+ * collapsed, and a section with a validation error is forced open.
  *
  * Every edit dispatches `configuration_editor_input_value_changed` (or `..._deleted` for cleared values) for the
  * serialized `configJson`, and also for the discrete top-level property when `boardId`, `title`, `objectApiName`,
@@ -77,17 +91,14 @@ export default class BoardCpeCommon extends LightningElement {
     manualDraft = '';
     manualError = null;
     pendingPathIds = [];
-    customLiteralIds = [];
 
-    isDrawerOpen = false;
+    /** Open state of the shell's Config sections: set once on load (a new Widget opens Board), then by the Admin. */
+    sectionOpen = null;
     jsonDraft = null;
     draftErrors = [];
     drawerMessage = null;
 
     bindingModeOptions = BINDING_MODE_OPTIONS;
-    operatorOptions = BASE_FILTER_OPERATOR_OPTIONS;
-    nullOptions = NULL_OPTIONS;
-    literalOptions = LITERAL_OPTIONS;
     orientationOptions = ORIENTATION_OPTIONS;
     bindingPathHelp = BINDING_PATH_HELP;
 
@@ -139,7 +150,7 @@ export default class BoardCpeCommon extends LightningElement {
     /** Current config (version 1 envelope) as a plain object. */
     @api
     getConfig() {
-        return clone(this.config);
+        return deepCopy(this.config);
     }
 
     /**
@@ -194,6 +205,9 @@ export default class BoardCpeCommon extends LightningElement {
 
     connectedCallback() {
         this._connected = true;
+        if (!this.sectionOpen) {
+            this.sectionOpen = initialSectionOpen(SECTIONS, this._widgetType, this._inputVariables);
+        }
         this.notifyConfig();
     }
 
@@ -247,7 +261,7 @@ export default class BoardCpeCommon extends LightningElement {
 
     notifyConfig() {
         if (this._connected) {
-            this.dispatchEvent(new CustomEvent('configchange', { detail: { config: clone(this.config) } }));
+            this.dispatchEvent(new CustomEvent('configchange', { detail: { config: deepCopy(this.config) } }));
         }
     }
 
@@ -277,6 +291,60 @@ export default class BoardCpeCommon extends LightningElement {
                     this.previewLoading = false;
                 }
             });
+    }
+
+    // ---- Config sections -----------------------------------------------------------------------------------------
+
+    get sections() {
+        return sectionStates(SECTIONS, this, this.sectionOpen, () =>
+            configErrors(this._widgetType, this.config, this.references)
+        );
+    }
+
+    /** Filter bindings switched to "Field path" without a path, or binding rows with an invalid path. */
+    get hasBindingDraftErrors() {
+        return (
+            this.pendingPathIds.some((filterId) => !this.hasPathBinding(filterId)) ||
+            this.bindingRows.some((row) => row.error)
+        );
+    }
+
+    /** `default · Account`; the object part only for data Widgets. */
+    get boardSummary() {
+        const boardId = this.boardIdValue || 'default';
+        if (!this.isDataWidget) {
+            return boardId;
+        }
+        const object = this.objectApiNameValue || this.references.objectApiName || 'No object';
+        return joinSummary([boardId, object]);
+    }
+
+    /** `3 bound · 1 opted out`, or `None` without any Filter to bind. */
+    get bindingsSummary() {
+        const rows = this.bindingRows;
+        if (!rows.length) {
+            return 'None';
+        }
+        const bound = rows.filter((row) => row.status === 'bound').length;
+        const optedOut = rows.filter((row) => row.status === 'ignored').length;
+        return joinSummary([`${bound} bound`, `${optedOut} opted out`]);
+    }
+
+    /** `None` or the number of conditions. */
+    get baseFiltersSummary() {
+        const count = this.baseFilters.length;
+        return count ? countLabel(count, 'condition') : 'None';
+    }
+
+    get advancedSummary() {
+        return this.hasDraft ? 'Pasted JSON not applied' : '';
+    }
+
+    handleSectionToggle(event) {
+        this.sectionOpen = toggleSectionOpen(this.sectionOpen, event);
+        if (event.detail.name === 'advanced') {
+            this.drawerMessage = null;
+        }
     }
 
     // ---- Header --------------------------------------------------------------------------------------------------
@@ -423,14 +491,17 @@ export default class BoardCpeCommon extends LightningElement {
             mode = isIgnoreBinding(binding) ? MODE_IGNORE : MODE_PATH;
         }
         const path = this.hasPathBinding(filterId) ? String(binding) : '';
-        const conventionText = isManual
-            ? 'Resolved by convention at runtime'
-            : this.conventionText(preview ? preview.get(filterId) : null);
+        const previewItem = preview ? preview.get(filterId) : null;
+        const conventionText = isManual ? 'Resolved by convention at runtime' : this.conventionText(previewItem);
         let effectiveText = conventionText;
+        let status =
+            isManual || (previewItem && RESOLVED_CONVENTION.includes(previewItem.status)) ? 'bound' : 'unbound';
         if (mode === MODE_IGNORE || (mode === MODE_PATH && hasBinding && !path)) {
             effectiveText = 'Ignored by this widget';
+            status = 'ignored';
         } else if (path) {
             effectiveText = path;
+            status = 'bound';
         }
         return {
             key: filterId,
@@ -443,6 +514,7 @@ export default class BoardCpeCommon extends LightningElement {
             path,
             conventionText,
             effectiveText,
+            status,
             error: path && !isValidBindingPath(path) ? `Invalid binding. ${BINDING_PATH_HELP}` : null
         };
     }
@@ -559,128 +631,47 @@ export default class BoardCpeCommon extends LightningElement {
         return this.baseFilters.length > 0;
     }
 
+    /** Read-only list: `Status · Closed, Duplicate`, operator badge, and error indicator of each saved condition. */
     get baseFilterRows() {
+        const errors = baseFilterErrorsByIndex(this.baseFilters);
         return this.baseFilters.map((condition, index) => {
-            const safe = isPlainObject(condition) ? condition : {};
-            const operator = safe.operator || 'EQ';
-            const value = safe.value;
-            const isList = LIST_OPERATORS.has(operator);
-            const isNull = operator === 'IS_NULL';
-            const isLiteral = operator === 'LITERAL';
-            const literal = typeof value === 'string' ? value.trim().toUpperCase() : '';
-            const isCustomLiteral =
-                isLiteral && (this.customLiteralIds.includes(safe.id) || (literal !== '' && !isDatePreset(literal)));
-            let scalarValue = '';
-            if (Array.isArray(value)) {
-                scalarValue = value.join(', ');
-            } else if (value !== null && value !== undefined) {
-                scalarValue = String(value);
-            }
+            const { label, operatorLabel, valueText } = baseFilterSummary(condition, index);
+            const id = isPlainObject(condition) ? condition.id : null;
             return {
-                key: safe.id || `index-${index}`,
-                id: safe.id,
-                number: index + 1,
-                title: `Condition ${index + 1}`,
-                fieldPath: safe.fieldPath || '',
-                operator,
-                isList,
-                isNull,
-                isLiteral,
-                isCustomLiteral,
-                isScalar: !isList && !isNull && !isLiteral,
-                scalarValue,
-                nullValue: value === false || value === 'false' ? 'false' : 'true',
-                literalSelection: isCustomLiteral ? CUSTOM_LITERAL : literal,
-                literalValue: literal,
-                error: baseFilterError(safe)
+                key: `condition-${index}`,
+                id,
+                text: joinSummary([label, valueText]),
+                operatorLabel,
+                hasError: errors[index].length > 0,
+                errorText: `${label} has errors. Edit base filters to fix them.`
             };
         });
     }
 
-    handleAddBaseFilter() {
-        const condition = { id: nextSequentialId(this.baseFilters, 'bf'), fieldPath: '', operator: 'EQ', value: null };
-        this.commit({ ...this.config, baseFilters: [...this.baseFilters, condition] });
-    }
-
-    handleRemoveBaseFilter(event) {
-        const id = event.target.dataset.id;
-        const remaining = this.baseFilters.filter((condition) => condition.id !== id);
-        this.customLiteralIds = this.customLiteralIds.filter((item) => item !== id);
-        const next = { ...this.config };
-        if (remaining.length) {
-            next.baseFilters = remaining;
-        } else {
-            delete next.baseFilters;
-        }
-        this.commit(next);
-    }
-
-    handleBaseFilterField(event) {
-        const value = event.detail.value;
-        this.updateBaseFilter(event.target.dataset.id, { fieldPath: hasText(value) ? value : '' });
-    }
-
-    handleBaseFilterOperator(event) {
-        const id = event.target.dataset.id;
-        const operator = event.detail.value;
-        const current = this.baseFilters.find((condition) => condition.id === id);
-        this.customLiteralIds = this.customLiteralIds.filter((item) => item !== id);
-        this.updateBaseFilter(id, { operator, value: convertValue(operator, current ? current.value : null) });
-    }
-
-    handleBaseFilterValue(event) {
-        const value = event.detail.value;
-        this.updateBaseFilter(event.target.dataset.id, { value: hasText(value) ? value : null });
-    }
-
-    handleBaseFilterList(event) {
-        const values = String(event.detail.value || '')
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean);
-        this.updateBaseFilter(event.target.dataset.id, { value: values });
-    }
-
-    handleBaseFilterNull(event) {
-        this.updateBaseFilter(event.target.dataset.id, { value: event.detail.value !== 'false' });
-    }
-
-    handleBaseFilterLiteral(event) {
-        const id = event.target.dataset.id;
-        const selection = event.detail.value;
-        if (selection === CUSTOM_LITERAL) {
-            if (!this.customLiteralIds.includes(id)) {
-                this.customLiteralIds = [...this.customLiteralIds, id];
-            }
-            return;
-        }
-        this.customLiteralIds = this.customLiteralIds.filter((item) => item !== id);
-        this.updateBaseFilter(id, { value: selection });
-    }
-
-    handleBaseFilterCustomLiteral(event) {
-        const value = String(event.detail.value || '')
-            .trim()
-            .toUpperCase();
-        this.updateBaseFilter(event.target.dataset.id, { value: value || null });
-    }
-
-    updateBaseFilter(id, patch) {
-        const baseFilters = this.baseFilters.map((condition) => {
-            return condition.id === id ? { ...condition, ...patch } : condition;
+    /**
+     * Opens the Base filters Config dialog on a draft of the conditions. Save applies the draft as one config change;
+     * Cancel, Escape, and the header X change nothing. Focus then returns to "Edit base filters…".
+     */
+    async handleEditBaseFilters() {
+        const result = await openConfigDialog(BoardBaseFilterDialog, {
+            label: 'Edit base filters',
+            description: 'Add, reorder, remove, and edit the static conditions that scope this Widget.',
+            value: this.baseFilters,
+            objectApiName: this.objectApiNameValue || null
         });
-        this.commit({ ...this.config, baseFilters });
+        if (result.action === DIALOG_SAVE) {
+            const draft = Array.isArray(result.draft) ? result.draft : [];
+            this.updateConfig({ baseFilters: draft.length ? draft : null });
+            // Let the read-only list re-render before restoring focus, so focus is not lost to <body>.
+            await Promise.resolve();
+        }
+        const button = this.template.querySelector('lightning-button.c-cpe-base-filters-edit');
+        if (button) {
+            button.focus();
+        }
     }
 
-    // ---- Config JSON drawer --------------------------------------------------------------------------------------
-
-    get drawerToggleIcon() {
-        return this.isDrawerOpen ? 'utility:chevrondown' : 'utility:chevronright';
-    }
-
-    get drawerExpanded() {
-        return String(this.isDrawerOpen);
-    }
+    // ---- Advanced: Config JSON -----------------------------------------------------------------------------------
 
     get hasDraft() {
         return this.jsonDraft !== null;
@@ -708,11 +699,6 @@ export default class BoardCpeCommon extends LightningElement {
 
     get draftErrorItems() {
         return this.draftErrors.map((message, index) => ({ key: `error-${index}`, message }));
-    }
-
-    handleToggleDrawer() {
-        this.isDrawerOpen = !this.isDrawerOpen;
-        this.drawerMessage = null;
     }
 
     handleJsonInput(event) {
@@ -751,7 +737,6 @@ export default class BoardCpeCommon extends LightningElement {
         this.jsonDraft = null;
         this.draftErrors = [];
         this.pendingPathIds = [];
-        this.customLiteralIds = [];
         this.manualFilterIds = [];
         this.references = references;
         this.commit(
@@ -793,23 +778,4 @@ export default class BoardCpeCommon extends LightningElement {
             ? 'Config JSON copied. Paste it into the configJson property in Lightning App Builder.'
             : 'Copy failed. The JSON is selected; press Ctrl+C (Cmd+C) to copy it.';
     }
-}
-
-function convertValue(operator, value) {
-    if (LIST_OPERATORS.has(operator)) {
-        if (Array.isArray(value)) {
-            return value;
-        }
-        return hasText(value) && typeof value !== 'boolean' ? [String(value)] : [];
-    }
-    if (operator === 'IS_NULL') {
-        return true;
-    }
-    if (operator === 'LITERAL') {
-        return isRelativeDateLiteral(value) ? String(value).trim().toUpperCase() : 'TODAY';
-    }
-    if (Array.isArray(value)) {
-        return value.length ? value[0] : null;
-    }
-    return typeof value === 'boolean' ? null : value;
 }

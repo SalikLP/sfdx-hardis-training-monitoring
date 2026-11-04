@@ -7,11 +7,20 @@
 
 ## JS Documentation
 
+### isCustomized(format, defaultNotation)
+
+Explicit values equal to the default (`formatStyle: 'number'`, the Widget's own notation) don't count as custom.
+
+**Kind**: global function  
+
 ### BoardCpeFormatEditor
 
 ValueFormatConfig editor (`formatStyle`, `notation`, fraction digits, `currencyCode`, `prefix`, `suffix`) shared by
-the Metric, Bar Chart, and Table column CPEs. Fires a non-bubbling `change` event with `detail.value`: the edited
-format, or null once every setting is back to its default.
+the Metric, Bar Chart, and Table column CPEs. Collapsed, it shows one summary line (`Number format: Default (compact)`)
+with a "Customize" link that reveals the controls; it starts expanded when any setting differs from the default
+(an explicit default such as the Widget's own notation does not count).
+Fires a non-bubbling `change` event with `detail.value`: the edited format, or null once every setting is back to its
+default.
 
 **Kind**: global class  
 **Extends**: <code>LightningElement</code>  
@@ -23,6 +32,14 @@ Widget default notation shown in the Notation picker: `standard` (Bar/Table) or 
 **Kind**: instance property of <code>BoardCpeFormatEditor</code>  
 **Decorators**: <code>@api</code>  
 **Default**: <code>'standard'</code>  
+
+#### _expandedChoice
+
+Open state chosen by the Admin (toggle, or editing a control), or null while it still follows the value: then
+the controls show whenever a setting differs from the default. Once set, value updates never override it.
+
+**Kind**: instance property of <code>BoardCpeFormatEditor</code>  
+**Default**: <code>null</code>  
 
 #### value
 

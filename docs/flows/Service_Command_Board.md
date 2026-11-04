@@ -15,7 +15,7 @@
 |:---|:---|
 |Process Type|Flow|
 |Label|Service Command Board|
-|Status|Active|
+|Status|⚠️ Draft|
 |Description|Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page.|
 |Environments|Default|
 |Interview Label|Service Command Board {!$Flow.CurrentDateTime}|
@@ -46,6 +46,7 @@
 |Allow Pause|⬜|
 |Show Footer|⬜|
 |Show Header|⬜|
+|Connector|END_ELEMENT_2|
 
 
 #### filterBar
@@ -58,7 +59,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[FilterSection_Column1](#filtersection_column1)|
+|Parent Field|[Board_Section1_Column1](#board_section1_column1)|
 |boardId (input)|serviceCommand|
 |title (input)|Service Command Filters|
 |configJson (input)|{"version":1,"widgetType":"filter","boardId":"serviceCommand","title":"Service Command Filters","filters":[{"filterId":"status","label":"Case Status","type":"PICKLIST","selectionMode":"multi","optionsSource":"FIELD_DESCRIBE","sourceObjectApiName":"Case","fieldApiName":"Status"},{"filterId":"priority","label":"Priority","type":"PICKLIST","selectionMode":"multi","optionsSource":"CUSTOM","fieldApiName":"Priority","options":[{"label":"High","value":"High"},{"label":"Medium","value":"Medium"},{"label":"Low","value":"Low"}]},{"filterId":"account","label":"Account","type":"LOOKUP","selectionMode":"multi","fieldApiName":"AccountId","targetObjectApiName":"Account"},{"filterId":"owner","label":"Owner","type":"USER","selectionMode":"multi","includeQueues":true},{"filterId":"created","label":"Created","type":"DATE_RANGE","fieldApiName":"CreatedDate"},{"filterId":"search","label":"Search","type":"TEXT","matchMode":"SOSL","minCharacters":2,"placeholder":"Search cases, comments, and posts"}],"persistence":"SESSION"}|
@@ -67,19 +68,19 @@
 
 
 
-#### FilterSection_Column1
+#### Board_Section1_Column1
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[FilterSection](#filtersection)|
+|Parent Field|[Board_Section1](#board_section1)|
 |width (input)|12|
 
 
 
 
-#### FilterSection
+#### Board_Section1
 
 |<!-- -->|<!-- -->|
 |:---|:---|
@@ -101,7 +102,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[MetricSection_Column1](#metricsection_column1)|
+|Parent Field|[Board_Section2_Column1](#board_section2_column1)|
 |boardId (input)|serviceCommand|
 |title (input)|Open Cases|
 |objectApiName (input)|Case|
@@ -110,13 +111,13 @@
 
 
 
-#### MetricSection_Column1
+#### Board_Section2_Column1
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[MetricSection](#metricsection)|
+|Parent Field|[Board_Section2](#board_section2)|
 |width (input)|3|
 
 
@@ -132,7 +133,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[MetricSection_Column2](#metricsection_column2)|
+|Parent Field|[Board_Section2_Column2](#board_section2_column2)|
 |boardId (input)|serviceCommand|
 |title (input)|Escalated|
 |objectApiName (input)|Case|
@@ -141,13 +142,13 @@
 
 
 
-#### MetricSection_Column2
+#### Board_Section2_Column2
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[MetricSection](#metricsection)|
+|Parent Field|[Board_Section2](#board_section2)|
 |width (input)|3|
 
 
@@ -163,7 +164,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[MetricSection_Column3](#metricsection_column3)|
+|Parent Field|[Board_Section2_Column3](#board_section2_column3)|
 |boardId (input)|serviceCommand|
 |title (input)|Accounts Affected|
 |objectApiName (input)|Account|
@@ -172,13 +173,13 @@
 
 
 
-#### MetricSection_Column3
+#### Board_Section2_Column3
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[MetricSection](#metricsection)|
+|Parent Field|[Board_Section2](#board_section2)|
 |width (input)|3|
 
 
@@ -194,7 +195,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[MetricSection_Column4](#metricsection_column4)|
+|Parent Field|[Board_Section2_Column4](#board_section2_column4)|
 |boardId (input)|serviceCommand|
 |title (input)|Open Pipeline|
 |objectApiName (input)|Opportunity|
@@ -203,19 +204,19 @@
 
 
 
-#### MetricSection_Column4
+#### Board_Section2_Column4
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[MetricSection](#metricsection)|
+|Parent Field|[Board_Section2](#board_section2)|
 |width (input)|3|
 
 
 
 
-#### MetricSection
+#### Board_Section2
 
 |<!-- -->|<!-- -->|
 |:---|:---|
@@ -237,7 +238,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[ChartSection_Column1](#chartsection_column1)|
+|Parent Field|[Board_Section3_Column1](#board_section3_column1)|
 |boardId (input)|serviceCommand|
 |title (input)|Cases by Status and Priority|
 |objectApiName (input)|Case|
@@ -247,13 +248,13 @@
 
 
 
-#### ChartSection_Column1
+#### Board_Section3_Column1
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[ChartSection](#chartsection)|
+|Parent Field|[Board_Section3](#board_section3)|
 |width (input)|6|
 
 
@@ -269,7 +270,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[ChartSection_Column2](#chartsection_column2)|
+|Parent Field|[Board_Section3_Column2](#board_section3_column2)|
 |boardId (input)|serviceCommand|
 |title (input)|Pipeline by Stage and Type|
 |objectApiName (input)|Opportunity|
@@ -279,19 +280,19 @@
 
 
 
-#### ChartSection_Column2
+#### Board_Section3_Column2
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[ChartSection](#chartsection)|
+|Parent Field|[Board_Section3](#board_section3)|
 |width (input)|6|
 
 
 
 
-#### ChartSection
+#### Board_Section3
 
 |<!-- -->|<!-- -->|
 |:---|:---|
@@ -313,7 +314,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[TableSection_Column1](#tablesection_column1)|
+|Parent Field|[Board_Section4_Column1](#board_section4_column1)|
 |boardId (input)|serviceCommand|
 |title (input)|Cases with Comments|
 |objectApiName (input)|Case|
@@ -322,13 +323,13 @@
 
 
 
-#### TableSection_Column1
+#### Board_Section4_Column1
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[TableSection](#tablesection)|
+|Parent Field|[Board_Section4](#board_section4)|
 |width (input)|6|
 
 
@@ -344,7 +345,7 @@
 |Is Required|✅|
 |Store Output Automatically|✅|
 |Style Properties|verticalAlignment:<br/>&nbsp;&nbsp;stringValue: top<br/>width:<br/>&nbsp;&nbsp;stringValue: 12<br/>|
-|Parent Field|[TableSection_Column2](#tablesection_column2)|
+|Parent Field|[Board_Section4_Column2](#board_section4_column2)|
 |boardId (input)|serviceCommand|
 |title (input)|Cases with Feed Posts|
 |objectApiName (input)|Case|
@@ -353,19 +354,19 @@
 
 
 
-#### TableSection_Column2
+#### Board_Section4_Column2
 
 |<!-- -->|<!-- -->|
 |:---|:---|
 |Field Type|Region|
 |Is Required|⬜|
-|Parent Field|[TableSection](#tablesection)|
+|Parent Field|[Board_Section4](#board_section4)|
 |width (input)|6|
 
 
 
 
-#### TableSection
+#### Board_Section4
 
 |<!-- -->|<!-- -->|
 |:---|:---|

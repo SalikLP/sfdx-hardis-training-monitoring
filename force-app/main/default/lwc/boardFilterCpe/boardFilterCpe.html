@@ -6,441 +6,63 @@
         element-info={elementInfo}
         onconfigchange={handleConfigChange}
     >
-        <section class="c-cpe-section c-filter-definitions slds-m-top_medium" aria-label="Filters">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Filters</h3>
+        <c-board-cpe-section
+            class="c-filter-definitions"
+            name={sections.filters.name}
+            label="Filters"
+            summary={sections.filters.summary}
+            open={sections.filters.open}
+            has-error={sections.filters.hasError}
+            ontoggle={handleSectionToggle}
+        >
             <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
                 Filters show in this order. Widgets bind them by filterId.
             </p>
             <template lwc:if={hasFilters}>
                 <ol class="c-filter-list">
                     <template for:each={filterRows} for:item="row">
-                        <li key={row.key} class="c-filter-row slds-p-vertical_x-small" data-index={row.index}>
-                            <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread">
-                                <span class="slds-text-title slds-truncate">
-                                    {row.title}
-                                    <span class="slds-badge slds-m-left_xx-small">{row.typeLabel}</span>
-                                </span>
-                                <div class="slds-shrink-none">
-                                    <lightning-button-icon
-                                        class="c-filter-up"
-                                        icon-name="utility:arrowup"
-                                        size="small"
-                                        variant="bare"
-                                        alternative-text="Move filter up"
-                                        disabled={row.isFirst}
-                                        data-index={row.index}
-                                        onclick={handleMoveUp}
-                                    ></lightning-button-icon>
-                                    <lightning-button-icon
-                                        class="c-filter-down"
-                                        icon-name="utility:arrowdown"
-                                        size="small"
-                                        variant="bare"
-                                        alternative-text="Move filter down"
-                                        disabled={row.isLast}
-                                        data-index={row.index}
-                                        onclick={handleMoveDown}
-                                    ></lightning-button-icon>
-                                    <lightning-button-icon
-                                        class="c-filter-remove"
-                                        icon-name="utility:delete"
-                                        size="small"
-                                        variant="bare"
-                                        alternative-text="Remove filter"
-                                        data-index={row.index}
-                                        onclick={handleRemoveFilter}
-                                    ></lightning-button-icon>
-                                </div>
-                            </div>
-                            <div class="slds-grid slds-gutters_xx-small slds-wrap">
-                                <lightning-input
-                                    class="c-filter-label slds-col slds-size_1-of-2"
-                                    label="Label"
-                                    value={row.label}
-                                    data-index={row.index}
-                                    onchange={handleLabel}
-                                ></lightning-input>
-                                <lightning-input
-                                    class="c-filter-id slds-col slds-size_1-of-2"
-                                    label="Filter id"
-                                    value={row.filterId}
-                                    field-level-help="Stable binding key. Derived from the label until you edit it."
-                                    data-index={row.index}
-                                    onchange={handleFilterId}
-                                ></lightning-input>
-                                <lightning-combobox
-                                    class="c-filter-type slds-col slds-size_1-of-2"
-                                    label="Type"
-                                    options={typeOptions}
-                                    value={row.type}
-                                    data-index={row.index}
-                                    onchange={handleType}
-                                ></lightning-combobox>
-                                <template lwc:if={row.showSelectionMode}>
-                                    <lightning-radio-group
-                                        class="c-filter-selection slds-col slds-size_1-of-2"
-                                        name={row.selectionName}
-                                        label="Selection"
-                                        type="button"
-                                        options={selectionOptions}
-                                        value={row.selectionMode}
-                                        data-index={row.index}
-                                        onchange={handleSelectionMode}
-                                    ></lightning-radio-group>
-                                </template>
-                            </div>
-
-                            <template lwc:if={row.isPicklist}>
-                                <lightning-radio-group
-                                    class="c-filter-options-source slds-m-top_x-small"
-                                    name={row.sourceName}
-                                    label="Options"
-                                    options={optionsSourceOptions}
-                                    value={row.optionsSource}
-                                    data-index={row.index}
-                                    onchange={handleOptionsSource}
-                                ></lightning-radio-group>
-                                <template lwc:if={row.isCustomOptions}>
-                                    <lightning-input
-                                        class="c-filter-field slds-m-top_x-small"
-                                        label="Convention field API name (optional)"
-                                        placeholder="Status"
-                                        value={row.fieldApiName}
-                                        field-level-help="Widgets bind this filter to a field with this API name."
-                                        data-index={row.index}
-                                        onchange={handleFieldApiName}
-                                    ></lightning-input>
-                                    <ul class="c-filter-option-list slds-m-top_x-small">
-                                        <template for:each={row.optionRows} for:item="option">
-                                            <li key={option.key} class="slds-grid slds-grid_vertical-align-end">
-                                                <lightning-input
-                                                    class="c-filter-option-label slds-col"
-                                                    label="Option label"
-                                                    value={option.label}
-                                                    data-index={row.index}
-                                                    data-option-index={option.optionIndex}
-                                                    data-name="label"
-                                                    onchange={handleOptionText}
-                                                ></lightning-input>
-                                                <lightning-input
-                                                    class="c-filter-option-value slds-col slds-m-left_xx-small"
-                                                    label="Value"
-                                                    value={option.value}
-                                                    data-index={row.index}
-                                                    data-option-index={option.optionIndex}
-                                                    data-name="value"
-                                                    onchange={handleOptionText}
-                                                ></lightning-input>
-                                                <lightning-button-icon
-                                                    class="c-filter-option-remove slds-m-left_xx-small"
-                                                    icon-name="utility:delete"
-                                                    size="small"
-                                                    variant="bare"
-                                                    alternative-text="Remove option"
-                                                    data-index={row.index}
-                                                    data-option-index={option.optionIndex}
-                                                    onclick={handleRemoveOption}
-                                                ></lightning-button-icon>
-                                            </li>
-                                        </template>
-                                    </ul>
-                                    <lightning-button
-                                        class="c-filter-option-add slds-m-top_xx-small"
-                                        label="Add option"
-                                        icon-name="utility:add"
-                                        data-index={row.index}
-                                        onclick={handleAddOption}
-                                    ></lightning-button>
-                                </template>
-                                <template lwc:else>
-                                    <c-board-cpe-object-field-picker
-                                        class="c-filter-source-object slds-m-top_x-small"
-                                        mode="object"
-                                        label="Options source object"
-                                        value={row.sourceObjectApiName}
-                                        data-index={row.index}
-                                        onchange={handleSourceObject}
-                                    ></c-board-cpe-object-field-picker>
-                                    <c-board-cpe-object-field-picker
-                                        class="c-filter-source-field slds-m-top_x-small"
-                                        mode="field"
-                                        label="Picklist field"
-                                        object-api-name={row.sourceFieldObject}
-                                        capability="picklist"
-                                        max-hops="0"
-                                        value={row.fieldApiName}
-                                        data-index={row.index}
-                                        onchange={handleSourceField}
-                                    ></c-board-cpe-object-field-picker>
-                                </template>
-                                <template lwc:if={row.hasDefaultChoices}>
-                                    <template lwc:if={row.isSingle}>
-                                        <lightning-combobox
-                                            class="c-filter-default-single slds-m-top_x-small"
-                                            label="Default value"
-                                            options={row.defaultSingleOptions}
-                                            value={row.defaultSingle}
-                                            data-index={row.index}
-                                            onchange={handleDefaultSingle}
-                                        ></lightning-combobox>
-                                    </template>
-                                    <template lwc:else>
-                                        <lightning-checkbox-group
-                                            class="c-filter-default-values slds-m-top_x-small"
-                                            label="Default values"
-                                            options={row.defaultChoices}
-                                            value={row.defaultValues}
-                                            data-index={row.index}
-                                            onchange={handleDefaultValues}
-                                        ></lightning-checkbox-group>
-                                    </template>
-                                </template>
-                                <template lwc:if={row.defaultChoicesMessage}>
-                                    <p
-                                        class="c-filter-default-message slds-text-body_small slds-text-color_weak slds-m-top_x-small"
-                                    >
-                                        {row.defaultChoicesMessage}
-                                    </p>
-                                </template>
-                            </template>
-
-                            <template lwc:if={row.isLookup}>
-                                <c-board-cpe-object-field-picker
-                                    class="c-filter-target-object slds-m-top_x-small"
-                                    mode="object"
-                                    label="Lookup object"
-                                    value={row.targetObjectApiName}
-                                    data-index={row.index}
-                                    onchange={handleTargetObject}
-                                ></c-board-cpe-object-field-picker>
-                                <lightning-input
-                                    class="c-filter-field slds-m-top_x-small"
-                                    label="Convention field API name (optional)"
-                                    placeholder="AccountId"
-                                    value={row.fieldApiName}
-                                    field-level-help="Leave empty to bind to the Widget object's lookup to the selected object."
-                                    data-index={row.index}
-                                    onchange={handleFieldApiName}
-                                ></lightning-input>
-                                <template lwc:if={row.hasTargetObject}>
-                                    <lightning-record-picker
-                                        class="c-filter-default-record slds-m-top_x-small"
-                                        label="Default records"
-                                        object-api-name={row.targetObjectApiName}
-                                        data-index={row.index}
-                                        onchange={handleDefaultRecord}
-                                    ></lightning-record-picker>
-                                </template>
-                                <template lwc:if={row.hasDefaultPills}>
-                                    <div class="slds-m-top_xx-small">
-                                        <template for:each={row.defaultPills} for:item="pill">
-                                            <lightning-pill
-                                                key={pill.key}
-                                                class="c-filter-default-pill"
-                                                label={pill.label}
-                                                data-index={row.index}
-                                                data-value={pill.value}
-                                                onremove={handleRemoveDefault}
-                                            ></lightning-pill>
-                                        </template>
-                                    </div>
-                                </template>
-                            </template>
-
-                            <template lwc:if={row.isUser}>
-                                <lightning-input
-                                    class="c-filter-field slds-m-top_x-small"
-                                    label="Convention field API name"
-                                    placeholder="OwnerId"
-                                    value={row.fieldApiName}
-                                    field-level-help="Defaults to OwnerId; use e.g. CreatedById to filter by creator."
-                                    data-index={row.index}
-                                    onchange={handleFieldApiName}
-                                ></lightning-input>
-                                <lightning-input
-                                    class="c-filter-queues slds-m-top_x-small"
-                                    type="checkbox"
-                                    label="Include queues"
-                                    checked={row.includeQueues}
-                                    data-index={row.index}
-                                    onchange={handleIncludeQueues}
-                                ></lightning-input>
-                                <lightning-input
-                                    class="c-filter-default-me slds-m-top_x-small"
-                                    type="checkbox"
-                                    label="Default to the current user (Me)"
-                                    checked={row.defaultMe}
-                                    data-index={row.index}
-                                    onchange={handleDefaultMe}
-                                ></lightning-input>
-                                <lightning-input
-                                    class="c-filter-default-user-search slds-m-top_x-small"
-                                    type="search"
-                                    label="Default users"
-                                    placeholder="Search users…"
-                                    value={row.userSearchTerm}
-                                    data-index={row.index}
-                                    onchange={handleUserSearch}
-                                ></lightning-input>
-                                <template lwc:if={row.hasUserResults}>
-                                    <ul class="c-filter-default-user-results slds-m-top_xx-small">
-                                        <template for:each={row.userResults} for:item="result">
-                                            <li key={result.key}>
-                                                <button
-                                                    type="button"
-                                                    class="slds-button c-filter-default-user-option"
-                                                    data-index={row.index}
-                                                    data-id={result.id}
-                                                    data-label={result.label}
-                                                    onclick={handleUserPick}
-                                                >
-                                                    {result.label}
-                                                </button>
-                                            </li>
-                                        </template>
-                                    </ul>
-                                </template>
-                                <template lwc:if={row.hasDefaultPills}>
-                                    <div class="slds-m-top_xx-small">
-                                        <template for:each={row.defaultPills} for:item="pill">
-                                            <lightning-pill
-                                                key={pill.key}
-                                                class="c-filter-default-pill"
-                                                label={pill.label}
-                                                data-index={row.index}
-                                                data-value={pill.value}
-                                                onremove={handleRemoveDefault}
-                                            ></lightning-pill>
-                                        </template>
-                                    </div>
-                                </template>
-                            </template>
-
-                            <template lwc:if={row.isDateRange}>
-                                <lightning-input
-                                    class="c-filter-field slds-m-top_x-small"
-                                    label="Convention field API name"
-                                    placeholder="CreatedDate"
-                                    value={row.fieldApiName}
-                                    field-level-help="Date or Date/Time field Widgets filter by convention."
-                                    data-index={row.index}
-                                    onchange={handleFieldApiName}
-                                ></lightning-input>
-                                <lightning-combobox
-                                    class="c-filter-date-default slds-m-top_x-small"
-                                    label="Default range"
-                                    options={dateDefaultOptions}
-                                    value={row.dateDefault}
-                                    data-index={row.index}
-                                    onchange={handleDateDefault}
-                                ></lightning-combobox>
-                                <template lwc:if={row.isCustomLiteral}>
-                                    <lightning-input
-                                        class="c-filter-date-literal slds-m-top_x-small"
-                                        label="Relative date literal"
-                                        placeholder="LAST_N_DAYS:30"
-                                        value={row.customLiteral}
-                                        data-index={row.index}
-                                        onchange={handleCustomLiteral}
-                                    ></lightning-input>
-                                </template>
-                                <template lwc:if={row.isCustomDates}>
-                                    <div class="slds-grid slds-gutters_xx-small slds-m-top_x-small">
-                                        <lightning-input
-                                            class="c-filter-date-from slds-col"
-                                            type="date"
-                                            label="From"
-                                            value={row.defaultFrom}
-                                            data-index={row.index}
-                                            data-name="from"
-                                            onchange={handleDefaultDate}
-                                        ></lightning-input>
-                                        <lightning-input
-                                            class="c-filter-date-to slds-col"
-                                            type="date"
-                                            label="To"
-                                            value={row.defaultTo}
-                                            data-index={row.index}
-                                            data-name="to"
-                                            onchange={handleDefaultDate}
-                                        ></lightning-input>
-                                    </div>
-                                </template>
-                            </template>
-
-                            <template lwc:if={row.isText}>
-                                <lightning-combobox
-                                    class="c-filter-match-mode slds-m-top_x-small"
-                                    label="Match mode"
-                                    options={matchModeOptions}
-                                    value={row.matchMode}
-                                    data-index={row.index}
-                                    onchange={handleMatchMode}
-                                ></lightning-combobox>
-                                <template lwc:if={row.showTextField}>
-                                    <lightning-input
-                                        class="c-filter-field slds-m-top_x-small"
-                                        label="Convention field API name (optional)"
-                                        placeholder="Subject"
-                                        value={row.fieldApiName}
-                                        field-level-help="Text field Widgets match by convention; override per Widget with a field list."
-                                        data-index={row.index}
-                                        onchange={handleFieldApiName}
-                                    ></lightning-input>
-                                </template>
-                                <div class="slds-grid slds-gutters_xx-small slds-m-top_x-small">
-                                    <lightning-input
-                                        class="c-filter-min-chars slds-col"
-                                        type="number"
-                                        label="Minimum characters"
-                                        min="2"
-                                        max="50"
-                                        step="1"
-                                        placeholder="2"
-                                        value={row.minCharacters}
-                                        data-index={row.index}
-                                        onchange={handleMinCharacters}
-                                    ></lightning-input>
-                                    <lightning-input
-                                        class="c-filter-placeholder slds-col"
-                                        label="Placeholder"
-                                        placeholder="Search…"
-                                        value={row.placeholder}
-                                        data-index={row.index}
-                                        onchange={handlePlaceholder}
-                                    ></lightning-input>
-                                </div>
-                                <lightning-input
-                                    class="c-filter-default-text slds-m-top_x-small"
-                                    label="Default search text"
-                                    value={row.defaultText}
-                                    data-index={row.index}
-                                    onchange={handleDefaultText}
-                                ></lightning-input>
+                        <li
+                            key={row.key}
+                            class="c-filter-row slds-grid slds-grid_vertical-align-center slds-p-vertical_xx-small"
+                        >
+                            <span class="c-filter-title slds-truncate" title={row.label}>{row.label}</span>
+                            <span class="c-filter-type-badge slds-badge slds-m-left_xx-small slds-shrink-none"
+                                >{row.typeLabel}</span
+                            >
+                            <template lwc:if={row.hasError}>
+                                <lightning-icon
+                                    class="c-filter-error slds-m-left_xx-small slds-shrink-none"
+                                    icon-name="utility:error"
+                                    variant="error"
+                                    size="x-small"
+                                    alternative-text={row.errorText}
+                                    title={row.errorText}
+                                ></lightning-icon>
                             </template>
                         </li>
                     </template>
                 </ol>
             </template>
-            <div class="slds-grid slds-grid_vertical-align-end slds-m-top_x-small">
-                <lightning-combobox
-                    class="c-filter-new-type slds-col"
-                    label="New filter type"
-                    options={typeOptions}
-                    value={newFilterType}
-                    onchange={handleNewType}
-                ></lightning-combobox>
-                <lightning-button
-                    class="c-filter-add slds-m-left_x-small"
-                    label="Add filter"
-                    icon-name="utility:add"
-                    onclick={handleAddFilter}
-                ></lightning-button>
-            </div>
-        </section>
+            <template lwc:else>
+                <p class="c-filter-empty slds-text-body_small slds-text-color_weak">No filters yet.</p>
+            </template>
+            <lightning-button
+                class="c-filter-edit slds-m-top_x-small"
+                label="Edit filters…"
+                icon-name="utility:edit"
+                onclick={handleEditFilters}
+            ></lightning-button>
+        </c-board-cpe-section>
 
-        <section class="c-cpe-section c-filter-record-context slds-m-top_medium" aria-label="Record context">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Record context</h3>
+        <c-board-cpe-section
+            class="c-filter-record-context"
+            name={sections.recordContext.name}
+            label="Record context"
+            summary={sections.recordContext.summary}
+            open={sections.recordContext.open}
+            has-error={sections.recordContext.hasError}
+            ontoggle={handleSectionToggle}
+        >
             <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
                 Applies when the Board receives a record Id (Record Pages or a Flow recordId).
             </p>
@@ -475,10 +97,17 @@
                     onchange={handleBadge}
                 ></lightning-input>
             </template>
-        </section>
+        </c-board-cpe-section>
 
-        <section class="c-cpe-section c-filter-persistence slds-m-top_medium" aria-label="Remember selections">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Remember selections</h3>
+        <c-board-cpe-section
+            class="c-filter-persistence"
+            name={sections.persistence.name}
+            label="Remember selections"
+            summary={sections.persistence.summary}
+            open={sections.persistence.open}
+            has-error={sections.persistence.hasError}
+            ontoggle={handleSectionToggle}
+        >
             <lightning-radio-group
                 class="c-filter-persistence-mode"
                 name="persistence"
@@ -487,6 +116,6 @@
                 value={persistence}
                 onchange={handlePersistence}
             ></lightning-radio-group>
-        </section>
+        </c-board-cpe-section>
     </c-board-cpe-common>
 </template>

@@ -2,13 +2,20 @@
     <div class="c-cpe slds-p-around_x-small">
         <template lwc:if={storedJsonError}>
             <div class="c-cpe-stored-error slds-text-color_error slds-m-bottom_small" role="alert">
-                {storedJsonError} Editing below rewrites configJson from scratch; paste a corrected copy in the Config
-                JSON drawer to keep the old settings.
+                {storedJsonError} Editing below rewrites configJson from scratch; paste a corrected copy in Advanced:
+                Config JSON to keep the old settings.
             </div>
         </template>
 
-        <section class="c-cpe-section" aria-label="Board">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Board</h3>
+        <c-board-cpe-section
+            class="c-cpe-board"
+            name={sections.board.name}
+            label="Board"
+            summary={sections.board.summary}
+            open={sections.board.open}
+            has-error={sections.board.hasError}
+            ontoggle={handleSectionToggle}
+        >
             <lightning-input
                 class="c-cpe-board-id"
                 label="Board id"
@@ -52,13 +59,20 @@
                     </template>
                 </ul>
             </template>
-        </section>
+        </c-board-cpe-section>
 
         <slot></slot>
 
         <template lwc:if={isDataWidget}>
-            <section class="c-cpe-section c-cpe-bindings slds-m-top_medium" aria-label="Filter bindings">
-                <h3 class="slds-text-title_caps slds-m-bottom_x-small">Filter bindings</h3>
+            <c-board-cpe-section
+                class="c-cpe-bindings"
+                name={sections.bindings.name}
+                label="Filter bindings"
+                summary={sections.bindings.summary}
+                open={sections.bindings.open}
+                has-error={sections.bindings.hasError}
+                ontoggle={handleSectionToggle}
+            >
                 <p class="c-cpe-discovery slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
                     {discoveryMessage}
                 </p>
@@ -155,190 +169,123 @@
                         {manualError}
                     </p>
                 </template>
-            </section>
+            </c-board-cpe-section>
 
-            <section class="c-cpe-section c-cpe-base-filters slds-m-top_medium" aria-label="Base filters">
-                <h3 class="slds-text-title_caps slds-m-bottom_x-small">Base filters</h3>
+            <c-board-cpe-section
+                class="c-cpe-base-filters"
+                name={sections.baseFilters.name}
+                label="Base filters"
+                summary={sections.baseFilters.summary}
+                open={sections.baseFilters.open}
+                has-error={sections.baseFilters.hasError}
+                ontoggle={handleSectionToggle}
+            >
                 <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
                     Static conditions combined with AND alongside the Board's Filter context.
                 </p>
                 <template lwc:if={hasBaseFilters}>
-                    <ol class="c-cpe-base-filter-list">
+                    <ol class="c-cpe-base-filter-rows">
                         <template for:each={baseFilterRows} for:item="row">
-                            <li key={row.key} class="c-cpe-base-filter slds-p-vertical_x-small" data-id={row.id}>
-                                <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread">
-                                    <span class="slds-text-title">{row.title}</span>
-                                    <lightning-button-icon
-                                        class="c-cpe-base-filter-remove"
-                                        icon-name="utility:delete"
-                                        size="small"
-                                        variant="bare"
-                                        alternative-text="Remove condition"
-                                        data-id={row.id}
-                                        onclick={handleRemoveBaseFilter}
-                                    ></lightning-button-icon>
-                                </div>
-                                <c-board-cpe-object-field-picker
-                                    class="c-cpe-base-filter-field"
-                                    mode="field"
-                                    label="Field"
-                                    object-api-name={objectApiNameValue}
-                                    capability="filterable"
-                                    allow-child-relationships
-                                    value={row.fieldPath}
-                                    data-id={row.id}
-                                    onchange={handleBaseFilterField}
-                                ></c-board-cpe-object-field-picker>
-                                <lightning-combobox
-                                    class="c-cpe-base-filter-operator slds-m-top_xx-small"
-                                    label="Operator"
-                                    options={operatorOptions}
-                                    value={row.operator}
-                                    data-id={row.id}
-                                    onchange={handleBaseFilterOperator}
-                                ></lightning-combobox>
-                                <template lwc:if={row.isScalar}>
-                                    <lightning-input
-                                        class="c-cpe-base-filter-value slds-m-top_xx-small"
-                                        label="Value"
-                                        value={row.scalarValue}
-                                        field-level-help="Dates use YYYY-MM-DD."
-                                        data-id={row.id}
-                                        onchange={handleBaseFilterValue}
-                                    ></lightning-input>
-                                </template>
-                                <template lwc:if={row.isList}>
-                                    <lightning-input
-                                        class="c-cpe-base-filter-list slds-m-top_xx-small"
-                                        label="Values (comma-separated)"
-                                        value={row.scalarValue}
-                                        data-id={row.id}
-                                        onchange={handleBaseFilterList}
-                                    ></lightning-input>
-                                </template>
-                                <template lwc:if={row.isNull}>
-                                    <lightning-combobox
-                                        class="c-cpe-base-filter-null slds-m-top_xx-small"
-                                        label="Condition"
-                                        options={nullOptions}
-                                        value={row.nullValue}
-                                        data-id={row.id}
-                                        onchange={handleBaseFilterNull}
-                                    ></lightning-combobox>
-                                </template>
-                                <template lwc:if={row.isLiteral}>
-                                    <lightning-combobox
-                                        class="c-cpe-base-filter-literal slds-m-top_xx-small"
-                                        label="Relative date"
-                                        options={literalOptions}
-                                        value={row.literalSelection}
-                                        data-id={row.id}
-                                        onchange={handleBaseFilterLiteral}
-                                    ></lightning-combobox>
-                                    <template lwc:if={row.isCustomLiteral}>
-                                        <lightning-input
-                                            class="c-cpe-base-filter-custom-literal slds-m-top_xx-small"
-                                            label="Custom literal"
-                                            value={row.literalValue}
-                                            placeholder="LAST_N_DAYS:30"
-                                            data-id={row.id}
-                                            onchange={handleBaseFilterCustomLiteral}
-                                        ></lightning-input>
-                                    </template>
-                                </template>
-                                <template lwc:if={row.error}>
-                                    <p
-                                        class="c-cpe-base-filter-error slds-text-color_error slds-text-body_small"
-                                        role="alert"
-                                    >
-                                        {row.error}
-                                    </p>
+                            <li
+                                key={row.key}
+                                class="c-cpe-base-filter slds-grid slds-grid_vertical-align-center slds-p-vertical_xx-small"
+                                data-id={row.id}
+                            >
+                                <span class="c-cpe-base-filter-text slds-truncate" title={row.text}>{row.text}</span>
+                                <span
+                                    class="c-cpe-base-filter-operator-badge slds-badge slds-m-left_xx-small slds-shrink-none"
+                                    >{row.operatorLabel}</span
+                                >
+                                <template lwc:if={row.hasError}>
+                                    <lightning-icon
+                                        class="c-cpe-base-filter-error slds-m-left_xx-small slds-shrink-none"
+                                        icon-name="utility:error"
+                                        variant="error"
+                                        size="x-small"
+                                        alternative-text={row.errorText}
+                                        title={row.errorText}
+                                    ></lightning-icon>
                                 </template>
                             </li>
                         </template>
                     </ol>
                 </template>
+                <template lwc:else>
+                    <p class="c-cpe-base-filter-empty slds-text-body_small slds-text-color_weak">No conditions.</p>
+                </template>
                 <lightning-button
-                    class="c-cpe-base-filter-add slds-m-top_x-small"
-                    label="Add condition"
-                    icon-name="utility:add"
-                    onclick={handleAddBaseFilter}
+                    class="c-cpe-base-filters-edit slds-m-top_x-small"
+                    label="Edit base filters…"
+                    icon-name="utility:edit"
+                    onclick={handleEditBaseFilters}
                 ></lightning-button>
-            </section>
+            </c-board-cpe-section>
         </template>
 
-        <section class="c-cpe-section c-cpe-drawer slds-m-top_medium" aria-label="Config JSON">
-            <button
-                type="button"
-                class="slds-button c-cpe-drawer-toggle"
-                aria-expanded={drawerExpanded}
-                aria-controls="cpe-json-panel"
-                onclick={handleToggleDrawer}
-            >
-                <lightning-icon
-                    icon-name={drawerToggleIcon}
-                    size="x-small"
-                    class="slds-m-right_x-small"
-                ></lightning-icon>
-                View / Copy Config JSON
-            </button>
-            <template lwc:if={isDrawerOpen}>
-                <div id="cpe-json-panel" class="c-cpe-drawer-panel slds-m-top_x-small">
-                    <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
-                        Copy this configJson into Lightning App Builder, or paste a configJson here and apply it.
-                    </p>
-                    <div class="slds-form-element">
-                        <label class="slds-form-element__label" for="cpe-json-text">configJson</label>
-                        <div class="slds-form-element__control">
-                            <textarea
-                                id="cpe-json-text"
-                                class="slds-textarea c-cpe-json"
-                                rows="12"
-                                spellcheck="false"
-                                oninput={handleJsonInput}
-                            ></textarea>
-                        </div>
+        <c-board-cpe-section
+            class="c-cpe-drawer"
+            name={sections.advanced.name}
+            label="Advanced: Config JSON"
+            summary={sections.advanced.summary}
+            open={sections.advanced.open}
+            has-error={sections.advanced.hasError}
+            ontoggle={handleSectionToggle}
+        >
+            <div class="c-cpe-drawer-panel">
+                <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
+                    Copy this configJson into Lightning App Builder, or paste a configJson here and apply it.
+                </p>
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label" for="cpe-json-text">configJson</label>
+                    <div class="slds-form-element__control">
+                        <textarea
+                            id="cpe-json-text"
+                            class="slds-textarea c-cpe-json"
+                            rows="12"
+                            spellcheck="false"
+                            oninput={handleJsonInput}
+                        ></textarea>
                     </div>
-                    <template lwc:if={hasDraftErrors}>
-                        <ul class="c-cpe-json-errors slds-text-color_error slds-text-body_small" role="alert">
-                            <template for:each={draftErrorItems} for:item="item">
-                                <li key={item.key}>{item.message}</li>
-                            </template>
-                        </ul>
-                    </template>
-                    <template lwc:if={draftIsValid}>
-                        <p class="c-cpe-json-valid slds-text-color_success slds-text-body_small">
-                            Valid configuration. Apply to update this component.
-                        </p>
-                    </template>
-                    <div class="slds-m-top_x-small">
-                        <lightning-button
-                            class="c-cpe-json-copy"
-                            label="Copy"
-                            icon-name="utility:copy"
-                            onclick={handleCopyJson}
-                        ></lightning-button>
-                        <lightning-button
-                            class="c-cpe-json-apply slds-m-left_x-small"
-                            variant="brand"
-                            label="Apply JSON"
-                            disabled={applyDisabled}
-                            onclick={handleApplyJson}
-                        ></lightning-button>
-                        <lightning-button
-                            class="c-cpe-json-discard slds-m-left_x-small"
-                            label="Discard changes"
-                            disabled={discardDisabled}
-                            onclick={handleDiscardJson}
-                        ></lightning-button>
-                    </div>
-                    <template lwc:if={drawerMessage}>
-                        <p class="c-cpe-json-message slds-text-body_small slds-m-top_x-small" role="status">
-                            {drawerMessage}
-                        </p>
-                    </template>
                 </div>
-            </template>
-        </section>
+                <template lwc:if={hasDraftErrors}>
+                    <ul class="c-cpe-json-errors slds-text-color_error slds-text-body_small" role="alert">
+                        <template for:each={draftErrorItems} for:item="item">
+                            <li key={item.key}>{item.message}</li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:if={draftIsValid}>
+                    <p class="c-cpe-json-valid slds-text-color_success slds-text-body_small">
+                        Valid configuration. Apply to update this component.
+                    </p>
+                </template>
+                <div class="slds-m-top_x-small">
+                    <lightning-button
+                        class="c-cpe-json-copy"
+                        label="Copy"
+                        icon-name="utility:copy"
+                        onclick={handleCopyJson}
+                    ></lightning-button>
+                    <lightning-button
+                        class="c-cpe-json-apply slds-m-left_x-small"
+                        variant="brand"
+                        label="Apply JSON"
+                        disabled={applyDisabled}
+                        onclick={handleApplyJson}
+                    ></lightning-button>
+                    <lightning-button
+                        class="c-cpe-json-discard slds-m-left_x-small"
+                        label="Discard changes"
+                        disabled={discardDisabled}
+                        onclick={handleDiscardJson}
+                    ></lightning-button>
+                </div>
+                <template lwc:if={drawerMessage}>
+                    <p class="c-cpe-json-message slds-text-body_small slds-m-top_x-small" role="status">
+                        {drawerMessage}
+                    </p>
+                </template>
+            </div>
+        </c-board-cpe-section>
     </div>
 </template>

@@ -196,79 +196,79 @@
         <flows>
             <screens>
                 <fields>
-                    <name>ChartSection</name>
+                    <name>Board_Section1</name>
                 </fields>
                 <fields>
                     <inputParameters>
                         <name>width</name>
                         <value/>
                     </inputParameters>
-                    <name>ChartSection_Column1</name>
+                    <name>Board_Section1_Column1</name>
+                </fields>
+                <fields>
+                    <name>Board_Section2</name>
                 </fields>
                 <fields>
                     <inputParameters>
                         <name>width</name>
                         <value/>
                     </inputParameters>
-                    <name>ChartSection_Column2</name>
-                </fields>
-                <fields>
-                    <name>FilterSection</name>
+                    <name>Board_Section2_Column1</name>
                 </fields>
                 <fields>
                     <inputParameters>
                         <name>width</name>
                         <value/>
                     </inputParameters>
-                    <name>FilterSection_Column1</name>
-                </fields>
-                <fields>
-                    <name>MetricSection</name>
+                    <name>Board_Section2_Column2</name>
                 </fields>
                 <fields>
                     <inputParameters>
                         <name>width</name>
                         <value/>
                     </inputParameters>
-                    <name>MetricSection_Column1</name>
+                    <name>Board_Section2_Column3</name>
                 </fields>
                 <fields>
                     <inputParameters>
                         <name>width</name>
                         <value/>
                     </inputParameters>
-                    <name>MetricSection_Column2</name>
+                    <name>Board_Section2_Column4</name>
+                </fields>
+                <fields>
+                    <name>Board_Section3</name>
                 </fields>
                 <fields>
                     <inputParameters>
                         <name>width</name>
                         <value/>
                     </inputParameters>
-                    <name>MetricSection_Column3</name>
+                    <name>Board_Section3_Column1</name>
                 </fields>
                 <fields>
                     <inputParameters>
                         <name>width</name>
                         <value/>
                     </inputParameters>
-                    <name>MetricSection_Column4</name>
+                    <name>Board_Section3_Column2</name>
                 </fields>
                 <fields>
-                    <name>TableSection</name>
-                </fields>
-                <fields>
-                    <inputParameters>
-                        <name>width</name>
-                        <value/>
-                    </inputParameters>
-                    <name>TableSection_Column1</name>
+                    <name>Board_Section4</name>
                 </fields>
                 <fields>
                     <inputParameters>
                         <name>width</name>
                         <value/>
                     </inputParameters>
-                    <name>TableSection_Column2</name>
+                    <name>Board_Section4_Column1</name>
+                </fields>
+                <fields>
+                    <inputParameters>
+                        <name>width</name>
+                        <value/>
+                    </inputParameters>
+                    <name>Board_Section4_Column2</name>
                 </fields>
                 <fields>
                     <inputParameters>

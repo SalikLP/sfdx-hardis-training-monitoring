@@ -1,0 +1,5 @@
+/* The summary takes the remaining header width and truncates; the title and icons keep their size. */
+.c-section-summary {
+    flex: 1 1 auto;
+    min-width: 0;
+}

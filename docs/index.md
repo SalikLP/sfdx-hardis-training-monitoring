@@ -55,7 +55,7 @@ The custom code written on top of the standard platform.
 
 <div class="sfdx-hardis-home-card__links" markdown>
 
-[Apex (16)](apex/index.md) [Lightning Web Components (24)](lwc/index.md) [Aura Components (2)](aura/index.md)
+[Apex (16)](apex/index.md) [Lightning Web Components (29)](lwc/index.md) [Aura Components (2)](aura/index.md)
 
 </div>
 
@@ -116,4 +116,4 @@ _Documentation generated from branch monitoring_orgfarm_42750320ff_dev_ed_develo
 
 [![SFDX-Hardis is provided by Cloudity](https://raw.githubusercontent.com/hardisgroupcom/sfdx-hardis/refs/heads/main/docs/assets/images/cloudity-banner.png)](https://cloudity.com?ref=sfdxhardis)
 
-<!-- sfdx-hardis-home-page: 2eac06e21b6943842d8de7bca645ea781da35708a92a6ccc98e850874d9312e2 -->
+<!-- sfdx-hardis-home-page: 45d698a84d47abe2f5242f735d1480ab974832819989f97e2e4dd62e3b2a8d18 -->

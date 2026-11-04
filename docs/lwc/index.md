@@ -4,16 +4,21 @@
 | :-------- | :---------- | :-----: | :------------- |
 | [boardBarCpe](boardBarCpe.md) | Board Bar Chart CPE | ✅ |  |
 | [boardBarWidget](boardBarWidget.md) | Unified vertical and horizontal bar chart widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
+| [boardBaseFilterDialog](boardBaseFilterDialog.md) | Board Base Filters Config Dialog | ❌ |  |
 | [boardChartUtils](boardChartUtils.md) | <!-- --> | ❌ |  |
 | [boardConfigUtils](boardConfigUtils.md) | Board Config Utils | ❌ |  |
 | [boardContextStore](boardContextStore.md) | Board Context Store | ❌ |  |
 | [boardCpeColumnList](boardCpeColumnList.md) | Board CPE Column List | ❌ |  |
 | [boardCpeCommon](boardCpeCommon.md) | Shared Board Flow CPE shell: header, builderContext filter bindings, base filters, and Config JSON drawer | ❌ |  |
 | [boardCpeConfigDialog](boardCpeConfigDialog.md) | Board Config dialog: LightningModal that edits a draft of one Config part and resolves save/dismiss | ❌ |  |
+| [boardCpeDragStyles](boardCpeDragStyles.md) | Board CPE Drag Styles | ❌ |  |
 | [boardCpeFormatEditor](boardCpeFormatEditor.md) | Board CPE Format Editor | ❌ |  |
+| [boardCpeMasterDetail](boardCpeMasterDetail.md) | Board CPE Master-Detail | ❌ |  |
 | [boardCpeObjectFieldPicker](boardCpeObjectFieldPicker.md) | Board CPE searchable object picker, capability-filtered field picker, and relationship path builder | ❌ |  |
+| [boardCpeSection](boardCpeSection.md) | Board CPE Config Section | ❌ |  |
 | [boardCpeUtils](boardCpeUtils.md) | Board CPE Utils | ❌ |  |
 | [boardFilterCpe](boardFilterCpe.md) | Board Filter CPE | ✅ |  |
+| [boardFilterDialog](boardFilterDialog.md) | Board Filter Definitions Config Dialog | ❌ |  |
 | [boardFilterWidget](boardFilterWidget.md) | Declarative filter bar widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
 | [boardMetricCpe](boardMetricCpe.md) | Board Metric CPE | ✅ |  |
 | [boardMetricWidget](boardMetricWidget.md) | Declarative KPI metric widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |

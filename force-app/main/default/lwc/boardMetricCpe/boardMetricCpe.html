@@ -6,8 +6,15 @@
         element-info={elementInfo}
         onconfigchange={handleConfigChange}
     >
-        <section class="c-cpe-section c-metric-measure slds-m-top_medium" aria-label="Measure">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Measure</h3>
+        <c-board-cpe-section
+            class="c-metric-measure"
+            name={sections.measure.name}
+            label="Measure"
+            summary={sections.measure.summary}
+            open={sections.measure.open}
+            has-error={sections.measure.hasError}
+            ontoggle={handleSectionToggle}
+        >
             <lightning-combobox
                 class="c-metric-aggregate"
                 label="Aggregate function"
@@ -35,81 +42,107 @@
             ></lightning-input>
             <c-board-cpe-format-editor
                 class="c-metric-format slds-m-top_x-small"
-                default-notation="compact"
+                default-notation={defaultNotation}
                 value={format}
                 onchange={handleFormat}
             ></c-board-cpe-format-editor>
-        </section>
+        </c-board-cpe-section>
 
-        <section class="c-cpe-section c-metric-thresholds slds-m-top_medium" aria-label="Thresholds">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Thresholds</h3>
-            <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
-                Rules are checked in order; the first match colors the value.
+        <c-board-cpe-section
+            class="c-metric-thresholds"
+            name={sections.thresholds.name}
+            label="Thresholds"
+            summary={sections.thresholds.summary}
+            open={sections.thresholds.open}
+            has-error={sections.thresholds.hasError}
+            ontoggle={handleSectionToggle}
+        >
+            <p class="c-metric-threshold-caption slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
+                When the value matches a rule, show its status. Rules are checked in order; the first match colors the
+                value.
             </p>
             <template lwc:if={hasThresholds}>
-                <ol class="c-metric-threshold-list">
+                <ol class="c-metric-threshold-list" aria-label="Threshold rules">
                     <template for:each={thresholdRows} for:item="row">
-                        <li key={row.key} class="c-metric-threshold slds-p-vertical_x-small" data-index={row.index}>
-                            <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread">
-                                <span class="slds-text-title">{row.title}</span>
-                                <div class="slds-shrink-none">
-                                    <lightning-button-icon
-                                        class="c-metric-threshold-up"
-                                        icon-name="utility:arrowup"
-                                        size="small"
-                                        variant="bare"
-                                        alternative-text="Move rule up"
-                                        disabled={row.isFirst}
-                                        data-index={row.index}
-                                        onclick={handleMoveThresholdUp}
-                                    ></lightning-button-icon>
-                                    <lightning-button-icon
-                                        class="c-metric-threshold-down"
-                                        icon-name="utility:arrowdown"
-                                        size="small"
-                                        variant="bare"
-                                        alternative-text="Move rule down"
-                                        disabled={row.isLast}
-                                        data-index={row.index}
-                                        onclick={handleMoveThresholdDown}
-                                    ></lightning-button-icon>
-                                    <lightning-button-icon
-                                        class="c-metric-threshold-remove"
-                                        icon-name="utility:delete"
-                                        size="small"
-                                        variant="bare"
-                                        alternative-text="Remove rule"
-                                        data-index={row.index}
-                                        onclick={handleRemoveThreshold}
-                                    ></lightning-button-icon>
-                                </div>
-                            </div>
-                            <div class="slds-grid slds-gutters_xx-small">
-                                <lightning-combobox
-                                    class="c-metric-threshold-operator slds-col"
-                                    label="When value is"
-                                    options={thresholdOperatorOptions}
-                                    value={row.operator}
+                        <li
+                            key={row.key}
+                            class={row.rowClass}
+                            data-index={row.index}
+                            ondragover={handleThresholdDragOver}
+                            ondrop={handleThresholdDrop}
+                        >
+                            <span
+                                class="c-metric-threshold-handle c-drag-handle"
+                                draggable="true"
+                                title="Drag to reorder"
+                                data-index={row.index}
+                                ondragstart={handleThresholdDragStart}
+                                ondragend={handleThresholdDragEnd}
+                            >
+                                <lightning-icon
+                                    icon-name="utility:drag_and_drop"
+                                    size="x-small"
+                                    alternative-text=""
+                                ></lightning-icon>
+                            </span>
+                            <lightning-combobox
+                                class="c-metric-threshold-operator"
+                                label={row.operatorLabel}
+                                variant="label-hidden"
+                                options={thresholdOperatorOptions}
+                                value={row.operator}
+                                data-index={row.index}
+                                onchange={handleThresholdOperator}
+                            ></lightning-combobox>
+                            <lightning-input
+                                class="c-metric-threshold-value"
+                                type="number"
+                                step="any"
+                                label={row.valueLabel}
+                                variant="label-hidden"
+                                value={row.value}
+                                data-index={row.index}
+                                onchange={handleThresholdValue}
+                            ></lightning-input>
+                            <lightning-combobox
+                                class="c-metric-threshold-variant"
+                                label={row.variantLabel}
+                                variant="label-hidden"
+                                options={thresholdVariantOptions}
+                                value={row.variant}
+                                data-index={row.index}
+                                onchange={handleThresholdVariant}
+                            ></lightning-combobox>
+                            <div class="c-metric-threshold-actions">
+                                <lightning-button-icon
+                                    class="c-metric-threshold-up"
+                                    icon-name="utility:arrowup"
+                                    size="small"
+                                    variant="bare"
+                                    alternative-text={row.moveUpLabel}
+                                    disabled={row.isFirst}
                                     data-index={row.index}
-                                    onchange={handleThresholdOperator}
-                                ></lightning-combobox>
-                                <lightning-input
-                                    class="c-metric-threshold-value slds-col"
-                                    type="number"
-                                    step="any"
-                                    label="Value"
-                                    value={row.value}
+                                    onclick={handleMoveThresholdUp}
+                                ></lightning-button-icon>
+                                <lightning-button-icon
+                                    class="c-metric-threshold-down"
+                                    icon-name="utility:arrowdown"
+                                    size="small"
+                                    variant="bare"
+                                    alternative-text={row.moveDownLabel}
+                                    disabled={row.isLast}
                                     data-index={row.index}
-                                    onchange={handleThresholdValue}
-                                ></lightning-input>
-                                <lightning-combobox
-                                    class="c-metric-threshold-variant slds-col"
-                                    label="Status"
-                                    options={thresholdVariantOptions}
-                                    value={row.variant}
+                                    onclick={handleMoveThresholdDown}
+                                ></lightning-button-icon>
+                                <lightning-button-icon
+                                    class="c-metric-threshold-remove"
+                                    icon-name="utility:delete"
+                                    size="small"
+                                    variant="bare"
+                                    alternative-text={row.removeLabel}
                                     data-index={row.index}
-                                    onchange={handleThresholdVariant}
-                                ></lightning-combobox>
+                                    onclick={handleRemoveThreshold}
+                                ></lightning-button-icon>
                             </div>
                         </li>
                     </template>
@@ -121,11 +154,6 @@
                 icon-name="utility:add"
                 onclick={handleAddThreshold}
             ></lightning-button>
-            <lightning-button
-                class="c-metric-threshold-dialog slds-m-top_x-small slds-m-left_x-small"
-                label="Edit in dialog…"
-                onclick={handleEditThresholdsInDialog}
-            ></lightning-button>
-        </section>
+        </c-board-cpe-section>
     </c-board-cpe-common>
 </template>

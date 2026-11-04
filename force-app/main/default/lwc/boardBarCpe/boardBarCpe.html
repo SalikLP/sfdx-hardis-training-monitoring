@@ -6,8 +6,15 @@
         element-info={elementInfo}
         onconfigchange={handleConfigChange}
     >
-        <section class="c-cpe-section c-bar-dimensions slds-m-top_medium" aria-label="Dimensions">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Dimensions</h3>
+        <c-board-cpe-section
+            class="c-bar-dimensions"
+            name={sections.dimensions.name}
+            label="Dimensions"
+            summary={sections.dimensions.summary}
+            open={sections.dimensions.open}
+            has-error={sections.dimensions.hasError}
+            ontoggle={handleSectionToggle}
+        >
             <c-board-cpe-object-field-picker
                 class="c-bar-group-by"
                 mode="field"
@@ -64,10 +71,17 @@
                     onchange={handleMaxSeries}
                 ></lightning-input>
             </template>
-        </section>
+        </c-board-cpe-section>
 
-        <section class="c-cpe-section c-bar-measure slds-m-top_medium" aria-label="Measure">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Measure</h3>
+        <c-board-cpe-section
+            class="c-bar-measure"
+            name={sections.measure.name}
+            label="Measure"
+            summary={sections.measure.summary}
+            open={sections.measure.open}
+            has-error={sections.measure.hasError}
+            ontoggle={handleSectionToggle}
+        >
             <lightning-combobox
                 class="c-bar-aggregate"
                 label="Aggregate function"
@@ -91,10 +105,17 @@
                 value={format}
                 onchange={handleFormat}
             ></c-board-cpe-format-editor>
-        </section>
+        </c-board-cpe-section>
 
-        <section class="c-cpe-section c-bar-display slds-m-top_medium" aria-label="Display">
-            <h3 class="slds-text-title_caps slds-m-bottom_x-small">Display</h3>
+        <c-board-cpe-section
+            class="c-bar-display"
+            name={sections.display.name}
+            label="Display"
+            summary={sections.display.summary}
+            open={sections.display.open}
+            has-error={sections.display.hasError}
+            ontoggle={handleSectionToggle}
+        >
             <lightning-input
                 class="c-bar-subtitle"
                 label="Subtitle"
@@ -142,6 +163,6 @@
                 checked={showDataLabels}
                 onchange={handleDataLabels}
             ></lightning-input>
-        </section>
+        </c-board-cpe-section>
     </c-board-cpe-common>
 </template>

@@ -1,0 +1,124 @@
+<template>
+    <lightning-modal-header label={label}></lightning-modal-header>
+    <lightning-modal-body>
+        <c-board-cpe-master-detail
+            class="c-base-filter-master-detail"
+            items={masterItems}
+            selected-key={selectedKey}
+            list-label="Base filter conditions"
+            empty-message="No conditions yet. Add one below."
+            onitemselect={handleItemSelect}
+            onitemmove={handleItemMove}
+            onitemremove={handleItemRemove}
+        >
+            <div slot="actions">
+                <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
+                    Conditions combine with AND alongside the Board's Filter context.
+                </p>
+                <lightning-button
+                    class="c-cpe-base-filter-add"
+                    label="Add condition"
+                    icon-name="utility:add"
+                    onclick={handleAdd}
+                ></lightning-button>
+            </div>
+            <template lwc:if={row}>
+                <div class="c-base-filter-detail" data-key={row.key}>
+                    <h2 class="slds-text-heading_small slds-m-bottom_x-small">{row.title}</h2>
+                    <template lwc:if={row.hasErrors}>
+                        <ul class="c-base-filter-errors slds-m-bottom_small">
+                            <template for:each={row.errors} for:item="item">
+                                <li key={item.key} class="slds-text-color_error slds-text-body_small">
+                                    {item.message}
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <c-board-cpe-object-field-picker
+                        class="c-cpe-base-filter-field"
+                        mode="field"
+                        label="Field"
+                        object-api-name={objectApiName}
+                        capability="filterable"
+                        allow-child-relationships
+                        value={row.fieldPath}
+                        data-index={row.index}
+                        onchange={handleField}
+                    ></c-board-cpe-object-field-picker>
+                    <lightning-combobox
+                        class="c-cpe-base-filter-operator slds-m-top_x-small"
+                        label="Operator"
+                        options={operatorOptions}
+                        value={row.operator}
+                        data-index={row.index}
+                        onchange={handleOperator}
+                    ></lightning-combobox>
+                    <template lwc:if={row.isScalar}>
+                        <lightning-input
+                            class="c-cpe-base-filter-value slds-m-top_x-small"
+                            label="Value"
+                            value={row.scalarValue}
+                            field-level-help="Dates use YYYY-MM-DD."
+                            data-index={row.index}
+                            onchange={handleValue}
+                        ></lightning-input>
+                    </template>
+                    <template lwc:if={row.isList}>
+                        <lightning-input
+                            class="c-cpe-base-filter-list slds-m-top_x-small"
+                            label="Values (comma-separated)"
+                            value={row.scalarValue}
+                            data-index={row.index}
+                            onchange={handleList}
+                        ></lightning-input>
+                    </template>
+                    <template lwc:if={row.isNull}>
+                        <lightning-combobox
+                            class="c-cpe-base-filter-null slds-m-top_x-small"
+                            label="Condition"
+                            options={nullOptions}
+                            value={row.nullValue}
+                            data-index={row.index}
+                            onchange={handleNull}
+                        ></lightning-combobox>
+                    </template>
+                    <template lwc:if={row.isLiteral}>
+                        <lightning-combobox
+                            class="c-cpe-base-filter-literal slds-m-top_x-small"
+                            label="Relative date"
+                            options={literalOptions}
+                            value={row.literalSelection}
+                            data-index={row.index}
+                            onchange={handleLiteral}
+                        ></lightning-combobox>
+                        <template lwc:if={row.isCustomLiteral}>
+                            <lightning-input
+                                class="c-cpe-base-filter-custom-literal slds-m-top_x-small"
+                                label="Custom literal"
+                                value={row.literalValue}
+                                placeholder="LAST_N_DAYS:30"
+                                data-index={row.index}
+                                onchange={handleCustomLiteral}
+                            ></lightning-input>
+                        </template>
+                    </template>
+                </div>
+            </template>
+            <template lwc:else>
+                <p class="c-base-filter-detail-empty slds-text-body_regular slds-text-color_weak slds-p-top_small">
+                    Add a condition to edit it.
+                </p>
+            </template>
+        </c-board-cpe-master-detail>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button class="c-dialog-cancel" label="Cancel" onclick={handleCancel}></lightning-button>
+        <lightning-button
+            class="c-dialog-save slds-m-left_x-small"
+            variant="brand"
+            label="Save"
+            disabled={isSaveDisabled}
+            onclick={handleSave}
+        ></lightning-button>
+    </lightning-modal-footer>
+</template>

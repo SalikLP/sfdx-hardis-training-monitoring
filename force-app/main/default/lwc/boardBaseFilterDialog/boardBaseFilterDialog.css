@@ -1,0 +1,4 @@
+/* Keep the selected condition's settings at a readable line length in the wide detail pane. */
+.c-base-filter-detail {
+    max-width: 40rem;
+}

@@ -70,7 +70,7 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 
 | Object | Name | Type | Description | Status |
 | :----  | :-------- | :--: | :---------- | :----- |
-| 💻 | [Service_Command_Board](../flows/Service_Command_Board.md) [🕒](../flows/Service_Command_Board-history.md) | Screen Flow | Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page. | Active |
+| 💻 | [Service_Command_Board](../flows/Service_Command_Board.md) [🕒](../flows/Service_Command_Board-history.md) | Screen Flow | Reference Screen Flow Board: a footerless screen of 1-, 4-, and 2-column Flow Sections hosting the Board Filter Bar, Metric, Bar Chart, and Table Widgets on Board id serviceCommand. Optional recordId input scopes the Board to a record when the Flow is embedded on a Record Page. | Draft |
 
 
 
@@ -116,14 +116,15 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | Component | Description | Exposed | Targets |
 | :-------- | :---------- | :-----: | :------------- |
 | [boardBarWidget](../lwc/boardBarWidget.md) | Unified vertical and horizontal bar chart widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
+| [boardBaseFilterDialog](../lwc/boardBaseFilterDialog.md) | Board Base Filters Config Dialog | ❌ |  |
 | [boardConfigUtils](../lwc/boardConfigUtils.md) | Board Config Utils | ❌ |  |
-| [boardCpeCommon](../lwc/boardCpeCommon.md) | Shared Board Flow CPE shell: header, builderContext filter bindings, base filters, and Config JSON drawer | ❌ |  |
 | [boardCpeFormatEditor](../lwc/boardCpeFormatEditor.md) | Board CPE Format Editor | ❌ |  |
 | [boardCpeObjectFieldPicker](../lwc/boardCpeObjectFieldPicker.md) | Board CPE searchable object picker, capability-filtered field picker, and relationship path builder | ❌ |  |
 | [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
-| [boardFilterCpe](../lwc/boardFilterCpe.md) | Board Filter CPE | ✅ |  |
+| [boardFilterDialog](../lwc/boardFilterDialog.md) | Board Filter Definitions Config Dialog | ❌ |  |
 | [boardFilterWidget](../lwc/boardFilterWidget.md) | Declarative filter bar widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
 | [boardMetricWidget](../lwc/boardMetricWidget.md) | Declarative KPI metric widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
+| [boardTableCpe](../lwc/boardTableCpe.md) | Board Table CPE | ✅ |  |
 | [boardTableWidget](../lwc/boardTableWidget.md) | Declarative table widget with child row expansion for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
 | [protoTableHarness](../lwc/protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 

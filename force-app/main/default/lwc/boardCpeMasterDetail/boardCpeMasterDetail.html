@@ -1,0 +1,107 @@
+<template>
+    <div class="c-master-detail slds-grid">
+        <div class="c-master-detail-master slds-col slds-size_1-of-3 slds-grid slds-grid_vertical">
+            <div class="c-master-detail-list-scroller slds-col">
+                <template lwc:if={hasItems}>
+                    <ul class="c-master-detail-list" aria-label={listLabel}>
+                        <template for:each={rows} for:item="row">
+                            <li
+                                key={row.key}
+                                class={row.itemClass}
+                                data-key={row.key}
+                                data-index={row.index}
+                                ondragover={handleDragOver}
+                                ondrop={handleDrop}
+                            >
+                                <span
+                                    class="c-master-detail-handle c-drag-handle"
+                                    draggable="true"
+                                    title="Drag to reorder"
+                                    data-index={row.index}
+                                    ondragstart={handleDragStart}
+                                    ondragend={handleDragEnd}
+                                >
+                                    <lightning-icon
+                                        icon-name="utility:drag_and_drop"
+                                        size="x-small"
+                                        alternative-text=""
+                                    ></lightning-icon>
+                                </span>
+                                <button
+                                    type="button"
+                                    class="c-master-detail-select"
+                                    aria-current={row.ariaCurrent}
+                                    data-key={row.key}
+                                    data-index={row.index}
+                                    onclick={handleSelect}
+                                >
+                                    <span class="c-master-detail-label slds-truncate" title={row.label}
+                                        >{row.label}</span
+                                    >
+                                    <template lwc:if={row.meta}>
+                                        <span
+                                            class="c-master-detail-meta slds-badge slds-m-left_xx-small slds-shrink-none"
+                                            >{row.meta}</span
+                                        >
+                                    </template>
+                                    <template lwc:if={row.hasError}>
+                                        <lightning-icon
+                                            class="c-master-detail-error slds-m-left_xx-small slds-shrink-none"
+                                            icon-name="utility:error"
+                                            variant="error"
+                                            size="x-small"
+                                            alternative-text={row.errorText}
+                                            title={row.errorText}
+                                        ></lightning-icon>
+                                    </template>
+                                </button>
+                                <div class="c-master-detail-item-actions slds-shrink-none">
+                                    <lightning-button-icon
+                                        class="c-master-detail-up"
+                                        icon-name="utility:arrowup"
+                                        size="small"
+                                        variant="bare"
+                                        alternative-text={row.upText}
+                                        disabled={row.isFirst}
+                                        data-index={row.index}
+                                        onclick={handleMoveUp}
+                                    ></lightning-button-icon>
+                                    <lightning-button-icon
+                                        class="c-master-detail-down"
+                                        icon-name="utility:arrowdown"
+                                        size="small"
+                                        variant="bare"
+                                        alternative-text={row.downText}
+                                        disabled={row.isLast}
+                                        data-index={row.index}
+                                        onclick={handleMoveDown}
+                                    ></lightning-button-icon>
+                                    <lightning-button-icon
+                                        class="c-master-detail-remove"
+                                        icon-name="utility:delete"
+                                        size="small"
+                                        variant="bare"
+                                        alternative-text={row.removeText}
+                                        data-index={row.index}
+                                        onclick={handleRemove}
+                                    ></lightning-button-icon>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:else>
+                    <p class="c-master-detail-empty slds-p-around_small slds-text-body_small slds-text-color_weak">
+                        {emptyMessage}
+                    </p>
+                </template>
+            </div>
+            <div class="c-master-detail-actions slds-p-around_small">
+                <slot name="actions"></slot>
+            </div>
+        </div>
+        <div class="c-master-detail-detail slds-col slds-p-horizontal_medium">
+            <slot></slot>
+        </div>
+    </div>
+</template>

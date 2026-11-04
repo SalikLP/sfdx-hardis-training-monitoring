@@ -1,68 +1,81 @@
 <template>
-    <fieldset class="c-format slds-form-element">
-        <legend class="slds-form-element__legend slds-form-element__label">{label}</legend>
-        <div class="slds-grid slds-gutters_xx-small slds-wrap">
-            <lightning-combobox
-                class="c-format-style slds-col slds-size_1-of-2"
-                label="Style"
-                options={styleOptions}
-                value={formatStyle}
-                onchange={handleStyle}
-            ></lightning-combobox>
-            <lightning-combobox
-                class="c-format-notation slds-col slds-size_1-of-2"
-                label="Notation"
-                options={notationOptions}
-                value={notation}
-                onchange={handleNotation}
-            ></lightning-combobox>
-            <lightning-input
-                class="c-format-min-digits slds-col slds-size_1-of-2"
-                type="number"
-                label="Min decimals"
-                min="0"
-                max="20"
-                step="1"
-                value={minimumFractionDigits}
-                data-name="minimumFractionDigits"
-                onchange={handleDigits}
-            ></lightning-input>
-            <lightning-input
-                class="c-format-max-digits slds-col slds-size_1-of-2"
-                type="number"
-                label="Max decimals"
-                min="0"
-                max="20"
-                step="1"
-                value={maximumFractionDigits}
-                data-name="maximumFractionDigits"
-                onchange={handleDigits}
-            ></lightning-input>
-            <template lwc:if={isCurrency}>
-                <lightning-input
-                    class="c-format-currency slds-col slds-size_1-of-1"
-                    label="Currency code"
-                    placeholder="Org default"
-                    max-length="3"
-                    value={currencyCode}
-                    field-level-help="3-letter ISO code such as USD or EUR. Leave empty for the org currency."
-                    onchange={handleCurrency}
-                ></lightning-input>
-            </template>
-            <lightning-input
-                class="c-format-prefix slds-col slds-size_1-of-2"
-                label="Prefix"
-                value={prefix}
-                data-name="prefix"
-                onchange={handleAffix}
-            ></lightning-input>
-            <lightning-input
-                class="c-format-suffix slds-col slds-size_1-of-2"
-                label="Suffix"
-                value={suffix}
-                data-name="suffix"
-                onchange={handleAffix}
-            ></lightning-input>
+    <div class="c-format slds-form-element" role="group" aria-label={label}>
+        <div class="slds-grid slds-grid_vertical-align-center">
+            <span class="c-format-summary slds-form-element__label slds-truncate" title={summaryLine}
+                >{summaryLine}</span
+            >
+            <lightning-button
+                class="c-format-toggle slds-col_bump-left"
+                variant="base"
+                label={toggleLabel}
+                aria-expanded={ariaExpanded}
+                onclick={handleToggle}
+            ></lightning-button>
         </div>
-    </fieldset>
+        <template lwc:if={expanded}>
+            <div class="c-format-controls slds-grid slds-gutters_xx-small slds-wrap">
+                <lightning-combobox
+                    class="c-format-style slds-col slds-size_1-of-1"
+                    label="Style"
+                    options={styleOptions}
+                    value={formatStyle}
+                    onchange={handleStyle}
+                ></lightning-combobox>
+                <lightning-combobox
+                    class="c-format-notation slds-col slds-size_1-of-1"
+                    label="Notation"
+                    options={notationOptions}
+                    value={notation}
+                    onchange={handleNotation}
+                ></lightning-combobox>
+                <lightning-input
+                    class="c-format-min-digits slds-col slds-size_1-of-2"
+                    type="number"
+                    label="Min decimals"
+                    min="0"
+                    max="20"
+                    step="1"
+                    value={minimumFractionDigits}
+                    data-name="minimumFractionDigits"
+                    onchange={handleDigits}
+                ></lightning-input>
+                <lightning-input
+                    class="c-format-max-digits slds-col slds-size_1-of-2"
+                    type="number"
+                    label="Max decimals"
+                    min="0"
+                    max="20"
+                    step="1"
+                    value={maximumFractionDigits}
+                    data-name="maximumFractionDigits"
+                    onchange={handleDigits}
+                ></lightning-input>
+                <template lwc:if={isCurrency}>
+                    <lightning-input
+                        class="c-format-currency slds-col slds-size_1-of-1"
+                        label="Currency code"
+                        placeholder="Org default"
+                        max-length="3"
+                        value={currencyCode}
+                        field-level-help="3-letter ISO code such as USD or EUR. Leave empty for the org currency."
+                        onchange={handleCurrency}
+                    ></lightning-input>
+                </template>
+                <lightning-input
+                    class="c-format-prefix slds-col slds-size_1-of-2"
+                    label="Prefix"
+                    value={prefix}
+                    data-name="prefix"
+                    onchange={handleAffix}
+                ></lightning-input>
+                <lightning-input
+                    class="c-format-suffix slds-col slds-size_1-of-2"
+                    label="Suffix"
+                    value={suffix}
+                    data-name="suffix"
+                    onchange={handleAffix}
+                ></lightning-input>
+            </div>
+        </template>
+    </div>
 </template>

@@ -247,16 +247,21 @@ nav:
           - All Lightning Web Components: lwc/index.md
           - boardBarCpe: lwc/boardBarCpe.md
           - boardBarWidget: lwc/boardBarWidget.md
+          - boardBaseFilterDialog: lwc/boardBaseFilterDialog.md
           - boardChartUtils: lwc/boardChartUtils.md
           - boardConfigUtils: lwc/boardConfigUtils.md
           - boardContextStore: lwc/boardContextStore.md
           - boardCpeColumnList: lwc/boardCpeColumnList.md
           - boardCpeCommon: lwc/boardCpeCommon.md
           - boardCpeConfigDialog: lwc/boardCpeConfigDialog.md
+          - boardCpeDragStyles: lwc/boardCpeDragStyles.md
           - boardCpeFormatEditor: lwc/boardCpeFormatEditor.md
+          - boardCpeMasterDetail: lwc/boardCpeMasterDetail.md
           - boardCpeObjectFieldPicker: lwc/boardCpeObjectFieldPicker.md
+          - boardCpeSection: lwc/boardCpeSection.md
           - boardCpeUtils: lwc/boardCpeUtils.md
           - boardFilterCpe: lwc/boardFilterCpe.md
+          - boardFilterDialog: lwc/boardFilterDialog.md
           - boardFilterWidget: lwc/boardFilterWidget.md
           - boardMetricCpe: lwc/boardMetricCpe.md
           - boardMetricWidget: lwc/boardMetricWidget.md

@@ -1,0 +1,8 @@
+/* Keep the selected filter's settings at a readable line length in the wide detail pane. */
+.c-filter-detail {
+    max-width: 40rem;
+}
+
+.c-filter-title {
+    overflow-wrap: anywhere;
+}
