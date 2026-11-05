@@ -1,0 +1,11 @@
+<template>
+    <lightning-card title={label} icon-name="utility:bug">
+        <div class="slds-p-horizontal_small">
+            <p class="slds-text-color_error slds-text-title_caps">PROTOTYPE probe, throwaway</p>
+            <p>boardId: <b>{boardId}</b> | mounts: <b>{mountCount}</b> | deliveries (queries): <b>{deliveries}</b> | while hidden: <b>{hiddenDeliveries}</b></p>
+            <lightning-button label="Clear timeline" onclick={handleClear} class="slds-m-vertical_x-small"></lightning-button>
+            <p class="slds-text-title">Page timeline (all probes, newest first)</p>
+            <pre class="slds-text-body_small" style="max-height: 16rem; overflow: auto; white-space: pre-wrap;"><template for:each={lines} for:item="l"><div key={l.key}>{l.line}</div></template></pre>
+        </div>
+    </lightning-card>
+</template>

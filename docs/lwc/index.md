@@ -30,6 +30,7 @@
 | [protoBoardWidget](protoBoardWidget.md) | Throwaway prototype Widget (metric, bar, table) reacting to Board filter context | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
 | [protoFilterWidget](protoFilterWidget.md) | Throwaway prototype Filter Widget for Board Host comparison | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
 | [protoTableHarness](protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
+| [protoTabProbe](protoTabProbe.md) | PROTOTYPE Tab Probe | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 | [protoWidgetCpe](protoWidgetCpe.md) | Proto Board Widget CPE | ❌ |  |
 
 

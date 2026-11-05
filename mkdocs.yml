@@ -140,6 +140,7 @@ nav:
           - Installation_Close_Check: flows/Installation_Close_Check.md
           - Installation_Crew_Warning: flows/Installation_Crew_Warning.md
           - Proto_Board_Host_Flow: flows/Proto_Board_Host_Flow.md
+          - Proto_Tabs_Filter_Context_Flow: flows/Proto_Tabs_Filter_Context_Flow.md
           - Service_Command_Board: flows/Service_Command_Board.md
           - sfdc_default_ReportExport_Protection_Flow: flows/sfdc_default_ReportExport_Protection_Flow.md
   - Authorizations:
@@ -273,6 +274,7 @@ nav:
           - protoBoardWidget: lwc/protoBoardWidget.md
           - protoFilterWidget: lwc/protoFilterWidget.md
           - protoTableHarness: lwc/protoTableHarness.md
+          - protoTabProbe: lwc/protoTabProbe.md
           - protoWidgetCpe: lwc/protoWidgetCpe.md
       - Aura Components:
           - All Aura Components: aura/index.md
@@ -296,6 +298,7 @@ nav:
       - Proto_Board_Account_Record_Page: pages/Proto_Board_Account_Record_Page.md
       - Proto_Board_App_Page: pages/Proto_Board_App_Page.md
       - Proto_Table_Widget_Lab: pages/Proto_Table_Widget_Lab.md
+      - Proto_Tabs_Filter_Context: pages/Proto_Tabs_Filter_Context.md
       - RevenueCloudConsole_UtilityBar: pages/RevenueCloudConsole_UtilityBar.md
       - SalesCloudMobile_UtilityBar: pages/SalesCloudMobile_UtilityBar.md
       - Service_Command_Board: pages/Service_Command_Board.md

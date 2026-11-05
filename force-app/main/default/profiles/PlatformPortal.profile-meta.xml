@@ -3018,6 +3018,10 @@
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>
+        <tab>Proto_Tabs_Filter_Context</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
         <tab>Service_Command_Board</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>

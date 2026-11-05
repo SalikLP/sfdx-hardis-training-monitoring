@@ -18,6 +18,7 @@
 | [Proto_Board_Account_Record_Page](Proto_Board_Account_Record_Page.md) | Record Page |
 | [Proto_Board_App_Page](Proto_Board_App_Page.md) | App Page |
 | [Proto_Table_Widget_Lab](Proto_Table_Widget_Lab.md) | App Page |
+| [Proto_Tabs_Filter_Context](Proto_Tabs_Filter_Context.md) | App Page |
 | [RevenueCloudConsole_UtilityBar](RevenueCloudConsole_UtilityBar.md) | Utility Bar |
 | [SalesCloudMobile_UtilityBar](SalesCloudMobile_UtilityBar.md) | Utility Bar |
 | [Service_Command_Board](Service_Command_Board.md) | App Page |

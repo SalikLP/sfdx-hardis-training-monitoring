@@ -27,7 +27,7 @@ What runs on its own when a record is created or changed.
 
 <div class="sfdx-hardis-home-card__links" markdown>
 
-[Assignment Rules (2)](assignmentRules/index.md) [Escalation Rules (1)](escalationRules/index.md) [Flows (6)](flows/index.md)
+[Assignment Rules (2)](assignmentRules/index.md) [Escalation Rules (1)](escalationRules/index.md) [Flows (7)](flows/index.md)
 
 </div>
 
@@ -55,7 +55,7 @@ The custom code written on top of the standard platform.
 
 <div class="sfdx-hardis-home-card__links" markdown>
 
-[Apex (16)](apex/index.md) [Lightning Web Components (29)](lwc/index.md) [Aura Components (2)](aura/index.md)
+[Apex (16)](apex/index.md) [Lightning Web Components (30)](lwc/index.md) [Aura Components (2)](aura/index.md)
 
 </div>
 
@@ -63,7 +63,7 @@ The custom code written on top of the standard platform.
 
 <div class="sfdx-hardis-home-card" markdown>
 
-[Lightning Pages](pages/index.md){ .sfdx-hardis-home-card__title } <span class="sfdx-hardis-home-card__count">19</span>
+[Lightning Pages](pages/index.md){ .sfdx-hardis-home-card__title } <span class="sfdx-hardis-home-card__count">20</span>
 
 The screens users work on, and the components placed on them.
 
@@ -116,4 +116,4 @@ _Documentation generated from branch monitoring_orgfarm_42750320ff_dev_ed_develo
 
 [![SFDX-Hardis is provided by Cloudity](https://raw.githubusercontent.com/hardisgroupcom/sfdx-hardis/refs/heads/main/docs/assets/images/cloudity-banner.png)](https://cloudity.com?ref=sfdxhardis)
 
-<!-- sfdx-hardis-home-page: 45d698a84d47abe2f5242f735d1480ab974832819989f97e2e4dd62e3b2a8d18 -->
+<!-- sfdx-hardis-home-page: a525b2502d60ff75cd11d9425a6641991dc046a292ec20d0a513e99b05006771 -->

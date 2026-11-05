@@ -296,6 +296,7 @@
         <members>Panel_Batch__c</members>
         <members>Proto_Board_App_Page</members>
         <members>Proto_Table_Widget_Lab</members>
+        <members>Proto_Tabs_Filter_Context</members>
         <members>Service_Command_Board</members>
         <name>CustomTab</name>
     </types>
@@ -407,6 +408,7 @@
         <members>Proto_Board_Account_Record_Page</members>
         <members>Proto_Board_App_Page</members>
         <members>Proto_Table_Widget_Lab</members>
+        <members>Proto_Tabs_Filter_Context</members>
         <members>RevenueCloudConsole_UtilityBar</members>
         <members>SalesCloudMobile_UtilityBar</members>
         <members>Service_Command_Board</members>
@@ -417,6 +419,7 @@
         <members>Installation_Close_Check</members>
         <members>Installation_Crew_Warning</members>
         <members>Proto_Board_Host_Flow</members>
+        <members>Proto_Tabs_Filter_Context_Flow</members>
         <members>Service_Command_Board</members>
         <members>sfdc_default_ReportExport_Protection_Flow</members>
         <name>Flow</name>
@@ -426,6 +429,7 @@
         <members>Installation_Close_Check</members>
         <members>Installation_Crew_Warning</members>
         <members>Proto_Board_Host_Flow</members>
+        <members>Proto_Tabs_Filter_Context_Flow</members>
         <members>Service_Command_Board</members>
         <members>sfdc_default_ReportExport_Protection_Flow</members>
         <name>FlowDefinition</name>
@@ -642,6 +646,7 @@
         <members>protoBoardStore</members>
         <members>protoBoardWidget</members>
         <members>protoFilterWidget</members>
+        <members>protoTabProbe</members>
         <members>protoTableHarness</members>
         <members>protoWidgetCpe</members>
         <name>LightningComponentBundle</name>
