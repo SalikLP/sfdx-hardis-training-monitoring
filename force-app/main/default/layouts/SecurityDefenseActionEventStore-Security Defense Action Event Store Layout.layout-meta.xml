@@ -23,6 +23,10 @@
                 <field>ExecutedAt</field>
             </layoutItems>
             <layoutItems>
+                <behavior>Edit</behavior>
+                <field>PerformedById</field>
+            </layoutItems>
+            <layoutItems>
                 <behavior>Readonly</behavior>
                 <field>SecurityDefenseActionEventNumber</field>
             </layoutItems>
@@ -47,6 +51,7 @@
         <fields>Status</fields>
         <fields>DetectedAt</fields>
         <fields>ExecutedAt</fields>
+        <fields>PerformedById</fields>
     </miniLayout>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showRunAssignmentRulesCheckbox>false</showRunAssignmentRulesCheckbox>
