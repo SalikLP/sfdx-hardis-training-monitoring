@@ -16,9 +16,9 @@ click Handover_Item__c "../Handover_Item__c/"
 Account["Account"]:::object
 click Account "../Account/"
 
-Panel_Batch__c -->|Installation__c| Installation__c
 Installation__c -->|Account__c| Account
 Handover_Item__c -->|Installation__c| Installation__c
+Panel_Batch__c -->|Installation__c| Installation__c
 
 classDef object fill:#D6E9FF,stroke:#0070D2,stroke-width:3px,rx:12px,ry:12px,shadow:drop,color:#333;
 classDef customObject fill:#FFF4C2,stroke:#CCAA00,stroke-width:3px,rx:12px,ry:12px,shadow:drop,color:#333;
