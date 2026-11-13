@@ -35,6 +35,7 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | ContactId |  | Lookup | <!-- --> |
 | ContactMobile |  |  | <!-- --> |
 | ContactPhone |  |  | <!-- --> |
+| CurrencyIsoCode |  |  | <!-- --> |
 | Description |  |  | <!-- --> |
 | EngineeringReqNumber__c | Engineering Req Number | Text | <!-- --> |
 | EntitlementId |  | Lookup | <!-- --> |
@@ -99,15 +100,51 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 
 | Apex Class | Type |
 | :----      | :--: | 
+| BoardAveragePerRecord | Class |
+| BoardAveragePerRecordTest | Test |
+| BoardBucketField | Class |
+| BoardBucketFieldTest | Test |
+| BoardChartEngine | Lightning Controller |
+| BoardChartEngineTest | Test |
+| BoardChartPanels | Class |
+| BoardChartQuery | Lightning Controller |
+| BoardChartQueryBucketTest | Test |
+| BoardCondition | Class |
+| BoardConditionTest | Test |
+| BoardCrossObjectMeasures | Lightning Controller |
+| BoardCurrencyConverter | Lightning Controller |
+| BoardCurrencyConverterTest | Test |
+| BoardDataProviderRows | Class |
+| BoardDataProviders | Class |
 | [BoardDescribe](../apex/BoardDescribe.md) | Class |
 | [BoardErrors](../apex/BoardErrors.md) | Lightning Controller |
+| BoardForecastingQuota | Class |
+| BoardForecastingQuotaTest | Test |
+| BoardFormula | Class |
+| BoardFormulaMeasures | Lightning Controller |
+| BoardFormulaMeasuresTest | Test |
+| BoardFormulaTest | Test |
 | [BoardQueryService](../apex/BoardQueryService.md) | Lightning Controller |
 | [BoardQueryServiceChildRowsTest](../apex/BoardQueryServiceChildRowsTest.md) | Test |
+| BoardQueryServiceEmptyFilledTest | Test |
+| BoardQueryServiceRowActionsTest | Test |
 | [BoardQueryServiceSearchTest](../apex/BoardQueryServiceSearchTest.md) | Test |
+| BoardQueryServiceTableGroupingTest | Test |
 | [BoardQueryServiceTableTest](../apex/BoardQueryServiceTableTest.md) | Test |
+| BoardQueryServiceTeamTest | Test |
 | [BoardQueryServiceTest](../apex/BoardQueryServiceTest.md) | Test |
+| BoardQuotaProvider | Class |
 | [BoardSchemaService](../apex/BoardSchemaService.md) | Lightning Controller |
 | [BoardSchemaServiceTest](../apex/BoardSchemaServiceTest.md) | Test |
+| BoardTableAggregate | Lightning Controller |
+| BoardTableAggregateCursor | Lightning Controller |
+| BoardTableAggregateEngine | Class |
+| BoardTableAggregateEngineTest | Test |
+| BoardTableBucketColumns | Class |
+| BoardTableBucketGroup | Class |
+| BoardTableEngine | Lightning Controller |
+| BoardTableGrouping | Lightning Controller |
+| BoardTableQuery | Lightning Controller |
 | [ProtoTableQueryService](../apex/ProtoTableQueryService.md) | Lightning Controller |
 
 
@@ -116,15 +153,24 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | Component | Description | Exposed | Targets |
 | :-------- | :---------- | :-----: | :------------- |
 | [boardBarWidget](../lwc/boardBarWidget.md) | Unified vertical and horizontal bar chart widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
-| [boardBaseFilterDialog](../lwc/boardBaseFilterDialog.md) | Board Base Filters Config Dialog | ❌ |  |
+| [boardChartColours](../lwc/boardChartColours.md) | Board Chart Colours | ❌ |  |
+| [boardChartPanels](../lwc/boardChartPanels.md) | <!-- --> | ❌ |  |
+| [boardChartSetupSteps](../lwc/boardChartSetupSteps.md) | Board Chart Setup Steps | ❌ |  |
+| [boardConditionRow](../lwc/boardConditionRow.md) | Board Condition Row | ❌ |  |
+| [boardConfigCurrency](../lwc/boardConfigCurrency.md) | Board CPE Config Currency | ❌ |  |
 | [boardConfigUtils](../lwc/boardConfigUtils.md) | Board Config Utils | ❌ |  |
-| [boardCpeFormatEditor](../lwc/boardCpeFormatEditor.md) | Board CPE Format Editor | ❌ |  |
+| [boardContextStore](../lwc/boardContextStore.md) | Board Context Store | ❌ |  |
+| [boardCpeCrossObjectMeasure](../lwc/boardCpeCrossObjectMeasure.md) | Board CPE Cross-object Measure | ❌ |  |
 | [boardCpeObjectFieldPicker](../lwc/boardCpeObjectFieldPicker.md) | Board CPE searchable object picker, capability-filtered field picker, and relationship path builder | ❌ |  |
+| [boardCpeTotalRow](../lwc/boardCpeTotalRow.md) | Board CPE Total Row | ❌ |  |
 | [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
+| [boardCrossObjectMeasure](../lwc/boardCrossObjectMeasure.md) | <!-- --> | ❌ |  |
 | [boardFilterDialog](../lwc/boardFilterDialog.md) | Board Filter Definitions Config Dialog | ❌ |  |
 | [boardFilterWidget](../lwc/boardFilterWidget.md) | Declarative filter bar widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
+| [boardFixedColourEditor](../lwc/boardFixedColourEditor.md) | Board Fixed Colour Editor | ❌ |  |
 | [boardMetricWidget](../lwc/boardMetricWidget.md) | Declarative KPI metric widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
-| [boardTableCpe](../lwc/boardTableCpe.md) | Board Table CPE | ✅ |  |
+| [boardSetupFilterDefinitions](../lwc/boardSetupFilterDefinitions.md) | Board Setup Filter Definitions | ❌ |  |
+| [boardSetupSteps](../lwc/boardSetupSteps.md) | <!-- --> | ❌ |  |
 | [boardTableWidget](../lwc/boardTableWidget.md) | Declarative table widget with child row expansion for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
 | [protoTableHarness](../lwc/protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 

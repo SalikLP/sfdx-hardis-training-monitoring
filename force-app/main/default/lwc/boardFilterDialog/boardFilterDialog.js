@@ -3,12 +3,21 @@ import LightningModal from 'lightning/modal';
 import getPicklistOptions from '@salesforce/apex/BoardSchemaService.getPicklistOptions';
 import resolveRecordLabels from '@salesforce/apex/BoardSchemaService.resolveRecordLabels';
 import searchUsersAndQueues from '@salesforce/apex/BoardSchemaService.searchUsersAndQueues';
-import { DATE_PRESETS, RECORD_CONTEXT_OVERRIDE_TYPES, normalizeBoardError } from 'c/boardConfigUtils';
+import getCurrencyOptions from '@salesforce/apex/BoardCurrencyConverter.getCurrencyOptions';
+import {
+    DATE_PRESETS,
+    CURRENCY_PICKER_ITEM,
+    EMPTY_FILLED_OPERATORS,
+    RECORD_CONTEXT_OVERRIDE_TYPES,
+    isCurrencyPickerItem,
+    normalizeBoardError
+} from 'c/boardConfigUtils';
 import {
     ConfigDialogMixin,
     FILTER_TYPE_LABELS,
     FILTER_TYPE_OPTIONS,
     TEXT_MATCH_MODE_OPTIONS,
+    USER_MATCH_MODE_OPTIONS,
     applyPatch,
     cleanString,
     compactRecordContext,
@@ -28,6 +37,15 @@ const SELECTION_OPTIONS = [
     { label: 'Single', value: 'single' },
     { label: 'Multiple', value: 'multi' }
 ];
+const DISPLAY_OPTIONS = [
+    { label: 'Dropdown', value: 'dropdown' },
+    { label: 'Buttons (up to 5 values)', value: 'buttons' }
+];
+const EMPTY_FILLED_DEFAULT_OPTIONS = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Empty', value: 'EMPTY' },
+    { label: 'Filled in', value: 'FILLED' }
+];
 const OPTIONS_SOURCE_OPTIONS = [
     { label: 'Field picklist values', value: 'FIELD_DESCRIBE' },
     { label: 'Custom options', value: 'CUSTOM' }
@@ -46,6 +64,7 @@ const USER_SEARCH_MIN_CHARACTERS = 2;
 // Keys owned by one filter type; dropped when the type changes.
 const TYPE_KEYS = [
     'selectionMode',
+    'display',
     'targetObjectApiName',
     'optionsSource',
     'sourceObjectApiName',
@@ -81,18 +100,23 @@ function defaultValuesOf(filter) {
  * the Record context no longer matches the draft filters (`recordContextErrors`).
  */
 export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal) {
-    /** `{ filters, recordContext }`, already deep-copied by `openConfigDialog`. */
+    /** `{ filters, recordContext, bucketFields }`, already deep-copied by `openConfigDialog`. */
     @api value;
 
     filters = [];
     recordContext = null;
+    /** The Filter widget's Board-level Bucket fields a Bucket filter can use (not edited here). */
+    bucketFields = [];
     rowKeyPrefix = 'filter';
     newFilterType = 'PICKLIST';
 
     typeOptions = FILTER_TYPE_OPTIONS;
     selectionOptions = SELECTION_OPTIONS;
+    displayOptions = DISPLAY_OPTIONS;
+    emptyFilledDefaultOptions = EMPTY_FILLED_DEFAULT_OPTIONS;
     optionsSourceOptions = OPTIONS_SOURCE_OPTIONS;
     matchModeOptions = TEXT_MATCH_MODE_OPTIONS;
+    userMatchModeOptions = USER_MATCH_MODE_OPTIONS;
     dateDefaultOptions = DATE_DEFAULT_OPTIONS;
 
     /** `Object.Field` → `{ loading, options, error }` for FIELD_DESCRIBE picklist defaults. */
@@ -105,12 +129,42 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
     /** Row key → date default mode chosen before any value is entered. */
     _dateModes = {};
 
+    /** The org's currency setup (`getCurrencyOptions`); a single-currency org has no Currency picker. */
+    currencyOptions = null;
+
+    connectedCallback() {
+        super.connectedCallback();
+        Promise.resolve(getCurrencyOptions())
+            .then((options) => {
+                this.currencyOptions = options || null;
+            })
+            .catch(() => {
+                this.currencyOptions = null;
+            });
+    }
+
+    /** Known to be a single-currency org: the Currency picker is unavailable (unknown while loading). */
+    get isCurrencyUnavailable() {
+        return Boolean(this.currencyOptions) && this.currencyOptions.multiCurrency !== true;
+    }
+
+    /** At most one Currency picker per Filter widget, and none in a single-currency org. */
+    get isAddCurrencyPickerDisabled() {
+        return this.isCurrencyUnavailable || this.filters.some(isCurrencyPickerItem);
+    }
+
+    get currencyPickerMeta() {
+        const label = FILTER_TYPE_LABELS[CURRENCY_PICKER_ITEM];
+        return this.isCurrencyUnavailable ? `${label} (unavailable)` : label;
+    }
+
     // ---- Draft (ConfigDialogMixin) -------------------------------------------------------------------------------
 
     initDraft(value) {
         const source = isPlainObject(value) ? value : {};
         this.filters = Array.isArray(source.filters) ? source.filters.map((f) => (isPlainObject(f) ? f : {})) : [];
         this.recordContext = source.recordContext === undefined ? null : source.recordContext;
+        this.bucketFields = Array.isArray(source.bucketFields) ? source.bucketFields.filter(isPlainObject) : null;
         this.loadDefaultSupport();
     }
 
@@ -135,7 +189,7 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
 
     /** The Filter widget's own validation rules applied to the draft filters. */
     get validation() {
-        return validateFilterDefinitions(this.filters);
+        return validateFilterDefinitions(this.filters, this.bucketFields);
     }
 
     /** Messages per draft filter. */
@@ -167,12 +221,20 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
         return this.filters.map((filter, index) => ({
             key: this._rowKeys[index],
             label: this.titleOf(filter, index),
-            meta: FILTER_TYPE_LABELS[filter.type] || 'Unknown type',
+            meta: isCurrencyPickerItem(filter)
+                ? this.currencyPickerMeta
+                : FILTER_TYPE_LABELS[filter.type] || 'Unknown type',
             hasError: errors[index].length > 0
         }));
     }
 
     titleOf(filter, index) {
+        if (filter.type === 'section') {
+            return cleanString(filter.label) || `Section ${index + 1}`;
+        }
+        if (isCurrencyPickerItem(filter)) {
+            return cleanString(filter.label) || FILTER_TYPE_LABELS[CURRENCY_PICKER_ITEM];
+        }
         return cleanString(filter.label) || cleanString(filter.filterId) || `Filter ${index + 1}`;
     }
 
@@ -200,8 +262,12 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
         }));
         return {
             key,
+            isSection: type === 'section',
+            isCurrencyPicker: type === CURRENCY_PICKER_ITEM,
+            startCollapsed: filter.startCollapsed === true,
             selectionName: `${key}-selection`,
             sourceName: `${key}-source`,
+            displayName: `${key}-display`,
             index,
             title: this.titleOf(filter, index),
             errors,
@@ -215,7 +281,13 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
             isUser: type === 'USER',
             isDateRange: type === 'DATE_RANGE',
             isText: type === 'TEXT',
-            showSelectionMode: ['PICKLIST', 'LOOKUP', 'USER'].includes(type),
+            isEmptyFilled: type === 'EMPTY_FILLED',
+            isBucket: type === 'BUCKET',
+            bucketFieldId: filter.bucketFieldId || '',
+            emptyFilledDefault: EMPTY_FILLED_OPERATORS.includes(defaultValue.operator) ? defaultValue.operator : 'ALL',
+            showSelectionMode:
+                ['LOOKUP', 'USER'].includes(type) || (type === 'PICKLIST' && filter.display !== 'buttons'),
+            display: filter.display === 'buttons' ? 'buttons' : 'dropdown',
             selectionMode,
             isSingle: selectionMode === 'single',
             fieldApiName: filter.fieldApiName || '',
@@ -241,6 +313,8 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
             targetObjectApiName: filter.targetObjectApiName || '',
             hasTargetObject: Boolean(cleanString(filter.targetObjectApiName)),
             includeQueues: filter.includeQueues === true,
+            userMatchModeName: `${key}-user-match-mode`,
+            userMatchMode: filter.matchMode || 'users',
             defaultMe: defaultValue.token === 'ME',
             userSearchTerm: userSearch.term,
             userResults: userSearch.results.map((result) => ({
@@ -398,6 +472,29 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
         this.addDraftItem(filter);
     }
 
+    handleAddSection() {
+        this.addDraftItem({ type: 'section', label: 'Section', startCollapsed: false });
+    }
+
+    handleAddCurrencyPicker() {
+        if (!this.isAddCurrencyPickerDisabled) {
+            this.addDraftItem({ type: CURRENCY_PICKER_ITEM });
+        }
+    }
+
+    handleCurrencyPickerLabel(event) {
+        const label = event.detail.value || '';
+        this.updateFilter(Number(event.target.dataset.index), { label: label.trim() ? label : null });
+    }
+
+    handleSectionLabel(event) {
+        this.updateFilter(Number(event.target.dataset.index), { label: event.detail.value || '' });
+    }
+
+    handleSectionCollapsed(event) {
+        this.updateFilter(Number(event.target.dataset.index), { startCollapsed: event.detail.checked ? true : null });
+    }
+
     handleLabel(event) {
         const index = Number(event.target.dataset.index);
         const filter = this.filters[index];
@@ -432,6 +529,15 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
 
     handleSelectionMode(event) {
         this.updateFilter(Number(event.target.dataset.index), { selectionMode: event.detail.value });
+    }
+
+    handleDisplay(event) {
+        const display = event.detail.value;
+        // Buttons display is single-select + All.
+        this.updateFilter(
+            Number(event.target.dataset.index),
+            display === 'buttons' ? { display, selectionMode: 'single' } : { display: null }
+        );
     }
 
     handleFieldApiName(event) {
@@ -498,6 +604,13 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
 
     handleTargetObject(event) {
         this.updateFilter(Number(event.target.dataset.index), { targetObjectApiName: event.detail.value || null });
+    }
+
+    handleUserMatchMode(event) {
+        const matchMode = event.detail.value;
+        this.updateFilter(Number(event.target.dataset.index), {
+            matchMode: matchMode === 'usersAndTeam' ? matchMode : null
+        });
     }
 
     handleIncludeQueues(event) {
@@ -625,6 +738,28 @@ export default class BoardFilterDialog extends ConfigDialogMixin(LightningModal)
         }
         this.updateFilter(index, {
             defaultValue: dates.from || dates.to ? applyPatch({ operator }, dates) : null
+        });
+    }
+
+    // BUCKET
+
+    /** Combobox options of the Board-level Bucket fields, by id. */
+    get bucketFieldOptions() {
+        return (this.bucketFields || [])
+            .filter((field) => cleanString(field.id))
+            .map((field) => ({ label: cleanString(field.label) || field.id.trim(), value: field.id.trim() }));
+    }
+
+    handleBucketField(event) {
+        this.updateFilter(Number(event.target.dataset.index), { bucketFieldId: event.detail.value || null });
+    }
+
+    // EMPTY_FILLED
+
+    handleEmptyFilledDefault(event) {
+        const operator = event.detail.value;
+        this.updateFilter(Number(event.target.dataset.index), {
+            defaultValue: EMPTY_FILLED_OPERATORS.includes(operator) ? { operator } : null
         });
     }
 

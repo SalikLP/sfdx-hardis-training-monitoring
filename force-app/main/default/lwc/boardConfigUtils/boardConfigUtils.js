@@ -1,13 +1,51 @@
 import LOCALE from '@salesforce/i18n/locale';
 import CURRENCY from '@salesforce/i18n/currency';
 import TIME_ZONE from '@salesforce/i18n/timeZone';
+import { bucketIdOf, bucketReference, findBucketField } from 'c/boardBucketFields';
 
 /** `FilterEntry.type` values (spec §3). */
-export const FILTER_TYPES = ['PICKLIST', 'LOOKUP', 'USER', 'DATE_RANGE', 'TEXT'];
+export const FILTER_TYPES = [
+    'PICKLIST',
+    'LOOKUP',
+    'USER',
+    'DATE_RANGE',
+    'NUMBER_RANGE',
+    'TEXT',
+    'EMPTY_FILLED',
+    'BUCKET'
+];
+/**
+ * Item `type` of the Currency picker in a Filter widget's `filters` list (`{ type: 'currencyPicker', label? }`). Like
+ * a Section item it is not a filter: never in the Filter context, never bound. At most one per Filter widget.
+ */
+export const CURRENCY_PICKER_ITEM = 'currencyPicker';
+
+export function isCurrencyPickerItem(item) {
+    return Boolean(item) && typeof item === 'object' && item.type === CURRENCY_PICKER_ITEM;
+}
+
+/**
+ * A Filter widget config's `filters` list, reading the older Board-level `currencyPicker: { label }` setting as a
+ * Currency picker item at the end of the list (unless the list already has one).
+ */
+export function filterItemsOf(config) {
+    const filters = Array.isArray(config?.filters) ? config.filters : [];
+    const legacy = config?.currencyPicker;
+    if (!legacy || typeof legacy !== 'object' || Array.isArray(legacy) || filters.some(isCurrencyPickerItem)) {
+        return filters;
+    }
+    const label = typeof legacy.label === 'string' && legacy.label.trim() ? legacy.label : null;
+    return [...filters, label ? { type: CURRENCY_PICKER_ITEM, label } : { type: CURRENCY_PICKER_ITEM }];
+}
+
+/** `EMPTY_FILLED` operators: `field = null` / `field != null`. All is the inactive filter (no condition). */
+export const EMPTY_FILLED_OPERATORS = ['EMPTY', 'FILLED'];
 /** Filter types a `LOCKED`/`DEFAULT` Record context override (`overrideFilterId`) can target. */
 export const RECORD_CONTEXT_OVERRIDE_TYPES = ['PICKLIST', 'LOOKUP', 'USER'];
 /** `DATE_RANGE` operators: relative literal or ISO bounds. */
 export const DATE_RANGE_OPERATORS = ['LITERAL', 'BETWEEN', 'GTE', 'LTE'];
+/** `NUMBER_RANGE` operators: min and max (`BETWEEN`), min only (`GTE`) or max only (`LTE`). */
+export const NUMBER_RANGE_OPERATORS = ['BETWEEN', 'GTE', 'LTE'];
 /** `filterBindings` opt-out value. */
 export const IGNORE_BINDING = 'IGNORE';
 
@@ -80,7 +118,7 @@ export function applyServerIgnoredFilters(applied = [], ignored = [], serverIgno
  * `default="vertical"`). They don't count as explicit, so a pasted `configJson` can still set them. The defaults stay
  * in the metadata because the platform refuses to remove a property default that Flow versions reference.
  */
-const METADATA_DEFAULTS = { boardId: 'default', orientation: 'vertical' };
+const METADATA_DEFAULTS = { boardId: 'default' };
 
 function explicitTopLevel(topLevelProps, key) {
     const value = topLevelProps[key] ? String(topLevelProps[key]).trim() : '';
@@ -88,11 +126,75 @@ function explicitTopLevel(topLevelProps, key) {
 }
 
 /**
+ * A Metric widget's Measures list. A config without one (a single-aggregate Metric saved before the Measures list) is
+ * one visible Measure built from its `aggregateFunction`, `valueFieldApiName` and `format` (default: count records).
+ */
+export function metricMeasures(config) {
+    const source = config && typeof config === 'object' ? config : {};
+    if (Array.isArray(source.measures) && source.measures.length) {
+        return source.measures;
+    }
+    const measure = { aggregateFunction: source.aggregateFunction || 'COUNT' };
+    if (source.valueFieldApiName) {
+        measure.valueFieldApiName = source.valueFieldApiName;
+    }
+    if (source.format && typeof source.format === 'object') {
+        measure.format = source.format;
+    }
+    return [measure];
+}
+
+/**
+ * The Average per record settings a Measure sends to Apex: for an `AVG_PER` Measure its per-record lookup `perField`
+ * and how each record's value is taken, `inner` (`SUM` of its rows, the default, or `ONCE`); none for other Measures.
+ */
+export function perRecordSettings(measure) {
+    const source = measure && typeof measure === 'object' ? measure : {};
+    if (
+        String(source.aggregateFunction || '')
+            .trim()
+            .toUpperCase() !== 'AVG_PER'
+    ) {
+        return {};
+    }
+    const inner = String(source.inner || '')
+        .trim()
+        .toUpperCase();
+    return { perField: source.perField || null, inner: inner || 'SUM' };
+}
+
+/**
+ * Whether a Widget waits for the Board's Filter widget before its first query: the `waitForFilterWidget` config key,
+ * on unless explicitly `false`. The Setup dialog's live preview (`livePreview`) never waits.
+ */
+export function waitsForFilterWidget(config, livePreview = false) {
+    return !livePreview && config?.waitForFilterWidget !== false;
+}
+
+/**
+ * Board id a waiting Widget shows in its Wait for Filter widget hint card: set while the Widget waits and has no
+ * Filter context yet, else empty.
+ */
+export function waitingForBoardId(config, livePreview, filterContext) {
+    return waitsForFilterWidget(config, livePreview) && !filterContext ? config?.boardId || 'default' : '';
+}
+
+/**
  * Versioned configJson (version: 1) parser, validator, and top-level @api property precedence merger.
  */
+/** Child rows were removed from the Table; a saved `childRelationship` is rejected, not migrated. */
+export const CHILD_ROWS_REMOVED_MESSAGE =
+    'Child rows were replaced by Row grouping: use the child object as source and group by the parent.';
+const CHILD_ROWS_REMOVED_ERROR = {
+    category: 'CONFIG_ERROR',
+    message: CHILD_ROWS_REMOVED_MESSAGE,
+    fieldPath: 'childRelationship',
+    retryable: false
+};
+
 export function parseAndMergeConfig(widgetType, rawConfigJson, topLevelProps = {}) {
     const cleanTop = {};
-    ['boardId', 'title', 'objectApiName', 'orientation'].forEach((key) => {
+    ['boardId', 'title', 'objectApiName'].forEach((key) => {
         const value = explicitTopLevel(topLevelProps, key);
         if (value) {
             cleanTop[key] = value;
@@ -166,13 +268,19 @@ export function parseAndMergeConfig(widgetType, rawConfigJson, topLevelProps = {
         merged.objectApiName = configObject || cleanTop.objectApiName || '';
     }
 
-    if (widgetType === 'bar') {
-        merged.orientation = cleanTop.orientation || parsed.orientation || 'vertical';
+    if (widgetType === 'table' && parsed.childRelationship !== undefined && parsed.childRelationship !== null) {
+        return { config: merged, isUnconfigured: false, error: CHILD_ROWS_REMOVED_ERROR };
+    }
+
+    if (widgetType === 'chart') {
+        merged.chartType = parsed.chartType || 'bar';
+        merged.orientation = parsed.orientation || 'vertical';
     }
 
     if (widgetType === 'filter') {
         merged.persistence = parsed.persistence || 'SESSION';
-        merged.filters = Array.isArray(parsed.filters) ? parsed.filters : [];
+        merged.filters = filterItemsOf(parsed);
+        delete merged.currencyPicker;
         return {
             config: merged,
             isUnconfigured: false,
@@ -201,8 +309,8 @@ function getDefaultTitle(widgetType) {
             return 'Board Filter Bar';
         case 'metric':
             return 'Metric';
-        case 'bar':
-            return 'Bar Chart';
+        case 'chart':
+            return 'Chart';
         case 'table':
             return 'Table';
         default:
@@ -275,6 +383,7 @@ const STEP_TWO_TYPES = new Set(['LOOKUP', 'USER', 'RECORD_CONTEXT']);
 const COMPATIBLE_FIELD_TYPES = {
     PICKLIST: new Set(['PICKLIST', 'MULTIPICKLIST', 'STRING', 'BOOLEAN', 'COMBOBOX']),
     DATE_RANGE: new Set(['DATE', 'DATETIME']),
+    NUMBER_RANGE: new Set(['INTEGER', 'LONG', 'DOUBLE', 'CURRENCY', 'PERCENT']),
     TEXT: new Set(['STRING', 'TEXTAREA', 'EMAIL', 'PHONE', 'URL', 'PICKLIST', 'COMBOBOX'])
 };
 
@@ -295,6 +404,9 @@ function hasSelection(entry) {
         case 'STARTS_WITH':
         case 'SOSL':
             return text.length > 0;
+        case 'EMPTY':
+        case 'FILLED':
+            return true;
         default:
             return false;
     }
@@ -359,6 +471,10 @@ function isFieldCompatible(entry, field, objectApiName) {
     if (entry.type === 'TEXT') {
         return COMPATIBLE_FIELD_TYPES.TEXT.has(dataType);
     }
+    if (entry.type === 'EMPTY_FILLED') {
+        // Any filterable field; the readable-field list already excludes what the user cannot see.
+        return true;
+    }
     const compatible = COMPATIBLE_FIELD_TYPES[entry.type];
     return Boolean(compatible && compatible.has(dataType));
 }
@@ -370,7 +486,7 @@ function conventionFieldPath(entry, objectApiName, fieldsByName, fields) {
             hinted && hinted.isFilterable && isFieldCompatible(entry, hinted, objectApiName) ? hinted.apiName : null;
         if (entry.operator === 'SOSL') {
             // A fieldApiName hint on this object searches that column (sent as CONTAINS); otherwise server-side SOSL
-            // over the Widget object (+ a Table's childRelationship) with no field path.
+            // over the Widget object with no field path.
             return hintedPath || undefined;
         }
         if (entry.operator !== 'CONTAINS' && entry.operator !== 'STARTS_WITH') {
@@ -418,12 +534,25 @@ function conventionFieldPath(entry, objectApiName, fieldsByName, fields) {
  * @param {object} params.filterContext Board FilterContext
  * @param {object} [params.filterBindings] Widget `filterBindings`
  * @param {string} [params.widgetId] Widget id used to skip its own cross filters
+ * @param {Array} [params.bucketFields] the Widget's own Bucket fields
+ * @param {Array} [params.boardBucketFields] the Board-level Bucket fields (`getBoardBucketFields`)
  * @returns {{ filters: Array, applied: Array<{filterId, label, fieldPath}>, ignored: Array<{filterId, label}>,
  *   error: object|null }} `filters` is the `BoardQueryService` request payload (sorted by filterId). `error` is a
  *   `CONFIG_ERROR` BoardErrorPayload for the first malformed explicit binding; Widgets render it instead of querying
  *   (the payload still carries that filter as explicit without a path, which the server rejects).
+ *   A `BUCKET` filter binds to a Bucket field (`bucket:<id>`, by convention the filter's own): the Widget's own first,
+ *   else the Board's. Its payload carries that Bucket field's config as `bucketField`; an unknown id is ignored by
+ *   convention and a `CONFIG_ERROR` when explicit.
  */
-export function resolveFilterBindings({ objectApiName, fields, filterContext, filterBindings, widgetId }) {
+export function resolveFilterBindings({
+    objectApiName,
+    fields,
+    filterContext,
+    filterBindings,
+    widgetId,
+    bucketFields,
+    boardBucketFields
+}) {
     const bindings = filterBindings && typeof filterBindings === 'object' ? filterBindings : {};
     const fieldList = Array.isArray(fields) ? fields : [];
     const fieldsByName = new Map(fieldList.map((field) => [field.apiName.toLowerCase(), field]));
@@ -457,7 +586,27 @@ export function resolveFilterBindings({ objectApiName, fields, filterContext, fi
                 };
             }
         }
-        if (!explicit) {
+        let bucketField = null;
+        if (entry.type === 'BUCKET') {
+            const bucketId = explicit ? bucketIdOf(fieldPath) : entry.bucketFieldId || null;
+            bucketField = bucketId
+                ? findBucketField(bucketFields, bucketId) || findBucketField(boardBucketFields, bucketId)
+                : null;
+            if (!bucketField) {
+                if (explicit && !error) {
+                    error = {
+                        category: 'CONFIG_ERROR',
+                        message: `Filter binding for "${entry.filterId}" must name a Bucket field of this Widget or the Board (bucket:<id>); "${fieldPath}" is unknown.`,
+                        filterId: entry.filterId,
+                        fieldPath: `filterBindings.${entry.filterId}`,
+                        retryable: false
+                    };
+                }
+                ignored.push({ filterId: entry.filterId, label });
+                return;
+            }
+            fieldPath = bucketReference(bucketId);
+        } else if (!explicit) {
             fieldPath = conventionFieldPath(entry, objectApiName, fieldsByName, fieldList);
             if (fieldPath === null) {
                 ignored.push({ filterId: entry.filterId, label });
@@ -471,7 +620,7 @@ export function resolveFilterBindings({ objectApiName, fields, filterContext, fi
             }
         }
         applied.push({ filterId: entry.filterId, label, fieldPath });
-        filters.push({
+        const filter = {
             filterId: entry.filterId,
             type: entry.type,
             fieldPath,
@@ -486,7 +635,15 @@ export function resolveFilterBindings({ objectApiName, fields, filterContext, fi
             targetObjectApiName: entry.targetObjectApiName || null,
             fieldApiName: entry.fieldApiName || null,
             minCharacters: Number.isInteger(entry.minCharacters) ? entry.minCharacters : null
-        });
+        };
+        if (entry.type === 'USER' && entry.matchMode === 'usersAndTeam') {
+            // Each picked user's Team; BoardQueryService resolves the roles below theirs (never sent to the client).
+            filter.matchMode = entry.matchMode;
+        }
+        if (bucketField) {
+            filter.bucketField = bucketField;
+        }
+        filters.push(filter);
     });
 
     filters.sort((a, b) => a.filterId.localeCompare(b.filterId));

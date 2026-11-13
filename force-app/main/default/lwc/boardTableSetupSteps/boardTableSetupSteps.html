@@ -1,0 +1,223 @@
+<template>
+    <template lwc:if={isData}>
+        <c-board-cpe-object-field-picker
+            class="c-table-object"
+            mode="object"
+            label="Object"
+            field-level-help="The object whose records the table lists. Changing it flags the steps whose fields aren't on the new object."
+            value={objectPickerValue}
+            onchange={handleObject}
+        ></c-board-cpe-object-field-picker>
+        <c-board-setup-base-filters
+            class="c-table-base-filters"
+            value={baseFilters}
+            object-api-name={objectApiName}
+            onchange={handleBaseFilters}
+        ></c-board-setup-base-filters>
+    </template>
+
+    <template lwc:if={isColumns}>
+        <c-board-cpe-column-list
+            class="c-table-column-list"
+            object-api-name={objectApiName}
+            columns={columns}
+            bucket-fields={bucketFields}
+            onchange={handleColumns}
+        ></c-board-cpe-column-list>
+        <h3 class="slds-text-title_caps slds-m-top_medium">Bucket fields</h3>
+        <c-board-bucket-field-editor
+            class="c-table-bucket-fields slds-m-top_xx-small"
+            object-api-name={objectApiName}
+            value={bucketFields}
+            onchange={handleBucketFields}
+        ></c-board-bucket-field-editor>
+    </template>
+
+    <template lwc:if={isGrouping}>
+        <template for:each={groupLevels} for:item="level">
+            <div key={level.key} class={level.levelClass} data-level={level.index}>
+                <c-board-cpe-object-field-picker
+                    class="c-table-group-by"
+                    mode="field"
+                    label={level.label}
+                    field-level-help={level.help}
+                    object-api-name={objectApiName}
+                    capability="groupable"
+                    max-hops="5"
+                    value={level.fieldPath}
+                    data-index={level.index}
+                    onchange={handleGroupField}
+                ></c-board-cpe-object-field-picker>
+                <template lwc:if={level.showBucketGroup}>
+                    <lightning-combobox
+                        class="c-table-group-by-bucket slds-m-top_x-small"
+                        label="Or group by a Bucket field"
+                        options={bucketGroupOptions}
+                        value={bucketGroupValue}
+                        field-level-help="With Detail rows off only: one Group row per bucket."
+                        onchange={handleBucketGroup}
+                    ></lightning-combobox>
+                </template>
+                <template lwc:if={level.showGranularity}>
+                    <lightning-combobox
+                        class="c-table-group-granularity slds-m-top_x-small"
+                        label="Date granularity"
+                        options={granularityOptions}
+                        value={level.dateGranularity}
+                        field-level-help="Groups dates by day, month, quarter or year (calendar or fiscal)."
+                        data-index={level.index}
+                        onchange={handleGroupGranularity}
+                    ></lightning-combobox>
+                </template>
+                <template lwc:if={level.showDirection}>
+                    <c-board-picture-tiles
+                        class="c-table-group-direction slds-m-top_x-small"
+                        label="Group order"
+                        options={directionOptions}
+                        value={level.sortDirection}
+                        field-level-help="The order of the groups: by the group value, or by the order field or summary below."
+                        data-index={level.index}
+                        onchange={handleGroupDirection}
+                    ></c-board-picture-tiles>
+                </template>
+                <template lwc:if={level.showFieldSettings}>
+                    <c-board-cpe-object-field-picker
+                        class="c-table-group-order-by slds-m-top_x-small"
+                        mode="field"
+                        label="Order groups by field (optional)"
+                        field-level-help="A field with one value per group, e.g. Account.AnnualRevenue when grouping by Account."
+                        object-api-name={objectApiName}
+                        capability="sortable"
+                        max-hops="5"
+                        value={level.orderBy}
+                        data-index={level.index}
+                        onchange={handleGroupOrderBy}
+                    ></c-board-cpe-object-field-picker>
+                </template>
+            </div>
+        </template>
+        <template lwc:if={isGrouped}>
+            <c-board-picture-tiles
+                class="c-table-detail-rows slds-m-top_small"
+                label="Detail rows"
+                field-level-help="Group rows only shows the Group rows with their summaries: an aggregated table. Columns then show the group field, fields through the group lookup, or summaries."
+                options={detailRowsTiles}
+                value={detailRowsValue}
+                onchange={handleDetailRows}
+            ></c-board-picture-tiles>
+            <template lwc:if={showSummaryOrder}>
+                <lightning-combobox
+                    class="c-table-group-order-summary slds-m-top_x-small"
+                    label="Order groups by summary"
+                    options={summaryOrderOptions}
+                    value={summaryOrder}
+                    field-level-help="With Detail rows off: rank the groups by one of the column summaries, e.g. Sum of Amount."
+                    onchange={handleSummaryOrder}
+                ></lightning-combobox>
+            </template>
+        </template>
+    </template>
+
+    <template lwc:if={isSummaries}>
+        <c-board-cpe-total-row
+            class="c-table-total-row"
+            object-api-name={objectApiName}
+            columns={columns}
+            show-total-row={showTotalRow}
+            grouped={isGrouped}
+            onchange={handleTotalRow}
+        ></c-board-cpe-total-row>
+        <template lwc:if={showSubtotalsSetting}>
+            <c-board-picture-tiles
+                class="c-table-subtotals slds-m-top_small"
+                label="Subtotals"
+                field-level-help="A row closing each group with that group's column summaries."
+                options={subtotalsTiles}
+                value={subtotalsValue}
+                onchange={handleSubtotals}
+            ></c-board-picture-tiles>
+        </template>
+    </template>
+
+    <template lwc:if={isDisplay}>
+        <c-board-cpe-object-field-picker
+            class="c-table-sort-by"
+            mode="field"
+            label="Default sort field"
+            field-level-help="The rows' order until the user sorts by a column."
+            object-api-name={objectApiName}
+            capability="sortable"
+            value={sortBy}
+            onchange={handleSortBy}
+        ></c-board-cpe-object-field-picker>
+        <c-board-picture-tiles
+            class="c-table-sort-direction slds-m-top_x-small"
+            label="Sort direction"
+            options={directionOptions}
+            value={sortDirection}
+            field-level-help="Ascending puts A and the smallest values first."
+            onchange={handleSortDirection}
+        ></c-board-picture-tiles>
+        <lightning-input
+            class="c-table-page-size slds-m-top_x-small"
+            type="number"
+            label="Page size"
+            min="10"
+            max="100"
+            step="1"
+            placeholder="25"
+            value={pageSize}
+            field-level-help="Rows fetched per page while scrolling (10–100, default 25)."
+            onchange={handlePageSize}
+        ></lightning-input>
+        <c-board-picture-tiles
+            class="c-table-row-limit-mode slds-m-top_small"
+            label="Row limit"
+            field-level-help={rowLimitHelp}
+            options={rowLimitTiles}
+            value={rowLimitMode}
+            onchange={handleRowLimitMode}
+        ></c-board-picture-tiles>
+        <template lwc:if={hasRowLimit}>
+            <lightning-input
+                class="c-table-row-limit slds-m-top_x-small"
+                type="number"
+                label="Row limit"
+                min="1"
+                max={rowLimitMax}
+                step="1"
+                value={rowLimit}
+                field-level-help={rowLimitHelp}
+                onchange={handleRowLimit}
+            ></lightning-input>
+        </template>
+        <lightning-input
+            class="c-table-row-count slds-m-top_x-small"
+            type="checkbox"
+            label="Show row count"
+            checked={showRowCount}
+            field-level-help="Shows how many records the table holds next to its title."
+            onchange={handleShowRowCount}
+        ></lightning-input>
+    </template>
+
+    <template lwc:if={isRowActions}>
+        <c-board-cpe-row-action-list
+            class="c-table-row-actions"
+            object-api-name={objectApiName}
+            row-actions={rowActions}
+            onchange={handleRowActions}
+        ></c-board-cpe-row-action-list>
+    </template>
+
+    <template lwc:if={isFilterBindings}>
+        <c-board-cpe-filter-bindings
+            class="c-table-filter-bindings"
+            config={config}
+            builder-context={builderContext}
+            element-info={elementInfo}
+            onchange={handleBindingsChange}
+            onbindingstate={handleBindingState}
+        ></c-board-cpe-filter-bindings>
+    </template>
+</template>

@@ -1,0 +1,85 @@
+<template>
+    <template lwc:if={isFilters}>
+        <c-board-setup-filter-definitions
+            class="c-filter-setup-definitions"
+            config={config}
+            onchange={handleDefinitionsChange}
+        ></c-board-setup-filter-definitions>
+    </template>
+
+    <template lwc:if={isBucketFields}>
+        <c-board-cpe-object-field-picker
+            class="c-filter-bucket-object"
+            mode="object"
+            label="Pick rule fields from"
+            field-level-help="The object whose fields the rule conditions start from while you set them up. Each Widget evaluates the rules on its own object."
+            value={bucketObjectApiName}
+            onchange={handleBucketObject}
+        ></c-board-cpe-object-field-picker>
+        <c-board-bucket-field-editor
+            class="c-filter-bucket-editor slds-m-top_small"
+            object-api-name={bucketObjectApiName}
+            value={bucketFields}
+            onchange={handleBucketFields}
+        ></c-board-bucket-field-editor>
+    </template>
+
+    <template lwc:if={isRecordContext}>
+        <lightning-combobox
+            class="c-filter-rc-mode"
+            label="Mode"
+            field-level-help="Implicit filters Widgets by the record Id where they bind it; Locked feeds the record into a filter viewers can't change; Default pre-fills that filter and viewers can change it."
+            options={recordContextOptions}
+            value={recordContextMode}
+            onchange={handleRecordContextMode}
+        ></lightning-combobox>
+        <lightning-combobox
+            class="c-filter-rc-filter slds-m-top_x-small"
+            label="Feed the record into filter"
+            field-level-help="A Picklist, Lookup or User filter that receives the record (or the field below)."
+            options={overrideFilterOptions}
+            value={overrideFilterId}
+            onchange={handleOverrideFilterId}
+        ></lightning-combobox>
+        <lightning-input
+            class="c-filter-rc-path slds-m-top_x-small"
+            label="Host record field path (optional)"
+            placeholder="AccountId"
+            value={overrideFieldPath}
+            field-level-help="Read this field (1–5 hop parent path) from the host record instead of its Id."
+            onchange={handleOverrideFieldPath}
+        ></lightning-input>
+        <template lwc:if={isLocked}>
+            <lightning-input
+                class="c-filter-rc-badge slds-m-top_x-small"
+                type="checkbox"
+                label="Show the locked record badge"
+                field-level-help="Shows viewers which record the Board is locked to."
+                checked={showRecordContextBadge}
+                onchange={handleBadge}
+            ></lightning-input>
+        </template>
+    </template>
+
+    <template lwc:if={isPersistence}>
+        <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
+            Where a viewer's selections are kept: until the browser tab closes, in this browser, or not at all.
+        </p>
+        <lightning-radio-group
+            class="c-filter-persistence-mode"
+            name="persistence"
+            label="Persistence"
+            options={persistenceOptions}
+            value={persistence}
+            onchange={handlePersistence}
+        ></lightning-radio-group>
+    </template>
+
+    <template lwc:if={isCurrency}>
+        <c-board-config-currency
+            class="c-filter-config-currency"
+            value={configCurrency}
+            onchange={handleConfigCurrency}
+        ></c-board-config-currency>
+    </template>
+</template>

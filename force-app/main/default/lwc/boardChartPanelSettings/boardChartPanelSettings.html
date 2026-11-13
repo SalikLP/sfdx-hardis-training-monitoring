@@ -1,0 +1,100 @@
+<template>
+    <c-board-cpe-object-field-picker
+        class="c-panel-field"
+        mode="field"
+        label="Panel field (optional)"
+        field-level-help="Small multiples: one small chart per value of this field, all with the same Measures and Group by."
+        object-api-name={objectApiName}
+        capability="groupable"
+        value={panelPickerValue}
+        onchange={handlePanelField}
+    ></c-board-cpe-object-field-picker>
+    <template lwc:if={hasBucketOptions}>
+        <lightning-combobox
+            class="c-panel-bucket slds-m-top_x-small"
+            label="Or one panel per bucket of a Bucket field"
+            options={bucketOptions}
+            value={panelBucket}
+            onchange={handlePanelBucket}
+        ></lightning-combobox>
+    </template>
+    <p class="slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+        One panel per value, each drawing the chart for that value's rows.
+    </p>
+    <template lwc:if={hasPanelField}>
+        <template lwc:if={showGranularity}>
+            <lightning-combobox
+                class="c-panel-granularity slds-m-top_x-small"
+                label="Panel date granularity"
+                options={granularityOptions}
+                value={panelDateGranularity}
+                onchange={handleGranularity}
+            ></lightning-combobox>
+        </template>
+        <lightning-input
+            class="c-panel-max slds-m-top_x-small"
+            type="number"
+            label="Maximum panels"
+            min="2"
+            max="12"
+            step="1"
+            placeholder={defaultMaxPanels}
+            value={maxPanels}
+            onchange={handleMaxPanels}
+        ></lightning-input>
+        <lightning-combobox
+            class="c-panel-sort slds-m-top_x-small"
+            label="Sort panels by"
+            options={sortOptions}
+            value={panelSort}
+            onchange={handleSort}
+        ></lightning-combobox>
+        <template lwc:if={showSortMeasure}>
+            <lightning-combobox
+                class="c-panel-sort-measure slds-m-top_x-small"
+                label="Measure to sort panels by"
+                options={sortMeasureOptions}
+                value={panelSortMeasure}
+                onchange={handleSortMeasure}
+            ></lightning-combobox>
+        </template>
+        <lightning-combobox
+            class="c-panel-headline slds-m-top_x-small"
+            label="Panel headline"
+            field-level-help="One Measure shown as a number in each panel header, right of the title, as that panel's total. It is hidden from the chart and keeps its own Measure condition."
+            options={headlineOptions}
+            value={panelHeadlineMeasure}
+            onchange={handleHeadline}
+        ></lightning-combobox>
+        <lightning-input
+            class="c-panel-per-row slds-m-top_x-small"
+            type="number"
+            label="Panels per row"
+            min="1"
+            max="6"
+            step="1"
+            placeholder={defaultPanelsPerRow}
+            value={panelsPerRow}
+            onchange={handlePanelsPerRow}
+        ></lightning-input>
+        <lightning-input
+            class="c-panel-height slds-m-top_x-small"
+            type="number"
+            label="Panel height (px)"
+            min={minPanelHeight}
+            max={maxPanelHeight}
+            step="10"
+            placeholder={defaultPanelHeight}
+            value={panelHeight}
+            onchange={handlePanelHeight}
+        ></lightning-input>
+        <lightning-input
+            class="c-panel-independent-scales slds-m-top_x-small"
+            type="checkbox"
+            label="Independent scales"
+            field-level-help="Each panel gets its own value axis instead of one shared by every panel."
+            checked={independentScales}
+            onchange={handleIndependentScales}
+        ></lightning-input>
+    </template>
+</template>

@@ -1,0 +1,88 @@
+<template>
+    <div class="c-condition-row slds-grid slds-gutters_x-small slds-wrap slds-grid_vertical-align-end">
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12">
+            <c-board-cpe-object-field-picker
+                class="c-condition-field"
+                mode="field"
+                label="Field"
+                object-api-name={objectApiName}
+                capability="filterable"
+                allow-child-relationships
+                value={fieldPath}
+                onchange={handleField}
+            ></c-board-cpe-object-field-picker>
+        </div>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+            <lightning-combobox
+                class="c-condition-operator"
+                label="Operator"
+                options={operatorOptions}
+                value={operator}
+                onchange={handleOperator}
+            ></lightning-combobox>
+        </div>
+        <div class="slds-col slds-grow">
+            <template lwc:if={isScalar}>
+                <lightning-input
+                    class="c-condition-value"
+                    label="Value"
+                    value={scalarValue}
+                    field-level-help="Dates use YYYY-MM-DD."
+                    onchange={handleValue}
+                ></lightning-input>
+            </template>
+            <template lwc:if={isList}>
+                <lightning-input
+                    class="c-condition-list"
+                    label="Values (comma-separated)"
+                    value={scalarValue}
+                    onchange={handleList}
+                ></lightning-input>
+            </template>
+            <template lwc:if={isNull}>
+                <lightning-combobox
+                    class="c-condition-null"
+                    label="Condition"
+                    options={nullOptions}
+                    value={nullValue}
+                    onchange={handleNull}
+                ></lightning-combobox>
+            </template>
+            <template lwc:if={isLiteral}>
+                <lightning-combobox
+                    class="c-condition-literal"
+                    label="Relative date"
+                    options={literalOptions}
+                    value={literalSelection}
+                    onchange={handleLiteral}
+                ></lightning-combobox>
+                <template lwc:if={isCustomLiteral}>
+                    <lightning-input
+                        class="c-condition-custom-literal slds-m-top_x-small"
+                        label="Custom literal"
+                        value={literal}
+                        placeholder="LAST_N_DAYS:30"
+                        onchange={handleCustomLiteral}
+                    ></lightning-input>
+                </template>
+            </template>
+        </div>
+        <div class="slds-col slds-shrink-none">
+            <lightning-button-icon
+                class="c-condition-remove"
+                icon-name="utility:delete"
+                variant="bare"
+                alternative-text="Remove condition"
+                title="Remove condition"
+                onclick={handleRemove}
+            ></lightning-button-icon>
+        </div>
+    </div>
+    <template lwc:if={hasErrors}>
+        <ul class="c-condition-errors slds-m-top_xx-small">
+            <template for:each={errorItems} for:item="item">
+                <li key={item.key} class="slds-text-color_error slds-text-body_small">{item.message}</li>
+            </template>
+        </ul>
+    </template>
+</template>

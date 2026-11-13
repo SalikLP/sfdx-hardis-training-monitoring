@@ -7,6 +7,13 @@
 
 ## JS Documentation
 
+### DATA_BAR_TYPES
+
+Field types a Data bar can draw (number, currency, percent).
+
+**Kind**: global constant  
+**Default**: <code>new Set(['INTEGER', 'LONG', 'DOUBLE', 'CURRENCY', 'PERCENT'])</code>  
+
 ### BoardCpeColumnList
 
 Repeatable Table column editor (`fieldPath` with 1–5 hop parent paths, `label`, `displayAs`, `linkToRecord`,
@@ -24,12 +31,45 @@ Prefix of generated column ids (`col1`, `col2`, …).
 **Decorators**: <code>@api</code>  
 **Default**: <code>'col'</code>  
 
+#### bucketFields
+
+The Widget's Bucket fields, offered as columns (`fieldPath: 'bucket:<id>'`).
+
+**Kind**: instance property of <code>BoardCpeColumnList</code>  
+**Decorators**: <code>@api</code>  
+**Default**: <code>[]</code>  
+
 #### drag
 
 Drag-to-reorder state (see the drag helpers in c/boardCpeUtils).
 
 **Kind**: instance property of <code>BoardCpeColumnList</code>  
-**Default**: <code>NO_DRAG</code>
+**Default**: <code>NO_DRAG</code>  
+
+#### _typeByPath
+
+Leaf field `dataType` per `object::path` (null when unknown), resolved lazily to offer Data bar.
+
+**Kind**: instance property of <code>BoardCpeColumnList</code>  
+**Default**: <code>{}</code>  
+
+#### displayAsOptionsFor(column)
+
+"Display as" options; Data bar only for number, currency and percent fields (or when already chosen).
+
+**Kind**: instance method of <code>BoardCpeColumnList</code>  
+
+#### bucketLabelOf(column)
+
+A Bucket field column's Bucket field label (its id when unknown), or null for a field column.
+
+**Kind**: instance method of <code>BoardCpeColumnList</code>  
+
+#### handleAddBucket(event)
+
+Adds a column showing a Bucket field's label per row.
+
+**Kind**: instance method of <code>BoardCpeColumnList</code>
 
 ## Files
 

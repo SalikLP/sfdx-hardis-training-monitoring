@@ -1478,6 +1478,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>CreditMemo.CorporateCurrencyIsoCode</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>CreditMemo.FuncCrcyCnvTotAmtWithTax</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -1489,6 +1494,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>CreditMemo.FunctionalCurrencyCvsnRate</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>CreditMemo.FunctionalCurrencyIsoCode</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -1513,6 +1523,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>CreditMemoLine.CorporateCurrencyIsoCode</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>CreditMemoLine.FuncCrcyCnvTotalTaxAmt</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -1529,6 +1544,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>CreditMemoLine.FunctionalCurrencyCvsnRate</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>CreditMemoLine.FunctionalCurrencyIsoCode</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -1963,6 +1983,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Invoice.CorporateCurrencyIsoCode</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Invoice.FuncCrcyCnvTotAmtWithTax</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -1974,6 +1999,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Invoice.FunctionalCurrencyCvsnRate</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Invoice.FunctionalCurrencyIsoCode</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -1998,6 +2028,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>InvoiceLine.CorporateCurrencyIsoCode</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>InvoiceLine.FuncCrcyCnvTotalTaxAmt</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -2014,6 +2049,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>InvoiceLine.FunctionalCurrencyCvsnRate</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>InvoiceLine.FunctionalCurrencyIsoCode</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

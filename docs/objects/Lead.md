@@ -31,6 +31,7 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | CleanStatus |  |  | <!-- --> |
 | Company |  |  | <!-- --> |
 | CompanyDunsNumber |  |  | <!-- --> |
+| CurrencyIsoCode |  |  | <!-- --> |
 | CurrentGenerators__c | Current Generator(s) | Text | <!-- --> |
 | DandbCompanyId |  | Lookup | <!-- --> |
 | Description |  |  | <!-- --> |
@@ -80,6 +81,18 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 
 
 
+## Related Apex Classes
+
+| Apex Class | Type |
+| :----      | :--: | 
+| BoardBucketFieldTest | Test |
+| BoardChartQueryBucketTest | Test |
+| BoardChartQueryReferenceLineTest | Test |
+| BoardChartQueryTest | Test |
+| BoardConditionTest | Test |
+| BoardDataProviderRowsTest | Test |
+| BoardQueryServiceTableBucketGroupTest | Test |
+| BoardQueryServiceTableBucketTest | Test |
 
 
 

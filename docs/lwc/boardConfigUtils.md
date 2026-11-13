@@ -12,7 +12,29 @@
 `FilterEntry.type` values (spec §3).
 
 **Kind**: global constant  
-**Default**: <code>['PICKLIST', 'LOOKUP', 'USER', 'DATE_RANGE', 'TEXT']</code>  
+**Default**: <code>[...]</code>  
+
+### CURRENCY_PICKER_ITEM
+
+Item `type` of the Currency picker in a Filter widget's `filters` list (`{ type: 'currencyPicker', label? }`). Like
+a Section item it is not a filter: never in the Filter context, never bound. At most one per Filter widget.
+
+**Kind**: global constant  
+**Default**: <code>'currencyPicker'</code>  
+
+### filterItemsOf(config)
+
+A Filter widget config's `filters` list, reading the older Board-level `currencyPicker: { label }` setting as a
+Currency picker item at the end of the list (unless the list already has one).
+
+**Kind**: global function  
+
+### EMPTY_FILLED_OPERATORS
+
+`EMPTY_FILLED` operators: `field = null` / `field != null`. All is the inactive filter (no condition).
+
+**Kind**: global constant  
+**Default**: <code>['EMPTY', 'FILLED']</code>  
 
 ### RECORD_CONTEXT_OVERRIDE_TYPES
 
@@ -27,6 +49,13 @@ Filter types a `LOCKED`/`DEFAULT` Record context override (`overrideFilterId`) c
 
 **Kind**: global constant  
 **Default**: <code>['LITERAL', 'BETWEEN', 'GTE', 'LTE']</code>  
+
+### NUMBER_RANGE_OPERATORS
+
+`NUMBER_RANGE` operators: min and max (`BETWEEN`), min only (`GTE`) or max only (`LTE`).
+
+**Kind**: global constant  
+**Default**: <code>['BETWEEN', 'GTE', 'LTE']</code>  
 
 ### IGNORE_BINDING
 
@@ -65,13 +94,41 @@ Top-level property values the `.js-meta.xml` design attributes pre-fill (`defaul
 in the metadata because the platform refuses to remove a property default that Flow versions reference.
 
 **Kind**: global constant  
-**Default**: <code>{ boardId: 'default', orientation: 'vertical' }</code>  
+**Default**: <code>{ boardId: 'default' }</code>  
 
-### parseAndMergeConfig(widgetType, rawConfigJson, [topLevelProps])
+### metricMeasures(config)
 
-Versioned configJson (version: 1) parser, validator, and top-level @api property precedence merger.
+A Metric widget's Measures list. A config without one (a single-aggregate Metric saved before the Measures list) is
+one visible Measure built from its `aggregateFunction`, `valueFieldApiName` and `format` (default: count records).
 
 **Kind**: global function  
+
+### perRecordSettings(measure)
+
+The Average per record settings a Measure sends to Apex: for an `AVG_PER` Measure its per-record lookup `perField`
+and how each record's value is taken, `inner` (`SUM` of its rows, the default, or `ONCE`); none for other Measures.
+
+**Kind**: global function  
+
+### waitsForFilterWidget(config, [livePreview])
+
+Whether a Widget waits for the Board's Filter widget before its first query: the `waitForFilterWidget` config key,
+on unless explicitly `false`. The Setup dialog's live preview (`livePreview`) never waits.
+
+**Kind**: global function  
+
+### waitingForBoardId(config, livePreview, filterContext)
+
+Board id a waiting Widget shows in its Wait for Filter widget hint card: set while the Widget waits and has no
+Filter context yet, else empty.
+
+**Kind**: global function  
+
+### CHILD_ROWS_REMOVED_MESSAGE
+
+Child rows were removed from the Table; a saved `childRelationship` is rejected, not migrated.
+
+**Kind**: global constant  
 
 ### RECORD_CONTEXT_FILTER_ID
 
@@ -98,7 +155,7 @@ Active filter entries of a FilterContext that apply to the Widget identified by 
 ### resolveFilterBindings(params) ⇒ <code>{ filters: Array, applied: Array&lt;{filterId, label, fieldPath}&gt;, ignored: Array&lt;{filterId, label}&gt;, error: object</code> \| <code>null }</code>
 
 **Kind**: global function  
-**Returns**: <code>{ filters: Array, applied: Array&lt;{filterId, label, fieldPath}&gt;, ignored: Array&lt;{filterId, label}&gt;, error: object</code> \| <code>null }</code> - `filters` is the `BoardQueryService` request payload (sorted by filterId). `error` is a `CONFIG_ERROR` BoardErrorPayload for the first malformed explicit binding; Widgets render it instead of querying (the payload still carries that filter as explicit without a path, which the server rejects).  
+**Returns**: <code>{ filters: Array, applied: Array&lt;{filterId, label, fieldPath}&gt;, ignored: Array&lt;{filterId, label}&gt;, error: object</code> \| <code>null }</code> - `filters` is the `BoardQueryService` request payload (sorted by filterId). `error` is a `CONFIG_ERROR` BoardErrorPayload for the first malformed explicit binding; Widgets render it instead of querying (the payload still carries that filter as explicit without a path, which the server rejects). A `BUCKET` filter binds to a Bucket field (`bucket:<id>`, by convention the filter's own): the Widget's own first, else the Board's. Its payload carries that Bucket field's config as `bucketField`; an unknown id is ignored by convention and a `CONFIG_ERROR` when explicit.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -108,6 +165,8 @@ Active filter entries of a FilterContext that apply to the Widget identified by 
 | params.filterContext | <code>object</code> | Board FilterContext |
 | [params.filterBindings] | <code>object</code> | Widget `filterBindings` |
 | [params.widgetId] | <code>string</code> | Widget id used to skip its own cross filters |
+| [params.bucketFields] | <code>Array</code> | the Widget's own Bucket fields |
+| [params.boardBucketFields] | <code>Array</code> | the Board-level Bucket fields (`getBoardBucketFields`) |
 
 ### buildFilterBindingSummary([applied], [ignored])
 

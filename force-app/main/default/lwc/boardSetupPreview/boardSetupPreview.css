@@ -1,0 +1,10 @@
+:host {
+    display: block;
+}
+
+/* The Widget measures its own root to tell a hidden App page tab; a block box keeps the preview counted as shown. */
+.c-preview-widget c-board-chart-widget,
+.c-preview-widget c-board-metric-widget,
+.c-preview-widget c-board-table-widget {
+    display: block;
+}

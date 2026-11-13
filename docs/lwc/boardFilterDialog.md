@@ -23,10 +23,17 @@ the Record context no longer matches the draft filters (`recordContextErrors`).
 
 #### value
 
-`{ filters, recordContext }`, already deep-copied by `openConfigDialog`.
+`{ filters, recordContext, bucketFields }`, already deep-copied by `openConfigDialog`.
 
 **Kind**: global property  
 **Decorators**: <code>@api</code>  
+
+#### bucketFields
+
+The Filter widget's Board-level Bucket fields a Bucket filter can use (not edited here).
+
+**Kind**: global property  
+**Default**: <code>[]</code>  
 
 #### picklistOptions
 
@@ -55,6 +62,25 @@ Row key → date default mode chosen before any value is entered.
 
 **Kind**: global property  
 **Default**: <code>{}</code>  
+
+#### currencyOptions
+
+The org's currency setup (`getCurrencyOptions`); a single-currency org has no Currency picker.
+
+**Kind**: global property  
+**Default**: <code>null</code>  
+
+#### isCurrencyUnavailable
+
+Known to be a single-currency org: the Currency picker is unavailable (unknown while loading).
+
+**Kind**: instance property (getter)  
+
+#### isAddCurrencyPickerDisabled
+
+At most one Currency picker per Filter widget, and none in a single-currency org.
+
+**Kind**: instance property (getter)  
 
 #### setDraftItems(filters, change)
 
@@ -104,6 +130,12 @@ Applies `{ filters?, recordContext? }` to the draft (never to the Widget config)
 Adds a default value (replacing the current one, including Me, on single-select filters).
 
 **Kind**: global function  
+
+#### bucketFieldOptions
+
+Combobox options of the Board-level Bucket fields, by id.
+
+**Kind**: instance property (getter)  
 
 #### retargetRecordContext(patch, fromId, toId)
 

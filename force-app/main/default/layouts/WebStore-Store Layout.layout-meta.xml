@@ -48,11 +48,19 @@
                 <behavior>Edit</behavior>
                 <field>StrikethroughPricebookId</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
+                <field>SupportedCurrencies</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
                 <behavior>Required</behavior>
                 <field>PricingStrategy</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
+                <field>CurrencyIsoCode</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsLeftToRight</style>

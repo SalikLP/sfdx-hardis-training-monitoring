@@ -1,15 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
+        <members>BoardAveragePerRecord</members>
+        <members>BoardAveragePerRecordQueryTest</members>
+        <members>BoardAveragePerRecordTest</members>
+        <members>BoardBucketField</members>
+        <members>BoardBucketFieldTest</members>
+        <members>BoardChartEngine</members>
+        <members>BoardChartEngineTest</members>
+        <members>BoardChartPanelTotals</members>
+        <members>BoardChartPanels</members>
+        <members>BoardChartPanelsTest</members>
+        <members>BoardChartQuery</members>
+        <members>BoardChartQueryBoardBucketTest</members>
+        <members>BoardChartQueryBucketPanelTest</members>
+        <members>BoardChartQueryBucketTest</members>
+        <members>BoardChartQueryGroupCapTest</members>
+        <members>BoardChartQueryPanelTest</members>
+        <members>BoardChartQueryPanelTotalsTest</members>
+        <members>BoardChartQueryReferenceLineTest</members>
+        <members>BoardChartQueryTest</members>
+        <members>BoardCondition</members>
+        <members>BoardConditionTest</members>
+        <members>BoardConditionWholeNumberTest</members>
+        <members>BoardConfigCurrencyTest</members>
+        <members>BoardCrossObjectMeasures</members>
+        <members>BoardCrossObjectMeasuresTest</members>
+        <members>BoardCrossObjectProviderTest</members>
+        <members>BoardCurrencyConverter</members>
+        <members>BoardCurrencyConverterTest</members>
+        <members>BoardCurrencyDisplayTest</members>
+        <members>BoardCurrencyRangeFilterTest</members>
+        <members>BoardCurrencyTableSummariesTest</members>
+        <members>BoardCurrencyTableTest</members>
+        <members>BoardDataProvider</members>
+        <members>BoardDataProviderCurrencyTest</members>
+        <members>BoardDataProviderRequest</members>
+        <members>BoardDataProviderResult</members>
+        <members>BoardDataProviderRows</members>
+        <members>BoardDataProviderRowsTest</members>
+        <members>BoardDataProviders</members>
+        <members>BoardDataProvidersTest</members>
         <members>BoardDescribe</members>
         <members>BoardErrors</members>
+        <members>BoardForecastingQuota</members>
+        <members>BoardForecastingQuotaTest</members>
+        <members>BoardFormula</members>
+        <members>BoardFormulaContext</members>
+        <members>BoardFormulaCurrency</members>
+        <members>BoardFormulaCurrencyTest</members>
+        <members>BoardFormulaMeasureQueryTest</members>
+        <members>BoardFormulaMeasures</members>
+        <members>BoardFormulaMeasuresTest</members>
+        <members>BoardFormulaTest</members>
+        <members>BoardMeasureConditionTest</members>
+        <members>BoardMeasureCurrencyTest</members>
+        <members>BoardMeasureGroups</members>
+        <members>BoardMeasureGroupsTest</members>
+        <members>BoardMetricQuery</members>
         <members>BoardQueryService</members>
+        <members>BoardQueryServiceBaseFilterTest</members>
+        <members>BoardQueryServiceBucketFilterTest</members>
         <members>BoardQueryServiceChildRowsTest</members>
+        <members>BoardQueryServiceCurrencyTest</members>
+        <members>BoardQueryServiceEmptyFilledTest</members>
+        <members>BoardQueryServiceMetricMeasuresTest</members>
+        <members>BoardQueryServiceRowActionsTest</members>
         <members>BoardQueryServiceSearchTest</members>
+        <members>BoardQueryServiceTableAggregateTest</members>
+        <members>BoardQueryServiceTableBucketGroupTest</members>
+        <members>BoardQueryServiceTableBucketTest</members>
+        <members>BoardQueryServiceTableGroupBarsTest</members>
+        <members>BoardQueryServiceTableGroupSummariesTest</members>
+        <members>BoardQueryServiceTableGroupingLevelsTest</members>
+        <members>BoardQueryServiceTableGroupingTest</members>
         <members>BoardQueryServiceTableTest</members>
+        <members>BoardQueryServiceTableTotalsTest</members>
+        <members>BoardQueryServiceTeamTest</members>
         <members>BoardQueryServiceTest</members>
+        <members>BoardQuotaProvider</members>
+        <members>BoardQuotaProviderTest</members>
         <members>BoardSchemaService</members>
         <members>BoardSchemaServiceTest</members>
+        <members>BoardTableAggregate</members>
+        <members>BoardTableAggregateCursor</members>
+        <members>BoardTableAggregateCursorTest</members>
+        <members>BoardTableAggregateEngine</members>
+        <members>BoardTableAggregateEngineTest</members>
+        <members>BoardTableBucketColumns</members>
+        <members>BoardTableBucketGroup</members>
+        <members>BoardTableCurrency</members>
+        <members>BoardTableEngine</members>
+        <members>BoardTableEngineTest</members>
+        <members>BoardTableGroupBarScales</members>
+        <members>BoardTableGroupSummaries</members>
+        <members>BoardTableGrouping</members>
+        <members>BoardTableQuery</members>
+        <members>BoardTableRowLimit</members>
+        <members>BoardTableRowLimitGroupedTest</members>
+        <members>BoardTeamResolver</members>
+        <members>BoardTeamResolverTest</members>
         <members>CrewCapacityBatch</members>
         <members>CrewCapacityBatchTest</members>
         <members>CrewSizeBackfillBatch</members>
@@ -132,6 +222,21 @@
         <name>CustomField</name>
     </types>
     <types>
+        <members>BoardEmptyFilledAll</members>
+        <members>BoardEmptyFilledAll</members>
+        <members>BoardEmptyFilledEmpty</members>
+        <members>BoardEmptyFilledEmpty</members>
+        <members>BoardEmptyFilledFilled</members>
+        <members>BoardEmptyFilledFilled</members>
+        <members>BoardTeamMine</members>
+        <members>BoardTeamMine</members>
+        <members>BoardTeamNoRoleNotice</members>
+        <members>BoardTeamNoRoleNotice</members>
+        <members>BoardTeamOfUser</members>
+        <members>BoardTeamOfUser</members>
+        <name>CustomLabel</name>
+    </types>
+    <types>
         <members>enablement_coaching_feedback_ready</members>
         <name>CustomNotificationType</name>
     </types>
@@ -146,6 +251,10 @@
         <members>Opportunity</members>
         <members>Panel_Batch__c</members>
         <name>CustomObject</name>
+    </types>
+    <types>
+        <members>Board_ViewAllQuotas</members>
+        <name>CustomPermission</name>
     </types>
     <types>
         <members>Crew_Capacity__c</members>
@@ -486,30 +595,70 @@
         <members>boardBarCpe</members>
         <members>boardBarWidget</members>
         <members>boardBaseFilterDialog</members>
+        <members>boardBucketFieldEditor</members>
+        <members>boardBucketFields</members>
+        <members>boardChartColours</members>
+        <members>boardChartCpe</members>
+        <members>boardChartPanelGrid</members>
+        <members>boardChartPanelSettings</members>
+        <members>boardChartPanels</members>
+        <members>boardChartReferenceLines</members>
+        <members>boardChartSetupSteps</members>
         <members>boardChartUtils</members>
+        <members>boardChartWidget</members>
+        <members>boardConditionEditor</members>
+        <members>boardConditionRow</members>
+        <members>boardConfigCurrency</members>
         <members>boardConfigUtils</members>
         <members>boardContextStore</members>
+        <members>boardCpeBindings</members>
         <members>boardCpeColumnList</members>
         <members>boardCpeCommon</members>
         <members>boardCpeConfigDialog</members>
+        <members>boardCpeCrossObjectMeasure</members>
         <members>boardCpeDragStyles</members>
+        <members>boardCpeFilterBindings</members>
         <members>boardCpeFormatEditor</members>
         <members>boardCpeMasterDetail</members>
+        <members>boardCpeMeasureList</members>
         <members>boardCpeObjectFieldPicker</members>
+        <members>boardCpeRowActionList</members>
         <members>boardCpeSection</members>
+        <members>boardCpeTotalRow</members>
         <members>boardCpeUtils</members>
+        <members>boardCrossObjectMeasure</members>
+        <members>boardCurrencyPicker</members>
+        <members>boardCursorProgress</members>
+        <members>boardDisplayCurrency</members>
         <members>boardFilterCpe</members>
         <members>boardFilterDialog</members>
+        <members>boardFilterSetupSteps</members>
         <members>boardFilterWidget</members>
+        <members>boardFixedColourEditor</members>
         <members>boardMetricCpe</members>
+        <members>boardMetricGauge</members>
+        <members>boardMetricGaugeView</members>
+        <members>boardMetricSetupSteps</members>
         <members>boardMetricWidget</members>
+        <members>boardPictureTiles</members>
+        <members>boardSegmentedButtons</members>
+        <members>boardSetupBaseFilters</members>
+        <members>boardSetupDialog</members>
+        <members>boardSetupFilterDefinitions</members>
+        <members>boardSetupGuide</members>
+        <members>boardSetupPreview</members>
+        <members>boardSetupSteps</members>
         <members>boardTableCpe</members>
+        <members>boardTableFlowModal</members>
+        <members>boardTableSetupSteps</members>
         <members>boardTableWidget</members>
+        <members>boardVisibilityWatcher</members>
         <members>boardWidgetState</members>
         <members>installationTimeline</members>
         <members>protoBoardStore</members>
         <members>protoBoardWidget</members>
         <members>protoFilterWidget</members>
+        <members>protoSetupPreviewDialog</members>
         <members>protoTabProbe</members>
         <members>protoTableHarness</members>
         <members>protoWidgetCpe</members>
@@ -548,6 +697,7 @@
         <name>NotificationTypeConfig</name>
     </types>
     <types>
+        <members>Board_Quota_Viewer</members>
         <members>Experience_Profile_Manager</members>
         <members>Helios_Delivery_Crew</members>
         <members>Helios_Delivery_Manager</members>

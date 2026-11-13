@@ -1,0 +1,50 @@
+<template>
+    <section class="c-preview" aria-label="Preview">
+        <div class="c-preview-header slds-grid slds-grid_vertical-align-center slds-m-bottom_x-small">
+            <template lwc:if={isOpen}>
+                <h2 class="c-preview-title slds-col slds-text-heading_small">Preview</h2>
+            </template>
+            <lightning-button-icon
+                class="c-preview-toggle slds-shrink-none"
+                icon-name={toggleIcon}
+                variant="border-filled"
+                alternative-text={toggleLabel}
+                title={toggleLabel}
+                aria-expanded={ariaExpanded}
+                onclick={handleToggle}
+            ></lightning-button-icon>
+        </div>
+        <template lwc:if={isOpen}>
+            <p class="c-preview-hint slds-text-body_small slds-text-color_weak slds-m-bottom_small">{hint}</p>
+            <div class="c-preview-widget">
+                <template lwc:if={isChart}>
+                    <c-board-chart-widget
+                        board-id={previewBoardId}
+                        live-preview={livePreview}
+                        config-json={previewConfigJson}
+                    ></c-board-chart-widget>
+                </template>
+                <template lwc:elseif={isMetric}>
+                    <c-board-metric-widget
+                        board-id={previewBoardId}
+                        live-preview={livePreview}
+                        config-json={previewConfigJson}
+                    ></c-board-metric-widget>
+                </template>
+                <template lwc:elseif={isTable}>
+                    <c-board-table-widget
+                        board-id={previewBoardId}
+                        live-preview={livePreview}
+                        config-json={previewConfigJson}
+                    ></c-board-table-widget>
+                </template>
+                <template lwc:elseif={isFilter}>
+                    <c-board-filter-widget
+                        board-id={previewBoardId}
+                        config-json={previewConfigJson}
+                    ></c-board-filter-widget>
+                </template>
+            </div>
+        </template>
+    </section>
+</template>

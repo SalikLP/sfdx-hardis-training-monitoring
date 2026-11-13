@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>BoardEmptyFilledAll</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Empty / Filled in filter: All button</shortDescription>
+        <value>All</value>
+    </labels>
+    <labels>
+        <fullName>BoardEmptyFilledEmpty</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Empty / Filled in filter: Empty button</shortDescription>
+        <value>Empty</value>
+    </labels>
+    <labels>
+        <fullName>BoardEmptyFilledFilled</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Empty / Filled in filter: Filled in button</shortDescription>
+        <value>Filled in</value>
+    </labels>
+    <labels>
+        <fullName>BoardTeamMine</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Filter widget: Team match mode pill for the running user</shortDescription>
+        <value>My team</value>
+    </labels>
+    <labels>
+        <fullName>BoardTeamNoRoleNotice</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Filter widget: picked user has no role (Include team)</shortDescription>
+        <value>{0} has no role; showing only their records.</value>
+    </labels>
+    <labels>
+        <fullName>BoardTeamOfUser</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Filter widget: Team match mode pill for a picked user ({0} = name)</shortDescription>
+        <value>{0}&apos;s team</value>
+    </labels>
+</CustomLabels>

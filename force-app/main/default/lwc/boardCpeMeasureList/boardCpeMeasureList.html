@@ -1,0 +1,241 @@
+<template>
+    <ol class="c-measures">
+        <template for:each={measureRows} for:item="row">
+            <li
+                key={row.key}
+                class={row.rowClass}
+                data-index={row.index}
+                ondragover={handleMeasureDragOver}
+                ondrop={handleMeasureDrop}
+            >
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <span
+                        class="c-measure-handle c-drag-handle"
+                        draggable="true"
+                        title="Drag to reorder"
+                        data-index={row.index}
+                        ondragstart={handleMeasureDragStart}
+                        ondragend={handleMeasureDragEnd}
+                    >
+                        <lightning-icon
+                            icon-name="utility:drag_and_drop"
+                            size="x-small"
+                            alternative-text=""
+                        ></lightning-icon>
+                    </span>
+                    <span class="c-measure-title slds-text-title slds-truncate slds-col">{row.title}</span>
+                    <div class="slds-shrink-none">
+                        <lightning-button-icon
+                            class="c-measure-up"
+                            icon-name="utility:arrowup"
+                            size="small"
+                            variant="bare"
+                            alternative-text="Move measure up"
+                            disabled={row.isFirst}
+                            data-index={row.index}
+                            onclick={handleMeasureUp}
+                        ></lightning-button-icon>
+                        <lightning-button-icon
+                            class="c-measure-down"
+                            icon-name="utility:arrowdown"
+                            size="small"
+                            variant="bare"
+                            alternative-text="Move measure down"
+                            disabled={row.isLast}
+                            data-index={row.index}
+                            onclick={handleMeasureDown}
+                        ></lightning-button-icon>
+                        <lightning-button-icon
+                            class="c-measure-remove"
+                            icon-name="utility:delete"
+                            size="small"
+                            variant="bare"
+                            alternative-text="Remove measure"
+                            disabled={row.isOnly}
+                            data-index={row.index}
+                            onclick={handleRemoveMeasure}
+                        ></lightning-button-icon>
+                    </div>
+                </div>
+                <lightning-combobox
+                    class="c-measure-aggregate"
+                    label="Aggregate function"
+                    options={aggregateOptions}
+                    value={row.aggregateFunction}
+                    data-index={row.index}
+                    onchange={handleMeasureAggregate}
+                ></lightning-combobox>
+                <template lwc:if={row.isFormula}>
+                    <!-- A native textarea: lightning-textarea events don't reach the handler in the Flow Builder modal. -->
+                    <div class="slds-form-element slds-m-top_xx-small">
+                        <span class="slds-form-element__label">Formula</span>
+                        <div class="slds-form-element__control">
+                            <textarea
+                                aria-label="Formula"
+                                class="c-measure-formula slds-textarea"
+                                rows="2"
+                                placeholder="e.g. A / B, A - B or 15000"
+                                spellcheck="false"
+                                data-index={row.index}
+                                data-formula={row.formula}
+                                oninput={handleMeasureFormula}
+                            ></textarea>
+                        </div>
+                        <div class="slds-form-element__help slds-text-color_weak">
+                            Salesforce formula syntax over the other Measures by letter: A is Measure 1, B is Measure 2,
+                            and so on (not another Formula measure). Hide the Measures it uses to show only the result.
+                            Dividing by zero or a blank Measure gives a blank result.
+                        </div>
+                    </div>
+                    <template lwc:if={row.formulaError}>
+                        <p class="c-measure-formula-error slds-form-element__help slds-text-color_error">
+                            {row.formulaError}
+                        </p>
+                    </template>
+                    <lightning-input
+                        class="c-measure-currency slds-m-top_xx-small"
+                        type="checkbox"
+                        label="Currency amount"
+                        field-level-help="The result is an amount: shown in the viewer's Display currency, with numbers in the formula (such as a 15000 target) read in the Board's Config currency. Leave unchecked for ratios and percentages."
+                        checked={row.isCurrency}
+                        data-index={row.index}
+                        onchange={handleMeasureCurrency}
+                    ></lightning-input>
+                </template>
+                <template lwc:if={row.showCrossObject}>
+                    <c-board-cpe-cross-object-measure
+                        class="c-measure-cross-object"
+                        measure={row.measure}
+                        show-category-mapping={showCategoryMapping}
+                        panel-field={panelField}
+                        data-index={row.index}
+                        onchange={handleMeasureCrossObject}
+                    ></c-board-cpe-cross-object-measure>
+                </template>
+                <template lwc:if={row.showValueField}>
+                    <c-board-cpe-object-field-picker
+                        class="c-measure-field slds-m-top_xx-small"
+                        mode="field"
+                        label="Value field"
+                        object-api-name={row.measureObjectApiName}
+                        capability={row.valueCapability}
+                        value={row.valueFieldApiName}
+                        data-index={row.index}
+                        onchange={handleMeasureField}
+                    ></c-board-cpe-object-field-picker>
+                </template>
+                <template lwc:if={row.showPerRecord}>
+                    <c-board-cpe-object-field-picker
+                        class="c-measure-per-field slds-m-top_xx-small"
+                        mode="field"
+                        label="Per record of"
+                        object-api-name={objectApiName}
+                        capability="lookup"
+                        value={row.perField}
+                        data-index={row.index}
+                        onchange={handleMeasurePerField}
+                    ></c-board-cpe-object-field-picker>
+                    <lightning-combobox
+                        class="c-measure-inner slds-m-top_xx-small"
+                        label="Each record's value"
+                        field-level-help="Each record counts once in the average, so its line items don't skew it."
+                        options={perRecordInnerOptions}
+                        value={row.inner}
+                        data-index={row.index}
+                        onchange={handleMeasureInner}
+                    ></lightning-combobox>
+                </template>
+                <lightning-input
+                    class="c-measure-label slds-m-top_xx-small"
+                    label="Label"
+                    placeholder="e.g. Sum of Amount"
+                    value={row.label}
+                    data-index={row.index}
+                    data-name="label"
+                    onchange={handleMeasureText}
+                ></lightning-input>
+                <template lwc:if={showColor}>
+                    <lightning-input
+                        class="c-measure-color slds-m-top_xx-small"
+                        label="Colour (optional)"
+                        placeholder="Palette colour by position, or a hex colour such as #0176d3"
+                        value={row.color}
+                        data-index={row.index}
+                        data-name="color"
+                        onchange={handleMeasureText}
+                    ></lightning-input>
+                </template>
+                <template lwc:if={showHidden}>
+                    <lightning-input
+                        class="c-measure-hidden slds-m-top_xx-small"
+                        type="checkbox"
+                        label="Hidden (fetched for calculations, not shown)"
+                        checked={row.hidden}
+                        data-index={row.index}
+                        onchange={handleMeasureHidden}
+                    ></lightning-input>
+                </template>
+                <template lwc:if={row.showShareOfTotal}>
+                    <c-board-picture-tiles
+                        class="c-measure-show-as slds-m-top_xx-small"
+                        label="Show as"
+                        field-level-help="Percent of total: each category's share of the grand total. Percent of category: each series' share within its category. A percentage defaults to a percent format; set a number format below to override it."
+                        options={row.showAsOptions}
+                        value={row.showAs}
+                        data-index={row.index}
+                        onchange={handleMeasureShowAs}
+                    ></c-board-picture-tiles>
+                </template>
+                <template lwc:if={row.showDisplay}>
+                    <c-board-picture-tiles
+                        class="c-measure-render slds-m-top_xx-small"
+                        label="Draw as"
+                        field-level-help="A Reference line draws the Measure's value as one line across the chart, e.g. a target or an average."
+                        options={measureRenderOptions}
+                        value={row.render}
+                        data-index={row.index}
+                        onchange={handleMeasureRender}
+                    ></c-board-picture-tiles>
+                    <lightning-combobox
+                        class="c-measure-axis slds-m-top_xx-small"
+                        label="Value axis"
+                        field-level-help="A secondary axis on the opposite side gives a Measure on another scale its own value axis."
+                        options={measureAxisOptions}
+                        value={row.axis}
+                        data-index={row.index}
+                        onchange={handleMeasureAxis}
+                    ></lightning-combobox>
+                </template>
+                <c-board-cpe-format-editor
+                    class="c-measure-format slds-m-top_xx-small"
+                    default-notation={defaultNotation}
+                    value={row.format}
+                    data-index={row.index}
+                    onchange={handleMeasureFormat}
+                ></c-board-cpe-format-editor>
+                <p class="slds-text-title slds-m-top_x-small">Measure condition (optional)</p>
+                <p class="slds-text-body_small slds-text-color_weak">
+                    Only rows matching it count for this Measure, on top of the filters and Base filters.
+                </p>
+                <c-board-condition-editor
+                    class="c-measure-condition slds-m-top_xx-small"
+                    value={row.condition}
+                    object-api-name={row.measureObjectApiName}
+                    id-prefix={row.conditionIdPrefix}
+                    data-index={row.index}
+                    onconditionchange={handleMeasureCondition}
+                ></c-board-condition-editor>
+            </li>
+        </template>
+    </ol>
+    <lightning-button
+        class="c-measure-add slds-m-top_x-small"
+        label="Add measure"
+        icon-name="utility:add"
+        disabled={addMeasureDisabled}
+        onclick={handleAddMeasure}
+    ></lightning-button>
+    <template lwc:if={addMeasureHelp}>
+        <p class="c-measure-add-help slds-text-body_small slds-text-color_weak">{addMeasureHelp}</p>
+    </template>
+</template>

@@ -8,8 +8,10 @@ import {
     moveItem,
     nextSequentialId,
     overRowDrag,
+    resolveFieldDescribe,
     startRowDrag
 } from 'c/boardCpeUtils';
+import { bucketFieldOptions, bucketIdOf, findBucketField } from 'c/boardBucketFields';
 
 const DISPLAY_AS_OPTIONS = [
     { label: 'Auto (from field type)', value: 'auto' },
@@ -33,7 +35,10 @@ const ALIGN_OPTIONS = [
     { label: 'Center', value: 'center' },
     { label: 'Right', value: 'right' }
 ];
-const NUMERIC_DISPLAY = new Set(['auto', 'number', 'currency', 'percent']);
+const NUMERIC_DISPLAY = new Set(['auto', 'number', 'currency', 'percent', 'dataBar']);
+const DATA_BAR_OPTION = { label: 'Data bar', value: 'dataBar' };
+/** Field types a Data bar can draw (number, currency, percent). */
+const DATA_BAR_TYPES = new Set(['INTEGER', 'LONG', 'DOUBLE', 'CURRENCY', 'PERCENT']);
 
 /**
  * Repeatable Table column editor (`fieldPath` with 1–5 hop parent paths, `label`, `displayAs`, `linkToRecord`,
@@ -41,7 +46,7 @@ const NUMERIC_DISPLAY = new Set(['auto', 'number', 'currency', 'percent']);
  * Fires a non-bubbling `change` event with `detail.columns` (the full, re-ordered/edited array).
  */
 export default class BoardCpeColumnList extends LightningElement {
-    @api objectApiName;
+    _objectApiName;
     @api addLabel = 'Add column';
     /** Prefix of generated column ids (`col1`, `col2`, …). */
     @api idPrefix = 'col';
@@ -50,8 +55,23 @@ export default class BoardCpeColumnList extends LightningElement {
     linkOptions = LINK_OPTIONS;
     alignOptions = ALIGN_OPTIONS;
     _columns = [];
+    /** The Widget's Bucket fields, offered as columns (`fieldPath: 'bucket:<id>'`). */
+    @api bucketFields = [];
     /** Drag-to-reorder state (see the drag helpers in c/boardCpeUtils). */
     drag = NO_DRAG;
+
+    /** Leaf field `dataType` per `object::path` (null when unknown), resolved lazily to offer Data bar. */
+    _typeByPath = {};
+    _typePending = new Set();
+
+    @api
+    get objectApiName() {
+        return this._objectApiName;
+    }
+    set objectApiName(value) {
+        this._objectApiName = value;
+        this.resolveColumnTypes();
+    }
 
     @api
     get columns() {
@@ -59,30 +79,88 @@ export default class BoardCpeColumnList extends LightningElement {
     }
     set columns(value) {
         this._columns = Array.isArray(value) ? value.filter(isPlainObject) : [];
+        this.resolveColumnTypes();
+    }
+
+    resolveColumnTypes() {
+        const objectApiName = this._objectApiName;
+        if (!objectApiName) {
+            return;
+        }
+        for (const column of this._columns) {
+            const key = `${objectApiName}::${column.fieldPath}`;
+            if (
+                column.fieldPath &&
+                bucketIdOf(column.fieldPath) === null &&
+                !(key in this._typeByPath) &&
+                !this._typePending.has(key)
+            ) {
+                this._typePending.add(key);
+                const settle = (field) => {
+                    this._typePending.delete(key);
+                    this._typeByPath = { ...this._typeByPath, [key]: field ? field.dataType : null };
+                };
+                resolveFieldDescribe(objectApiName, column.fieldPath)
+                    .then(settle)
+                    .catch(() => settle(null));
+            }
+        }
+    }
+
+    /** "Display as" options; Data bar only for number, currency and percent fields (or when already chosen). */
+    displayAsOptionsFor(column) {
+        const type = this._typeByPath[`${this._objectApiName}::${column.fieldPath}`];
+        return DATA_BAR_TYPES.has(type) || column.displayAs === DATA_BAR_OPTION.value
+            ? [...DISPLAY_AS_OPTIONS, DATA_BAR_OPTION]
+            : DISPLAY_AS_OPTIONS;
     }
 
     get hasColumns() {
         return this._columns.length > 0;
     }
 
+    get bucketOptions() {
+        return bucketFieldOptions(this.bucketFields);
+    }
+
+    get hasBucketFields() {
+        return this.bucketOptions.length > 0;
+    }
+
+    /** A Bucket field column's Bucket field label (its id when unknown), or null for a field column. */
+    bucketLabelOf(column) {
+        const id = bucketIdOf(column.fieldPath);
+        if (id === null) {
+            return null;
+        }
+        return findBucketField(this.bucketFields, id)?.label || id;
+    }
+
     get rows() {
         const last = this._columns.length - 1;
         return this._columns.map((column, index) => {
             const displayAs = column.displayAs || 'auto';
+            const bucketLabel = this.bucketLabelOf(column);
             return {
                 key: column.id || `index-${index}`,
                 index,
                 title: `Column ${index + 1}`,
                 fieldPath: column.fieldPath || '',
+                isBucket: bucketLabel !== null,
+                isField: bucketLabel === null,
+                bucketLabel,
                 label: column.label || '',
                 displayAs,
+                displayAsOptions: this.displayAsOptionsFor(column),
+                isDataBar: displayAs === DATA_BAR_OPTION.value,
+                barOnly: column.barOnly === true,
                 linkToRecord: column.linkToRecord || 'auto',
                 align: column.align || 'auto',
                 wrapText: column.wrapText === true,
                 hideOnNarrow: column.hideOnNarrow === true,
                 width: column.width || '',
                 format: column.format || null,
-                showFormat: NUMERIC_DISPLAY.has(displayAs),
+                showFormat: bucketLabel === null && NUMERIC_DISPLAY.has(displayAs),
                 isFirst: index === 0,
                 isLast: index === last,
                 rowClass: `c-column slds-p-vertical_x-small${dragRowClass(this.drag, index)}`
@@ -91,6 +169,15 @@ export default class BoardCpeColumnList extends LightningElement {
     }
 
     handleAdd(event) {
+        const fieldPath = event.detail.value;
+        if (!fieldPath) {
+            return;
+        }
+        this.emit([...this._columns, { id: nextSequentialId(this._columns, this.idPrefix), fieldPath }]);
+    }
+
+    /** Adds a column showing a Bucket field's label per row. */
+    handleAddBucket(event) {
         const fieldPath = event.detail.value;
         if (!fieldPath) {
             return;
@@ -142,7 +229,12 @@ export default class BoardCpeColumnList extends LightningElement {
 
     handleChoice(event) {
         const value = event.detail.value;
-        this.updateColumn(event, { [event.target.dataset.name]: value && value !== 'auto' ? value : null });
+        const name = event.target.dataset.name;
+        const patch = { [name]: value && value !== 'auto' ? value : null };
+        if (name === 'displayAs' && value !== DATA_BAR_OPTION.value) {
+            patch.barOnly = null;
+        }
+        this.updateColumn(event, patch);
     }
 
     handleToggle(event) {

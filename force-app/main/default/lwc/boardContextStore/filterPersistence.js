@@ -2,16 +2,27 @@
  * Filter widget definitions, Web Storage hydration, config-drift sanitization, and initial load precedence
  * (LOCKED recordContext > stored state > DEFAULT recordContext > admin defaultValue > cleared).
  */
-import { FILTER_TYPES, DATE_RANGE_OPERATORS, RECORD_CONTEXT_OVERRIDE_TYPES } from 'c/boardConfigUtils';
+import {
+    FILTER_TYPES,
+    DATE_RANGE_OPERATORS,
+    NUMBER_RANGE_OPERATORS,
+    EMPTY_FILLED_OPERATORS,
+    RECORD_CONTEXT_OVERRIDE_TYPES,
+    isCurrencyPickerItem
+} from 'c/boardConfigUtils';
+import { bucketLabels, findBucketField } from 'c/boardBucketFields';
 
 export const FILTER_STORAGE_PREFIX = 'sf-board-filters::v1::';
 
 const TEXT_MATCH_MODES = ['SOSL', 'CONTAINS', 'STARTS_WITH'];
+const USER_MATCH_MODES = ['users', 'usersAndTeam'];
 const FILTER_SOURCES = ['FILTER_WIDGET', 'RECORD_CONTEXT', 'CROSS_FILTER'];
-const ENTRY_OPERATORS = ['IN', ...DATE_RANGE_OPERATORS, ...TEXT_MATCH_MODES];
+const ENTRY_OPERATORS = ['IN', ...DATE_RANGE_OPERATORS, ...TEXT_MATCH_MODES, ...EMPTY_FILLED_OPERATORS];
 const RECORD_ID_PATTERN = /^[a-zA-Z0-9]{15}(?:[a-zA-Z0-9]{3})?$/;
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const DATE_LITERAL_PATTERN = /^[A-Z_]+(?::\d+)?$/;
+/** A Number range bound as typed: optional minus, digits, optional decimals (no grouping separators). */
+const NUMBER_PATTERN = /^-?\d+(?:\.\d+)?$/;
 
 export function buildFilterStorageKey(userId, scopeKey) {
     return `${FILTER_STORAGE_PREFIX}${userId}::${scopeKey}`;
@@ -85,12 +96,58 @@ function cleanStringArray(values) {
     return Array.isArray(values) ? values.filter((v) => typeof v === 'string' && v.trim()).map((v) => v.trim()) : [];
 }
 
+function isSectionItem(raw) {
+    return Boolean(raw) && raw.type === 'section';
+}
+
+/**
+ * Bar layout of configJson `filters`: sections in list order, `{ key, label, startCollapsed, filterIds, items }`.
+ * `items` are the section's slots in order: `{ filterId }` or `{ currencyPicker: { label } }` (the first Currency
+ * picker item only; at most one per Filter widget). `filterIds` lists only the filters. Filters before the first
+ * Section item form a headingless Section (`label: null`, omitted when empty). Only filterIds that survive
+ * `normalizeFilterDefinitions` (`validIds`) are placed, so Section and Currency picker items never reach the Filter
+ * context.
+ */
+export function normalizeFilterLayout(rawFilters, validIds) {
+    const sections = [{ key: 'section-start', label: null, startCollapsed: false, filterIds: [], items: [] }];
+    const placed = new Set();
+    let hasPicker = false;
+    (Array.isArray(rawFilters) ? rawFilters : []).forEach((raw, index) => {
+        const section = sections[sections.length - 1];
+        if (isSectionItem(raw)) {
+            sections.push({
+                key: `section-${index}`,
+                label: cleanString(raw.label) || '',
+                startCollapsed: raw.startCollapsed === true,
+                filterIds: [],
+                items: []
+            });
+            return;
+        }
+        if (isCurrencyPickerItem(raw)) {
+            if (!hasPicker) {
+                hasPicker = true;
+                section.items.push({ currencyPicker: { label: cleanString(raw.label) } });
+            }
+            return;
+        }
+        const filterId = cleanString(raw?.filterId);
+        if (filterId && validIds.includes(filterId) && !placed.has(filterId)) {
+            placed.add(filterId);
+            section.filterIds.push(filterId);
+            section.items.push({ filterId });
+        }
+    });
+    return sections[0].items.length ? sections : sections.slice(1);
+}
+
 /**
  * Normalizes configJson `filters`. Entries without a `filterId`, with an unsupported `type`, or with a duplicate
  * `filterId` are skipped; when an `errors` array is passed, a `CONFIG_ERROR` BoardErrorPayload naming the offending
- * filter is pushed for each of them.
+ * filter is pushed for each of them. With the Board-level `bucketFields`, a `BUCKET` filter offers its Bucket field's
+ * labels as options and is rejected when that Bucket field is not defined.
  */
-export function normalizeFilterDefinitions(rawFilters, errors = null) {
+export function normalizeFilterDefinitions(rawFilters, errors = null, bucketFields = null) {
     const seen = new Set();
     const defs = [];
     const reject = (filterId, message) => {
@@ -99,6 +156,11 @@ export function normalizeFilterDefinitions(rawFilters, errors = null) {
         }
     };
     (Array.isArray(rawFilters) ? rawFilters : []).forEach((raw, index) => {
+        if (isSectionItem(raw) || isCurrencyPickerItem(raw)) {
+            // Section items group filters in the bar and the Currency picker sets the Display currency; neither
+            // is a filter.
+            return;
+        }
         const filterId = cleanString(raw?.filterId);
         if (!filterId) {
             reject(null, `Filter #${index + 1} has no filterId.`);
@@ -112,16 +174,29 @@ export function normalizeFilterDefinitions(rawFilters, errors = null) {
             reject(filterId, `Filter "${filterId}" has an unsupported type "${raw.type}".`);
             return;
         }
-        seen.add(filterId);
         const type = raw.type;
+        const bucketFieldId = type === 'BUCKET' ? cleanString(raw.bucketFieldId) : null;
+        const bucketField = bucketFieldId ? findBucketField(bucketFields, bucketFieldId) : null;
+        if (type === 'BUCKET' && Array.isArray(bucketFields) && !bucketField) {
+            reject(
+                filterId,
+                `Filter "${filterId}" uses an unknown Bucket field "${bucketFieldId || ''}". Define it in the Filter widget's Bucket fields.`
+            );
+            return;
+        }
+        seen.add(filterId);
         const isUser = type === 'USER';
         let selectionMode = null;
         if (type === 'PICKLIST') {
-            selectionMode = raw.selectionMode === 'single' ? 'single' : 'multi';
+            // Buttons display is single-select + All.
+            selectionMode = raw.selectionMode === 'single' || raw.display === 'buttons' ? 'single' : 'multi';
         } else if (type === 'LOOKUP' || isUser) {
             selectionMode = raw.selectionMode === 'multi' ? 'multi' : 'single';
+        } else if (type === 'BUCKET') {
+            // Picklist-style over the bucket labels; several buckets OR together.
+            selectionMode = 'multi';
         }
-        const options = Array.isArray(raw.options)
+        let options = Array.isArray(raw.options)
             ? raw.options
                   .filter((o) => o && o.value !== undefined && o.value !== null && String(o.value) !== '')
                   .map((o) => ({ label: String(o.label ?? o.value), value: String(o.value) }))
@@ -130,26 +205,41 @@ export function normalizeFilterDefinitions(rawFilters, errors = null) {
         if (type === 'PICKLIST') {
             const impliedCustom = !raw.optionsSource && options.length > 0;
             optionsSource = raw.optionsSource === 'CUSTOM' || impliedCustom ? 'CUSTOM' : 'FIELD_DESCRIBE';
+        } else if (type === 'BUCKET') {
+            optionsSource = 'BUCKET_LABELS';
+            options = bucketLabels(bucketField).map((label) => ({ label, value: label }));
         }
         defs.push({
             filterId,
             label: cleanString(raw.label) || filterId,
             type,
             selectionMode,
+            display: type === 'PICKLIST' && raw.display === 'buttons' ? 'buttons' : 'dropdown',
             fieldApiName: cleanString(raw.fieldApiName) || (isUser ? 'OwnerId' : null),
             targetObjectApiName: cleanString(raw.targetObjectApiName) || (isUser ? 'User' : null),
             optionsSource,
             sourceObjectApiName: cleanString(raw.sourceObjectApiName),
             options,
+            bucketFieldId,
             includeQueues: raw.includeQueues === true,
-            matchMode: TEXT_MATCH_MODES.includes(raw.matchMode) ? raw.matchMode : 'SOSL',
+            matchMode: normalizeMatchMode(type, raw.matchMode),
             // BoardQueryService never searches terms shorter than 2 characters, so neither does the UI.
             minCharacters: Number.isInteger(raw.minCharacters) ? Math.max(2, raw.minCharacters) : 2,
             placeholder: cleanString(raw.placeholder),
-            defaultValue: raw.defaultValue && typeof raw.defaultValue === 'object' ? raw.defaultValue : null
+            defaultValue: raw.defaultValue && typeof raw.defaultValue === 'object' ? raw.defaultValue : null,
+            // A Number range over a currency field: its bounds are read in the Display currency (shown as a hint).
+            ...(type === 'NUMBER_RANGE' ? { currencyField: raw.currencyField === true } : {})
         });
     });
     return defs;
+}
+
+/** TEXT: the search operator (default `SOSL`); USER: `users` (default) or `usersAndTeam` (each picked user's Team). */
+function normalizeMatchMode(type, matchMode) {
+    if (type === 'USER') {
+        return USER_MATCH_MODES.includes(matchMode) ? matchMode : 'users';
+    }
+    return TEXT_MATCH_MODES.includes(matchMode) ? matchMode : 'SOSL';
 }
 
 /**
@@ -172,10 +262,27 @@ function defaultOperator(def) {
     if (def.type === 'DATE_RANGE') {
         return 'LITERAL';
     }
+    if (def.type === 'NUMBER_RANGE') {
+        return 'BETWEEN';
+    }
     if (def.type === 'TEXT') {
         return def.matchMode;
     }
     return 'IN';
+}
+
+/** `NUMBER_RANGE` operator of the typed bounds: `GTE` (min only), `LTE` (max only), else `BETWEEN`. */
+export function numberRangeOperator(from, to) {
+    if (from && !to) {
+        return 'GTE';
+    }
+    return to && !from ? 'LTE' : 'BETWEEN';
+}
+
+/** A typed Number range bound as a plain number string (`1,500.5` stays invalid), or null when blank. */
+export function cleanNumberBound(value) {
+    const text = value === null || value === undefined ? '' : String(value).trim();
+    return text || null;
 }
 
 export function dateRangeOperator(from, to) {
@@ -193,7 +300,7 @@ function constrainValues(def, values) {
     if ((def.type === 'LOOKUP' || def.type === 'USER') && next.some((v) => !RECORD_ID_PATTERN.test(v))) {
         next = next.filter((v) => RECORD_ID_PATTERN.test(v));
     }
-    if (def.type === 'PICKLIST' && def.optionsSource === 'CUSTOM') {
+    if ((def.type === 'PICKLIST' && def.optionsSource === 'CUSTOM') || def.type === 'BUCKET') {
         const allowed = new Set(def.options.map((o) => o.value));
         next = next.filter((v) => allowed.has(v));
     }
@@ -214,6 +321,7 @@ export function buildFilterValue(def, input, userId) {
     const value = clearedFilterValue(def);
     switch (def.type) {
         case 'PICKLIST':
+        case 'BUCKET':
         case 'LOOKUP': {
             if (input.values !== undefined && !Array.isArray(input.values)) {
                 return null;
@@ -256,9 +364,32 @@ export function buildFilterValue(def, input, userId) {
             }
             break;
         }
+        case 'NUMBER_RANGE': {
+            const from = cleanNumberBound(input.from);
+            const to = cleanNumberBound(input.to);
+            if (input.operator !== undefined && input.operator !== null) {
+                if (!NUMBER_RANGE_OPERATORS.includes(input.operator)) {
+                    return null;
+                }
+            }
+            if ((from && !NUMBER_PATTERN.test(from)) || (to && !NUMBER_PATTERN.test(to))) {
+                return null;
+            }
+            value.from = from;
+            value.to = to;
+            value.operator = numberRangeOperator(from, to);
+            break;
+        }
         case 'TEXT': {
             value.text = cleanString(input.text);
             break;
+        }
+        case 'EMPTY_FILLED': {
+            if (EMPTY_FILLED_OPERATORS.includes(input.operator)) {
+                value.operator = input.operator;
+                value.active = true;
+            }
+            return value;
         }
         default:
             return null;
@@ -358,6 +489,13 @@ export function buildFilterEntry(def, value, { source = 'FILTER_WIDGET', locked 
     if (def.type === 'TEXT' && Number.isInteger(def.minCharacters)) {
         entry.minCharacters = def.minCharacters;
     }
+    if (def.type === 'USER' && def.matchMode === 'usersAndTeam') {
+        entry.matchMode = def.matchMode;
+    }
+    if (def.type === 'BUCKET') {
+        // Widgets bind the filter by convention to this Bucket field (`bucket:<id>`).
+        entry.bucketFieldId = def.bucketFieldId;
+    }
     return entry;
 }
 
@@ -394,7 +532,8 @@ export function buildExternalFilterEntry(definitions, key, incoming, userId) {
             type: incoming.type,
             fieldApiName: cleanString(incoming.fieldApiName),
             targetObjectApiName: cleanString(incoming.targetObjectApiName),
-            minCharacters: incoming.minCharacters
+            minCharacters: incoming.minCharacters,
+            matchMode: incoming.matchMode
         },
         {
             active: incoming.active === true,

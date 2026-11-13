@@ -43,6 +43,7 @@
     <columns>
         <field>FlowInterviewLog$CreatedBy</field>
     </columns>
+    <currency>USD</currency>
     <description>Which flows run, what’s the status of each interview, and how long do users take to complete the screens?</description>
     <format>Summary</format>
     <groupingsDown>

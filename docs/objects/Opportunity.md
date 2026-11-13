@@ -30,6 +30,7 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | CampaignId |  | Lookup | <!-- --> |
 | CloseDate |  |  | <!-- --> |
 | ContractId |  | Lookup | <!-- --> |
+| CurrencyIsoCode |  |  | <!-- --> |
 | CurrentGenerators__c | Current Generator(s) | Text | <!-- --> |
 | DeliveryInstallationStatus__c | Delivery/Installation Status | Picklist | <!-- --> |
 | Description |  |  | <!-- --> |
@@ -75,12 +76,65 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 
 | Apex Class | Type |
 | :----      | :--: | 
+| BoardAveragePerRecord | Class |
+| BoardAveragePerRecordQueryTest | Test |
+| BoardAveragePerRecordTest | Test |
+| BoardChartQueryBoardBucketTest | Test |
+| BoardChartQueryBucketPanelTest | Test |
+| BoardChartQueryBucketTest | Test |
+| BoardChartQueryGroupCapTest | Test |
+| BoardChartQueryPanelTest | Test |
+| BoardChartQueryPanelTotalsTest | Test |
+| BoardChartQueryReferenceLineTest | Test |
+| BoardChartQueryTest | Test |
+| BoardConditionTest | Test |
+| BoardConfigCurrencyTest | Test |
+| BoardCrossObjectMeasures | Lightning Controller |
+| BoardCrossObjectMeasuresTest | Test |
+| BoardCrossObjectProviderTest | Test |
+| BoardCurrencyDisplayTest | Test |
+| BoardCurrencyRangeFilterTest | Test |
+| BoardCurrencyTableSummariesTest | Test |
+| BoardCurrencyTableTest | Test |
+| BoardDataProviderCurrencyTest | Test |
+| BoardDataProviderRowsTest | Test |
+| BoardDataProvidersTest | Test |
+| BoardForecastingQuota | Class |
+| BoardForecastingQuotaTest | Test |
+| BoardFormulaMeasureQueryTest | Test |
+| BoardMeasureConditionTest | Test |
+| BoardMeasureCurrencyTest | Test |
+| [BoardQueryService](../apex/BoardQueryService.md) | Lightning Controller |
+| BoardQueryServiceBaseFilterTest | Test |
+| BoardQueryServiceBucketFilterTest | Test |
 | [BoardQueryServiceChildRowsTest](../apex/BoardQueryServiceChildRowsTest.md) | Test |
+| BoardQueryServiceCurrencyTest | Test |
+| BoardQueryServiceEmptyFilledTest | Test |
+| BoardQueryServiceMetricMeasuresTest | Test |
 | [BoardQueryServiceSearchTest](../apex/BoardQueryServiceSearchTest.md) | Test |
+| BoardQueryServiceTableAggregateTest | Test |
+| BoardQueryServiceTableBucketGroupTest | Test |
+| BoardQueryServiceTableBucketTest | Test |
+| BoardQueryServiceTableGroupBarsTest | Test |
+| BoardQueryServiceTableGroupingLevelsTest | Test |
+| BoardQueryServiceTableGroupSummariesTest | Test |
+| BoardQueryServiceTableTotalsTest | Test |
+| BoardQueryServiceTeamTest | Test |
 | [BoardQueryServiceTest](../apex/BoardQueryServiceTest.md) | Test |
+| BoardQuotaProviderTest | Test |
 | [BoardSchemaServiceTest](../apex/BoardSchemaServiceTest.md) | Test |
+| BoardTableAggregateCursorTest | Test |
+| BoardTableEngineTest | Test |
+| BoardTableGrouping | Lightning Controller |
+| BoardTableRowLimitGroupedTest | Test |
 
 
+## Related Lightning Web Components
+
+| Component | Description | Exposed | Targets |
+| :-------- | :---------- | :-----: | :------------- |
+| [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
+| [boardSetupSteps](../lwc/boardSetupSteps.md) | <!-- --> | ❌ |  |
 
 
 

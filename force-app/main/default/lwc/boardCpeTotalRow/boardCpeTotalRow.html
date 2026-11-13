@@ -1,0 +1,35 @@
+<template>
+    <lightning-input
+        class="c-total-row-toggle"
+        type="checkbox"
+        label="Show Total row"
+        checked={isOn}
+        field-level-help="A row at the bottom with summaries of each numeric column, over all matching records (or only the shown rows under a Row limit)."
+        onchange={handleToggle}
+    ></lightning-input>
+    <template lwc:if={hasSummaryRows}>
+        <template for:each={summaryRows} for:item="row">
+            <lightning-dual-listbox
+                key={row.key}
+                class="c-summary-picker slds-m-top_small"
+                name={row.key}
+                data-index={row.index}
+                data-column-id={row.columnId}
+                label={row.label}
+                source-label="Available"
+                selected-label="Shown (in order)"
+                options={summaryOptions}
+                value={row.value}
+                max={maxSummaries}
+                size="4"
+                field-level-help="Pick 1–4 summaries; several are stacked in one cell, in this order."
+                onchange={handleSummaries}
+            ></lightning-dual-listbox>
+        </template>
+    </template>
+    <template lwc:if={showNoNumericColumns}>
+        <p class="c-total-row-empty slds-text-color_weak slds-m-top_x-small">
+            Add a number, currency or percent column to show totals.
+        </p>
+    </template>
+</template>

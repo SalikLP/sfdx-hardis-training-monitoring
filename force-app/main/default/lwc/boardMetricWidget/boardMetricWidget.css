@@ -1,3 +1,8 @@
+/* Block host so the hidden-Widget visibility watcher measures the Widget box, not an inline box. */
+:host {
+    display: block;
+}
+
 .c-board-card {
     background-color: var(--slds-g-color-surface-container-1, #ffffff);
     color: var(--slds-g-color-on-surface-2, #2e2e2e);
@@ -52,7 +57,7 @@
 }
 
 .c-board-metric-subtitle,
-.c-board-metric-progress {
+.c-board-cursor-progress-label {
     color: var(--slds-g-color-on-surface-1, #5c5c5c);
     margin-top: var(--slds-g-spacing-1, 0.25rem);
 }
@@ -67,4 +72,9 @@
     .c-board-metric-content {
         transition: none;
     }
+}
+
+.c-board-metric-gauge-error {
+    margin-top: var(--slds-g-spacing-2, 0.5rem);
+    color: var(--slds-g-color-error-1, #b60554);
 }

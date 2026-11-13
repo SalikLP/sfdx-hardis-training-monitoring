@@ -42,6 +42,10 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
+                <field>CurrencyIsoCode</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
                 <field>ProcessingMode</field>
             </layoutItems>
             <layoutItems>

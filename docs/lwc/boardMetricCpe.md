@@ -7,53 +7,19 @@
 
 ## JS Documentation
 
-### SECTIONS
-
-Config sections of the Metric Config editor (see `sectionStates` in `c/boardCpeUtils`).
-
-**Kind**: global constant  
-**Default**: <code>[...]</code>  
-
 ### BoardMetricCpe
 
-Flow Custom Property Editor for the Board Metric widget: aggregate function + capability-filtered value field,
-value format, subtitle, and ordered thresholds, inside the shared `c-board-cpe-common` shell (Board, Object, Filter
-bindings, Base filters, Config JSON). Its own Config sections are Measure and Thresholds.
+Flow Custom Property Editor for the Board Metric widget (ADR 0002). The panel is an overview inside the shared
+`c-board-cpe-common` shell in Setup dialog mode: Board (Board id, title, *Wait for Filter widget*), one summary
+line per step of the Metric widget's Setup dialog (Data, Measures, Display, Thresholds, Filter bindings) with
+"Edit…" opening the dialog at that step, and Advanced: Config JSON. Every other setting is edited in the Setup
+dialog's steps (`c-board-metric-setup-steps`).
 
 **Kind**: global class  
-**Extends**: <code>LightningElement</code>  
-
-#### configLoaded
-
-Set once the shell has sent its first `configchange`; section errors wait for it (no flash of errors).
-
-**Kind**: instance property of <code>BoardMetricCpe</code>  
-**Default**: <code>false</code>  
-
-#### defaultNotation
-
-Widget default notation, shown by the format editor.
-
-**Kind**: instance property of <code>BoardMetricCpe</code>  
-**Default**: <code>defaultNotationFor('metric')</code>  
-
-#### sectionOpen
-
-Open state of the Config sections: set once on load (a new Widget opens Measure), then by the Admin.
-
-**Kind**: instance property of <code>BoardMetricCpe</code>  
-**Default**: <code>null</code>  
-
-#### drag
-
-Drag-to-reorder state of the threshold rules (see the drag helpers in c/boardCpeUtils).
-
-**Kind**: instance property of <code>BoardMetricCpe</code>  
-**Default**: <code>NO_DRAG</code>
+**Extends**: <code>LightningElement</code>
 
 ## Files
 
-- `boardMetricCpe.css`
 - `boardMetricCpe.html`
 - `boardMetricCpe.js`
 - `boardMetricCpe.js-meta.xml`

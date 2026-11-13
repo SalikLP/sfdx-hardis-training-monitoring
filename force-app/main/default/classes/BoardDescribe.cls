@@ -93,6 +93,20 @@ public with sharing class BoardDescribe {
         }
     }
 
+    /**
+     * The first readable name field of `target` (e.g. `Name`, `CaseNumber`), as Reference labels use it; null when
+     * the object has none the user can read.
+     */
+    public static String readableNameField(Schema.DescribeSObjectResult target) {
+        for (Schema.SObjectField candidate : target.fields.getMap().values()) {
+            Schema.DescribeFieldResult candidateDescribe = candidate.getDescribe();
+            if (candidateDescribe.isNameField() && candidateDescribe.isAccessible()) {
+                return candidateDescribe.getName();
+            }
+        }
+        return null;
+    }
+
     /** Escapes `\`, `%`, and `_` so the term matches literally inside a `LIKE` pattern. */
     public static String escapeLike(String term) {
         return term.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_');

@@ -1,4 +1,5 @@
 import { formatValue, formatTemporal } from 'c/boardConfigUtils';
+import { displayCurrencyFormat } from 'c/boardDisplayCurrency';
 
 const NUMERIC_TYPES = new Set(['INTEGER', 'LONG', 'DOUBLE']);
 const AUTO_DISPLAY = {
@@ -9,6 +10,7 @@ const AUTO_DISPLAY = {
     BOOLEAN: 'boolean',
     PICKLIST: 'badge'
 };
+const DATA_BAR = 'dataBar';
 const RIGHT_ALIGNED = new Set(['number', 'currency', 'percent']);
 const ARIA_SORT = { ASC: 'ascending', DESC: 'descending' };
 /** Admin `width` values accepted into the header style; anything else (e.g. injected declarations) is dropped. */
@@ -39,23 +41,26 @@ function resolveAlign(align, displayAs) {
 
 /**
  * Merges server-resolved columns (`BoardQueryService.TableColumn`) with their admin `TableColumnConfig`.
- * @param {object[]} serverColumns `{ id, fieldPath, label, dataType, isSortable, linkPath }`
+ * @param {object[]} serverColumns `{ id, fieldPath, label, dataType, isSortable, linkPath, currencyIsoCode }`
  * @param {object[]} configColumns `TableColumnConfig[]`
  * @param {{ sortBy: string, sortDirection: string }} sort effective server sort
  */
-export function buildColumnViews(serverColumns, configColumns, sort) {
+export function buildColumnViews(serverColumns, configColumns, sort, barScales) {
+    const scaleById = new Map((barScales || []).map((scale) => [scale.columnId, scale]));
     const configById = new Map((configColumns || []).map((column) => [column?.id || column?.fieldPath, column]));
     return (serverColumns || []).map((serverColumn, index) => {
         const config = configById.get(serverColumn.id) || {};
         const displayAs = resolveDisplayAs(config.displayAs, serverColumn.dataType);
         const align = resolveAlign(config.align, displayAs);
+        // A Data bar column shows its value as the field's natural number style.
+        const valueDisplayAs = displayAs === DATA_BAR ? resolveDisplayAs(null, serverColumn.dataType) : displayAs;
         const isSorted = Boolean(sort?.sortBy) && sort.sortBy === serverColumn.fieldPath;
         const isSortable = serverColumn.isSortable === true;
         const classes = ['c-board-table-col', `c-board-table-col_${align}`];
         if (index === 0) {
             classes.push('c-board-table-col_first');
         }
-        // The first column hosts the child expander + count badge and is sticky, so it never narrow-hides.
+        // The first column is sticky, so it never narrow-hides.
         if (config.hideOnNarrow === true && index > 0) {
             classes.push('c-board-table-col_narrow-hidden');
         }
@@ -69,7 +74,11 @@ export function buildColumnViews(serverColumns, configColumns, sort) {
             dataType: serverColumn.dataType,
             label: config.label || serverColumn.label || serverColumn.fieldPath,
             displayAs,
+            valueDisplayAs,
+            barOnly: config.barOnly === true,
+            barScale: displayAs === DATA_BAR ? scaleById.get(serverColumn.id) || null : null,
             format: config.format || null,
+            currencyIsoCode: serverColumn.currencyIsoCode || null,
             wrapText: config.wrapText === true,
             isSortable,
             isSorted,
@@ -84,11 +93,23 @@ export function buildColumnViews(serverColumns, configColumns, sort) {
     });
 }
 
-function formatCell(value, column) {
+/**
+ * Currency columns format with the Display currency ISO code Apex returned on the column (a saved `currencyCode`
+ * is ignored); other columns keep their format (a currency style there uses the viewer's currency).
+ */
+function cellFormat(format, currencyIsoCode) {
+    if (currencyIsoCode) {
+        return displayCurrencyFormat(format, currencyIsoCode);
+    }
+    const { currencyCode, ...rest } = format; // eslint-disable-line no-unused-vars
+    return rest;
+}
+
+export function formatCell(value, column) {
     if (value === null || value === undefined || value === '') {
         return '';
     }
-    switch (column.displayAs) {
+    switch (column.valueDisplayAs || column.displayAs) {
         case 'number':
         case 'currency':
         case 'percent': {
@@ -96,10 +117,11 @@ function formatCell(value, column) {
             if (!Number.isFinite(numeric)) {
                 return String(value);
             }
-            const formatStyle = column.displayAs === 'number' ? column.format?.formatStyle : column.displayAs;
+            const valueDisplayAs = column.valueDisplayAs || column.displayAs;
+            const formatStyle = valueDisplayAs === 'number' ? column.format?.formatStyle : valueDisplayAs;
             return formatValue(
                 numeric,
-                { ...(column.format || {}), formatStyle: formatStyle || 'number' },
+                cellFormat({ ...(column.format || {}), formatStyle: formatStyle || 'number' }, column.currencyIsoCode),
                 {
                     valueType: column.dataType
                 }
@@ -111,6 +133,67 @@ function formatCell(value, column) {
         default:
             return String(value);
     }
+}
+
+function percent(part, whole) {
+    return Math.min(100, Math.max(0, (part / whole) * 100));
+}
+
+/**
+ * Geometry of a Data bar. The server scale `{ max, min }` spans the whole scope, so the axis runs from the most
+ * negative value (left) through the zero line to the largest positive one (right) and never shifts as pages load.
+ * Returns null when the cell has no bar (blank or non-numeric value, no scale, or an all-zero axis).
+ * @param {unknown} value raw cell value
+ * @param {{ max: number, min: number }|null} scale
+ * @returns {{ left: number, width: number, zero: number, isNegative: boolean }|null} percentages of the axis
+ */
+export function dataBarGeometry(value, scale) {
+    if (!scale || value === null || value === undefined || value === '') {
+        return null;
+    }
+    const numeric = Number(value);
+    const negativeSpan = Math.max(0, -Number(scale.min));
+    const span = Math.max(0, Number(scale.max)) + negativeSpan;
+    if (!Number.isFinite(numeric) || !Number.isFinite(span) || span <= 0) {
+        return null;
+    }
+    const zero = percent(negativeSpan, span);
+    if (numeric < 0) {
+        const width = percent(-numeric, span);
+        return { left: Math.max(0, zero - width), width, zero, isNegative: true };
+    }
+    return { left: zero, width: Math.min(percent(numeric, span), 100 - zero), zero, isNegative: false };
+}
+
+function barView(column, raw, text) {
+    const geometry = dataBarGeometry(raw, column.barScale);
+    if (!geometry) {
+        return { isDataBar: Boolean(column.barScale), hasBar: false, barText: text, showBarValue: !column.barOnly };
+    }
+    return {
+        isDataBar: true,
+        barText: text,
+        showBarValue: !column.barOnly,
+        hasBar: true,
+        barFillClass: `c-data-bar-fill ${geometry.isNegative ? 'c-data-bar-fill_negative' : 'c-data-bar-fill_positive'}`,
+        barFillStyle: `left: ${geometry.left}%; width: ${geometry.width}%;`,
+        barZeroStyle: `left: ${geometry.zero}%;`,
+        hasNegativeAxis: geometry.zero > 0
+    };
+}
+
+/**
+ * Data bar of a Group row's summary cell (Detail rows off): the column's first summary on the server's group scale.
+ * `{ isDataBar: false }` unless the column is a Data bar.
+ * @param {object} column column view from `buildColumnViews`
+ * @param {{ summaryFunction: string, value: number }[]} summaries the group's Stacked summaries of the column
+ */
+export function summaryBarView(column, summaries) {
+    if (column.displayAs !== DATA_BAR || !summaries?.length) {
+        return { isDataBar: false };
+    }
+    const raw = summaries[0].value;
+    return barView(column, raw, formatCell(raw, column));
 }
 
 function escapeRegExp(value) {
@@ -173,6 +256,7 @@ export function buildCellView(column, row, highlight = null) {
     const isBoolean = column.displayAs === 'boolean';
     const isBadge = column.displayAs === 'badge' && Boolean(text) && !recordId;
     const key = `${row.id}-${column.id}`;
+    const bar = column.displayAs === DATA_BAR ? barView(column, raw, text) : { isDataBar: false };
     const segments = column.displayAs === 'text' ? highlightSegments(text, highlight, key) : null;
     return {
         key,
@@ -184,7 +268,8 @@ export function buildCellView(column, row, highlight = null) {
         isBadge,
         isBoolean,
         isChecked: isBoolean && (raw === true || raw === 'true'),
-        isPlain: !recordId && !isBadge && !isBoolean,
+        isPlain: !recordId && !isBadge && !isBoolean && !bar.isDataBar,
+        ...bar,
         hasHighlight: Boolean(segments),
         segments,
         cellClass: column.cellClass,

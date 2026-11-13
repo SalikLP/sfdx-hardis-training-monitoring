@@ -1,0 +1,19 @@
+<template>
+    <div class="c-gauge slds-m-top_small" role="img" aria-label={summary}>
+        <div class="c-gauge-track">
+            <template for:each={bands} for:item="band">
+                <div key={band.key} class={band.className} style={band.style} data-variant={band.variant}></div>
+            </template>
+            <template lwc:if={hasValue}>
+                <div class="c-gauge-value" style={valueStyle} title={valueTitle}></div>
+            </template>
+            <template lwc:if={target}>
+                <div class="c-gauge-target" style={targetStyle} title={targetTitle}></div>
+            </template>
+        </div>
+        <div class="c-gauge-scale slds-text-body_small">
+            <span class="c-gauge-min">{model.minLabel}</span>
+            <span class="c-gauge-max">{model.maxLabel}</span>
+        </div>
+    </div>
+</template>

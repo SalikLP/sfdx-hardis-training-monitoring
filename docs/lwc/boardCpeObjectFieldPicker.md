@@ -26,6 +26,13 @@ Fires a non-bubbling `change` event: `{ value, object }` (object), `{ value, fie
 **Kind**: global class  
 **Extends**: <code>LightningElement</code>  
 
+#### fieldLevelHelp
+
+Help text shown next to the label.
+
+**Kind**: instance property of <code>BoardCpeObjectFieldPicker</code>  
+**Decorators**: <code>@api</code>  
+
 #### capability
 
 Comma-separated capabilities every selectable field must have: filterable, groupable, sortable, numeric, date

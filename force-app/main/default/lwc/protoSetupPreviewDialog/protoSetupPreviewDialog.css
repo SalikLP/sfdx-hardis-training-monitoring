@@ -1,0 +1,21 @@
+.c-body {
+    min-height: 70vh;
+}
+.c-pane {
+    overflow: auto;
+}
+.c-preview {
+    border-left: 1px solid var(--slds-g-color-border-1, #e5e5e5);
+}
+.c-draft {
+    width: 100%;
+    font-family: monospace;
+}
+.c-log {
+    font-size: 0.75rem;
+    max-height: 14rem;
+    overflow: auto;
+    background: var(--slds-g-color-surface-container-2, #f3f3f3);
+    padding: 0.5rem;
+    white-space: pre-wrap;
+}

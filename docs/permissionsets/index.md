@@ -2,6 +2,7 @@
 
 | Permission Set | User License |
 | :----      | :--: | 
+| [Board_Quota_Viewer](Board_Quota_Viewer.md) | None |
 | [Experience_Profile_Manager](Experience_Profile_Manager.md) | None |
 | [Helios_Delivery_Crew](Helios_Delivery_Crew.md) | None |
 | [Helios_Delivery_Manager](Helios_Delivery_Manager.md) | None |

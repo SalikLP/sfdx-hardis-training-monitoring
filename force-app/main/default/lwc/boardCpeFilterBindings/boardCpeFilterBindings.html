@@ -1,0 +1,87 @@
+<template>
+    <p class="c-cpe-discovery slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">{discoveryMessage}</p>
+    <template lwc:if={hasBindingRows}>
+        <ul class="c-cpe-binding-list">
+            <template for:each={bindingRows} for:item="row">
+                <li key={row.key} class="c-cpe-binding-row slds-p-vertical_x-small" data-filter-id={row.filterId}>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread">
+                        <div class="slds-truncate">
+                            <span class="c-cpe-binding-label">{row.label}</span>
+                            <span class="slds-badge slds-m-left_xx-small">{row.typeLabel}</span>
+                            <code class="c-cpe-binding-id slds-m-left_xx-small">{row.filterId}</code>
+                        </div>
+                        <template lwc:if={row.isManual}>
+                            <lightning-button-icon
+                                class="c-cpe-binding-remove"
+                                icon-name="utility:delete"
+                                size="small"
+                                variant="bare"
+                                alternative-text="Remove filter binding"
+                                data-filter-id={row.filterId}
+                                onclick={handleManualRemove}
+                            ></lightning-button-icon>
+                        </template>
+                    </div>
+                    <p class="slds-text-body_small">
+                        Convention: <span class="c-cpe-binding-convention">{row.conventionText}</span>
+                    </p>
+                    <lightning-combobox
+                        class="c-cpe-binding-mode slds-m-top_xx-small"
+                        label="Binding"
+                        variant="label-inline"
+                        options={bindingModeOptions}
+                        value={row.mode}
+                        data-filter-id={row.filterId}
+                        onchange={handleBindingModeChange}
+                    ></lightning-combobox>
+                    <template lwc:if={row.isPath}>
+                        <lightning-input
+                            class="c-cpe-binding-path slds-m-top_xx-small"
+                            label="Binding path"
+                            value={row.path}
+                            placeholder="Account.Parent.Owner.Name"
+                            field-level-help={bindingPathHelp}
+                            data-filter-id={row.filterId}
+                            onchange={handleBindingPathChange}
+                        ></lightning-input>
+                        <c-board-cpe-object-field-picker
+                            class="c-cpe-binding-picker slds-m-top_xx-small"
+                            mode="field"
+                            label="Pick a field, parent path, or child relationship"
+                            object-api-name={objectApiName}
+                            capability="filterable"
+                            allow-child-relationships
+                            data-filter-id={row.filterId}
+                            onchange={handleBindingPick}
+                        ></c-board-cpe-object-field-picker>
+                    </template>
+                    <template lwc:if={row.error}>
+                        <p class="c-cpe-binding-error slds-text-color_error slds-text-body_small" role="alert">
+                            {row.error}
+                        </p>
+                    </template>
+                    <p class="slds-text-body_small slds-text-color_weak">
+                        Applies as: <span class="c-cpe-binding-effective">{row.effectiveText}</span>
+                    </p>
+                </li>
+            </template>
+        </ul>
+    </template>
+    <div class="slds-grid slds-grid_vertical-align-end slds-m-top_x-small">
+        <lightning-input
+            class="c-cpe-manual-id slds-col"
+            label="Filter id (Filter widget outside this Flow)"
+            value={manualDraft}
+            placeholder="e.g. region or $recordContext"
+            onchange={handleManualDraftChange}
+        ></lightning-input>
+        <lightning-button
+            class="c-cpe-manual-add slds-m-left_x-small"
+            label="Add binding"
+            onclick={handleManualAdd}
+        ></lightning-button>
+    </div>
+    <template lwc:if={manualError}>
+        <p class="c-cpe-manual-error slds-text-color_error slds-text-body_small" role="alert">{manualError}</p>
+    </template>
+</template>

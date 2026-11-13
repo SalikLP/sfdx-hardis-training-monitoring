@@ -32,6 +32,7 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | BuyerAttributes |  | Picklist | <!-- --> |
 | CleanStatus |  |  | <!-- --> |
 | ContactSource |  |  | <!-- --> |
+| CurrencyIsoCode |  |  | <!-- --> |
 | Department |  |  | <!-- --> |
 | Description |  |  | <!-- --> |
 | DoNotCall |  |  | <!-- --> |

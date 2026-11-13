@@ -1,0 +1,17 @@
+<template>
+    <template lwc:if={isMultiCurrency}>
+        <lightning-combobox
+            class="c-config-currency"
+            label="Config currency"
+            field-level-help="The currency Admin amounts on this Board are written in (Metric thresholds, Base filter amounts). Viewers see them converted to their Display currency."
+            options={options}
+            value={selectedValue}
+            onchange={handleChange}
+        ></lightning-combobox>
+    </template>
+    <template lwc:elseif={isSingleCurrency}>
+        <p class="c-config-currency-single slds-text-body_regular slds-text-color_weak">
+            This org uses one currency: every amount is in it, so there is no Config currency to set.
+        </p>
+    </template>
+</template>

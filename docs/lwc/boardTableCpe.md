@@ -7,53 +7,16 @@
 
 ## JS Documentation
 
-### SECTIONS
-
-Config sections of the Table Config editor (see `sectionStates` in `c/boardCpeUtils`).
-
-**Kind**: global constant  
-**Default**: <code>[...]</code>  
-
 ### BoardTableCpe
 
-Flow Custom Property Editor for the Board Table widget: repeatable columns, default sort, page size, row count, and
-the optional expandable `childRelationship` (relationship, child columns, sort, limit), inside the shared
-`c-board-cpe-common` shell (Board, Object, Filter bindings, Base filters, Config JSON).
+Flow Custom Property Editor for the Board Table widget (ADR 0002). The panel is an overview inside the shared
+`c-board-cpe-common` shell in Setup dialog mode: Board (Board id, title, *Wait for Filter widget*), one summary
+line per step of the Table widget's Setup dialog (Data, Columns, Grouping, Summaries, Display, Row actions, Filter
+bindings) with "Edit…" opening the dialog at that step, and Advanced: Config JSON. Every other setting is edited
+in the Setup dialog's steps (`c-board-table-setup-steps`).
 
 **Kind**: global class  
-**Extends**: <code>LightningElement</code>  
-
-#### configLoaded
-
-Set by the shell's first `configchange`; until then `config` is a placeholder and must not flag errors.
-
-**Kind**: instance property of <code>BoardTableCpe</code>  
-**Default**: <code>false</code>  
-
-#### sectionOpen
-
-Open state of the Config sections: set once on load (a new Widget opens Columns), then by the Admin.
-
-**Kind**: instance property of <code>BoardTableCpe</code>  
-**Default**: <code>null</code>  
-
-#### columnsSummary
-
-`3 columns`, or `No columns`.
-
-**Kind**: instance property (getter) of <code>BoardTableCpe</code>  
-
-#### sortingSummary
-
-`CreatedDate desc · 50 per page`, plus `No row count` when hidden.
-
-**Kind**: instance property (getter) of <code>BoardTableCpe</code>  
-
-#### childSummary
-
-`None`, or the child relationship and its column count (e.g. `CaseComments · 2 columns`).
-
-**Kind**: instance property (getter) of <code>BoardTableCpe</code>
+**Extends**: <code>LightningElement</code>
 
 ## Files
 

@@ -74,7 +74,7 @@ private class BoardQueryServiceSearchTest {
         // by Subject before the index catches up.
         Test.setFixedSearchResults(new List<Id>{ alphaId });
         BoardQueryService.TableResult result = BoardQueryService.queryTable(
-            JSON.serialize(caseTable(null, textFilter('SOSL', 'quasar', null)))
+            JSON.serialize(caseTable(textFilter('SOSL', 'quasar', null)))
         );
         Assert.areEqual(
             new Set<String>{ 'Alpha widget', 'Beta quasar' },
@@ -163,81 +163,28 @@ private class BoardQueryServiceSearchTest {
     }
 
     // ---------------------------------------------------------------------------------------------------------
-    // Child union, parent preservation, auto-expand
+    // Child union and parent preservation
     // ---------------------------------------------------------------------------------------------------------
 
     @IsTest
-    static void caseCommentMatchKeepsTheParentAndAutoExpandsItsMatchingChildren() {
+    static void caseCommentMatchKeepsTheParentRow() {
         Test.setFixedSearchResults(new List<Id>());
-        Map<String, Object> child = caseCommentConfig();
         BoardQueryService.TableResult result = BoardQueryService.queryTable(
-            JSON.serialize(caseTable(child, textFilter('SOSL', 'zebra', null)))
+            JSON.serialize(caseTable(textFilter('SOSL', 'zebra', 'SELF, CaseComment(ParentId)')))
         );
-
-        Map<String, BoardQueryService.TableRow> bySubject = rowsBySubject(result.rows);
-        Assert.areEqual(new Set<String>{ 'Delta' }, bySubject.keySet(), 'Only the comment matched; the parent stays');
-        BoardQueryService.TableRow delta = bySubject.get('Delta');
-        Assert.isTrue(delta.autoExpanded);
-        Assert.areEqual(2, delta.childCount, 'The badge still counts every child');
-        Assert.areEqual(1, delta.children.rows.size(), 'Only matching children are batch-fetched');
-        Assert.areEqual('zebra crossing', delta.children.rows[0].values.get('CommentBody'));
-        Assert.areEqual(1, result.searchChildIds.size());
-
-        // Later cursor pages auto-expand with the matched child Ids handed back in childConfig.
-        child.put('matchedChildIds', result.searchChildIds);
-        BoardQueryService.TablePage page = BoardQueryService.fetchTablePage(
-            result.paginationCursor,
-            0,
-            10,
-            JSON.serialize(child)
+        Assert.areEqual(
+            new Set<String>{ 'Delta' },
+            rowsBySubject(result.rows).keySet(),
+            'Only the comment matched; the parent row stays'
         );
-        Assert.isTrue(page.rows[0].autoExpanded);
-        Assert.areEqual(1, page.rows[0].children.rows.size());
-
-        // Manual expansion still lists every child.
-        Assert.areEqual(2, BoardQueryService.queryChildRows(JSON.serialize(caseCommentConfig()), delta.id).rows.size());
-    }
-
-    @IsTest
-    static void feedItemMatchedOnlyBySoslKeepsTheParentAndAutoExpands() {
-        // FeedItem.Body is not filterable, so only the SOSL leg can match it.
-        Id feedId = [SELECT Id FROM FeedItem LIMIT 1].Id;
-        Test.setFixedSearchResults(new List<Id>{ feedId });
-        Map<String, Object> child = new Map<String, Object>{
-            'childObjectApiName' => 'FeedItem',
-            'foreignKeyField' => 'ParentId',
-            'limit' => 1,
-            'columns' => new List<Object>{ new Map<String, Object>{ 'id' => 'body', 'fieldPath' => 'Body' } }
-        };
-        BoardQueryService.TableResult result = BoardQueryService.queryTable(
-            JSON.serialize(caseTable(child, textFilter('SOSL', 'kraken', 'SELF, FeedItem(ParentId)')))
-        );
-
-        Assert.areEqual(1, result.rows.size());
-        Assert.areEqual('Delta', result.rows[0].values.get('Subject'));
-        Assert.isTrue(result.rows[0].autoExpanded);
-        Assert.areEqual(feedId, result.rows[0].children.rows[0].id);
-        Assert.isFalse(result.rows[0].children.hasMore);
     }
 
     @IsTest
     static void explicitChildTargetsPreserveParentsOnAnyWidget() {
-        // A Metric has no childRelationship: the CaseComment target still unions its parent.
+        // The CaseComment target still unions its parent.
         Test.setFixedSearchResults(new List<Id>());
         Assert.areEqual(1, countCases(textFilter('SOSL', 'zebra', 'SELF, CaseComment(ParentId)')));
         Assert.areEqual(0, countCases(textFilter('SOSL', 'zebra', 'SELF')), 'SELF alone ignores child matches');
-    }
-
-    @IsTest
-    static void rowsWithoutChildMatchesAreNotAutoExpanded() {
-        Test.setFixedSearchResults(new List<Id>());
-        BoardQueryService.TableResult result = BoardQueryService.queryTable(
-            JSON.serialize(caseTable(caseCommentConfig(), textFilter('SOSL', 'quasar', null)))
-        );
-        Assert.areEqual(1, result.rows.size(), 'Beta matches by Subject (LIKE)');
-        Assert.isNull(result.rows[0].autoExpanded);
-        Assert.isNull(result.rows[0].children);
-        Assert.isTrue(result.searchChildIds.isEmpty());
     }
 
     // ---------------------------------------------------------------------------------------------------------
@@ -292,20 +239,11 @@ private class BoardQueryServiceSearchTest {
         return null;
     }
 
-    private static Map<String, Object> caseCommentConfig() {
-        return new Map<String, Object>{
-            'childObjectApiName' => 'CaseComment',
-            'foreignKeyField' => 'ParentId',
-            'columns' => new List<Object>{ new Map<String, Object>{ 'id' => 'body', 'fieldPath' => 'CommentBody' } }
-        };
-    }
-
-    private static Map<String, Object> caseTable(Map<String, Object> child, Map<String, Object> filter) {
+    private static Map<String, Object> caseTable(Map<String, Object> filter) {
         return new Map<String, Object>{
             'objectApiName' => 'Case',
             'columns' => new List<Object>{ new Map<String, Object>{ 'id' => 's', 'fieldPath' => 'Subject' } },
             'sortBy' => 'Subject',
-            'childRelationship' => child,
             'filters' => new List<Object>{ filter }
         };
     }

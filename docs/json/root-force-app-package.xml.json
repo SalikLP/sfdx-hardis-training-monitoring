@@ -1,11 +1,291 @@
 [
   {
-    "text": "Apex Class (16)",
+    "text": "Apex Class (106)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
     },
     "children": [
+      {
+        "text": "BoardAveragePerRecord",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardAveragePerRecordQueryTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardAveragePerRecordTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardBucketField",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardBucketFieldTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartEngine",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartEngineTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartPanels",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartPanelsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartPanelTotals",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQuery",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQueryBoardBucketTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQueryBucketPanelTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQueryBucketTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQueryGroupCapTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQueryPanelTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQueryPanelTotalsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQueryReferenceLineTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardChartQueryTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCondition",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardConditionTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardConditionWholeNumberTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardConfigCurrencyTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCrossObjectMeasures",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCrossObjectMeasuresTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCrossObjectProviderTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCurrencyConverter",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCurrencyConverterTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCurrencyDisplayTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCurrencyRangeFilterTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCurrencyTableSummariesTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardCurrencyTableTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardDataProvider",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardDataProviderCurrencyTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardDataProviderRequest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardDataProviderResult",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardDataProviderRows",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardDataProviderRowsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardDataProviders",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardDataProvidersTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
       {
         "text": "BoardDescribe",
         "icon": "fa-solid fa-circle-check icon-success",
@@ -21,7 +301,126 @@
         }
       },
       {
+        "text": "BoardForecastingQuota",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardForecastingQuotaTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardFormula",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardFormulaContext",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardFormulaCurrency",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardFormulaCurrencyTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardFormulaMeasureQueryTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardFormulaMeasures",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardFormulaMeasuresTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardFormulaTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardMeasureConditionTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardMeasureCurrencyTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardMeasureGroups",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardMeasureGroupsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardMetricQuery",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "BoardQueryService",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceBaseFilterTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceBucketFilterTest",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -35,7 +434,84 @@
         }
       },
       {
+        "text": "BoardQueryServiceCurrencyTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceEmptyFilledTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceMetricMeasuresTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceRowActionsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "BoardQueryServiceSearchTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTableAggregateTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTableBucketGroupTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTableBucketTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTableGroupBarsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTableGroupingLevelsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTableGroupingTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTableGroupSummariesTest",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -49,7 +525,35 @@
         }
       },
       {
+        "text": "BoardQueryServiceTableTotalsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQueryServiceTeamTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "BoardQueryServiceTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQuotaProvider",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardQuotaProviderTest",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -64,6 +568,132 @@
       },
       {
         "text": "BoardSchemaServiceTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableAggregate",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableAggregateCursor",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableAggregateCursorTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableAggregateEngine",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableAggregateEngineTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableBucketColumns",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableBucketGroup",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableCurrency",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableEngine",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableEngineTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableGroupBarScales",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableGrouping",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableGroupSummaries",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableQuery",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableRowLimit",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTableRowLimitGroupedTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTeamResolver",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTeamResolverTest",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -339,14 +969,14 @@
     ]
   },
   {
-    "text": "Custom Field (202)",
+    "text": "Custom Field (207)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
     },
     "children": [
       {
-        "text": "Account (38)",
+        "text": "Account (39)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -389,6 +1019,13 @@
           },
           {
             "text": "Account.CleanStatus",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Account.CurrencyIsoCode",
             "icon": "fa-solid fa-circle-check icon-success",
             "a_attr": {
               "href": null
@@ -621,7 +1258,7 @@
         ]
       },
       {
-        "text": "Case (39)",
+        "text": "Case (40)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -692,6 +1329,13 @@
           },
           {
             "text": "Case.ContactPhone",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Case.CurrencyIsoCode",
             "icon": "fa-solid fa-circle-check icon-success",
             "a_attr": {
               "href": null
@@ -903,7 +1547,7 @@
         ]
       },
       {
-        "text": "Contact (33)",
+        "text": "Contact (34)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -953,6 +1597,13 @@
           },
           {
             "text": "Contact.ContactSource",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Contact.CurrencyIsoCode",
             "icon": "fa-solid fa-circle-check icon-success",
             "a_attr": {
               "href": null
@@ -1345,7 +1996,7 @@
         ]
       },
       {
-        "text": "Lead (34)",
+        "text": "Lead (35)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -1388,6 +2039,13 @@
           },
           {
             "text": "Lead.CompanyDunsNumber",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Lead.CurrencyIsoCode",
             "icon": "fa-solid fa-circle-check icon-success",
             "a_attr": {
               "href": null
@@ -1592,7 +2250,7 @@
         ]
       },
       {
-        "text": "Opportunity (24)",
+        "text": "Opportunity (25)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -1628,6 +2286,13 @@
           },
           {
             "text": "Opportunity.ContractId",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Opportunity.CurrencyIsoCode",
             "icon": "fa-solid fa-circle-check icon-success",
             "a_attr": {
               "href": null
@@ -1843,6 +2508,73 @@
     ]
   },
   {
+    "text": "Custom Label (6)",
+    "icon": "fa-solid fa-folder icon-blue",
+    "a_attr": {
+      "href": null
+    },
+    "children": [
+      {
+        "text": "BoardEmptyFilledAll",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardEmptyFilledEmpty",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardEmptyFilledFilled",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTeamMine",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTeamNoRoleNotice",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "BoardTeamOfUser",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      }
+    ]
+  },
+  {
+    "text": "Custom Labels (1)",
+    "icon": "fa-solid fa-folder icon-blue",
+    "a_attr": {
+      "href": null
+    },
+    "children": [
+      {
+        "text": "CustomLabels",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      }
+    ]
+  },
+  {
     "text": "Custom Notification Type (1)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
@@ -1923,6 +2655,22 @@
       },
       {
         "text": "Panel_Batch__c",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      }
+    ]
+  },
+  {
+    "text": "Custom Permission (1)",
+    "icon": "fa-solid fa-folder icon-blue",
+    "a_attr": {
+      "href": null
+    },
+    "children": [
+      {
+        "text": "Board_ViewAllQuotas",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -3963,7 +4711,7 @@
     ]
   },
   {
-    "text": "Lightning Component Bundle (30)",
+    "text": "Lightning Component Bundle (70)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -3991,7 +4739,98 @@
         }
       },
       {
+        "text": "boardBucketFieldEditor",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardBucketFields",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartColours",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartCpe",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartPanelGrid",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartPanels",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartPanelSettings",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartReferenceLines",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartSetupSteps",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "boardChartUtils",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardChartWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardConditionEditor",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardConditionRow",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardConfigCurrency",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4006,6 +4845,13 @@
       },
       {
         "text": "boardContextStore",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeBindings",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4033,7 +4879,21 @@
         }
       },
       {
+        "text": "boardCpeCrossObjectMeasure",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "boardCpeDragStyles",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeFilterBindings",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4054,7 +4914,21 @@
         }
       },
       {
+        "text": "boardCpeMeasureList",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "boardCpeObjectFieldPicker",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCpeRowActionList",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4068,7 +4942,42 @@
         }
       },
       {
+        "text": "boardCpeTotalRow",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "boardCpeUtils",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCrossObjectMeasure",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCurrencyPicker",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardCursorProgress",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardDisplayCurrency",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4089,7 +4998,21 @@
         }
       },
       {
+        "text": "boardFilterSetupSteps",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "boardFilterWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardFixedColourEditor",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4103,7 +5026,84 @@
         }
       },
       {
+        "text": "boardMetricGauge",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardMetricGaugeView",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardMetricSetupSteps",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "boardMetricWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardPictureTiles",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardSegmentedButtons",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardSetupBaseFilters",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardSetupDialog",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardSetupFilterDefinitions",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardSetupGuide",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardSetupPreview",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardSetupSteps",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4117,7 +5117,28 @@
         }
       },
       {
+        "text": "boardTableFlowModal",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardTableSetupSteps",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
         "text": "boardTableWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "boardVisibilityWatcher",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4153,6 +5174,13 @@
       },
       {
         "text": "protoFilterWidget",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
+      {
+        "text": "protoSetupPreviewDialog",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
           "href": null
@@ -4556,12 +5584,19 @@
     ]
   },
   {
-    "text": "Permission Set (8)",
+    "text": "Permission Set (9)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
     },
     "children": [
+      {
+        "text": "Board_Quota_Viewer",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        }
+      },
       {
         "text": "Experience_Profile_Manager",
         "icon": "fa-solid fa-circle-check icon-success",

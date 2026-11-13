@@ -50,17 +50,6 @@
                     data-name="maximumFractionDigits"
                     onchange={handleDigits}
                 ></lightning-input>
-                <template lwc:if={isCurrency}>
-                    <lightning-input
-                        class="c-format-currency slds-col slds-size_1-of-1"
-                        label="Currency code"
-                        placeholder="Org default"
-                        max-length="3"
-                        value={currencyCode}
-                        field-level-help="3-letter ISO code such as USD or EUR. Leave empty for the org currency."
-                        onchange={handleCurrency}
-                    ></lightning-input>
-                </template>
                 <lightning-input
                     class="c-format-prefix slds-col slds-size_1-of-2"
                     label="Prefix"

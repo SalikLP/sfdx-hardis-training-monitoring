@@ -1,0 +1,173 @@
+<template>
+    <div class="c-bucket-field-editor">
+        <p class="slds-text-body_small slds-text-color_weak">
+            A Bucket field labels each record by the first rule it matches, so you can group or split the chart by it.
+            Use a formula checkbox in a rule for logic a condition can't express.
+        </p>
+        <template lwc:if={hasFields}>
+            <ul class="c-bucket-fields slds-m-top_x-small">
+                <template for:each={fieldViews} for:item="field">
+                    <li key={field.key} class="c-bucket-field slds-box slds-box_small slds-m-bottom_small">
+                        <div class="slds-grid slds-grid_vertical-align-end">
+                            <lightning-input
+                                class="c-bucket-field-label slds-col slds-grow"
+                                label="Bucket field label"
+                                placeholder="e.g. Deal size"
+                                value={field.label}
+                                data-field-index={field.fieldIndex}
+                                onchange={handleFieldLabel}
+                            ></lightning-input>
+                            <lightning-button-icon
+                                class="c-bucket-field-remove slds-m-left_x-small slds-shrink-none"
+                                icon-name="utility:delete"
+                                variant="bare"
+                                alternative-text="Remove Bucket field"
+                                title="Remove Bucket field"
+                                data-field-index={field.fieldIndex}
+                                onclick={handleRemoveField}
+                            ></lightning-button-icon>
+                        </div>
+                        <ol class="c-bucket-rules slds-m-top_x-small">
+                            <template for:each={field.rules} for:item="rule">
+                                <li key={rule.key} class="c-bucket-rule slds-p-vertical_x-small">
+                                    <div class="slds-grid slds-grid_vertical-align-center">
+                                        <span class="slds-text-title slds-truncate slds-col">{rule.title}</span>
+                                        <div class="slds-shrink-none">
+                                            <lightning-button-icon
+                                                class="c-bucket-rule-up"
+                                                icon-name="utility:arrowup"
+                                                size="small"
+                                                variant="bare"
+                                                alternative-text="Move rule up"
+                                                disabled={rule.isFirst}
+                                                data-field-index={field.fieldIndex}
+                                                data-rule-index={rule.ruleIndex}
+                                                onclick={handleRuleUp}
+                                            ></lightning-button-icon>
+                                            <lightning-button-icon
+                                                class="c-bucket-rule-down"
+                                                icon-name="utility:arrowdown"
+                                                size="small"
+                                                variant="bare"
+                                                alternative-text="Move rule down"
+                                                disabled={rule.isLast}
+                                                data-field-index={field.fieldIndex}
+                                                data-rule-index={rule.ruleIndex}
+                                                onclick={handleRuleDown}
+                                            ></lightning-button-icon>
+                                            <lightning-button-icon
+                                                class="c-bucket-rule-remove"
+                                                icon-name="utility:delete"
+                                                size="small"
+                                                variant="bare"
+                                                alternative-text="Remove rule"
+                                                disabled={rule.isOnly}
+                                                data-field-index={field.fieldIndex}
+                                                data-rule-index={rule.ruleIndex}
+                                                onclick={handleRemoveRule}
+                                            ></lightning-button-icon>
+                                        </div>
+                                    </div>
+                                    <lightning-input
+                                        class="c-bucket-rule-label"
+                                        label="Bucket label"
+                                        placeholder="e.g. Large"
+                                        value={rule.label}
+                                        data-field-index={field.fieldIndex}
+                                        data-rule-index={rule.ruleIndex}
+                                        data-name="label"
+                                        onchange={handleRuleText}
+                                    ></lightning-input>
+                                    <lightning-combobox
+                                        class="c-bucket-rule-colour-name slds-m-top_xx-small"
+                                        label="Colour (optional)"
+                                        options={colourOptions}
+                                        value={rule.choice}
+                                        data-field-index={field.fieldIndex}
+                                        data-rule-index={rule.ruleIndex}
+                                        onchange={handleRuleColourChoice}
+                                    ></lightning-combobox>
+                                    <template lwc:if={rule.isCustomColour}>
+                                        <lightning-input
+                                            class="c-bucket-rule-colour slds-m-top_xx-small"
+                                            label="Custom hex colour"
+                                            placeholder="#0176d3"
+                                            value={rule.colour}
+                                            data-field-index={field.fieldIndex}
+                                            data-rule-index={rule.ruleIndex}
+                                            data-name="colour"
+                                            onchange={handleRuleText}
+                                        ></lightning-input>
+                                        <template lwc:if={rule.colourWarning}>
+                                            <p
+                                                class="c-bucket-rule-colour-warning slds-text-body_small slds-text-color_error"
+                                            >
+                                                {rule.colourWarning}
+                                            </p>
+                                        </template>
+                                    </template>
+                                    <c-board-condition-editor
+                                        class="c-bucket-rule-condition slds-m-top_xx-small"
+                                        value={rule.condition}
+                                        object-api-name={objectApiName}
+                                        data-field-index={field.fieldIndex}
+                                        data-rule-index={rule.ruleIndex}
+                                        onconditionchange={handleRuleCondition}
+                                    ></c-board-condition-editor>
+                                </li>
+                            </template>
+                        </ol>
+                        <lightning-button
+                            class="c-bucket-add-rule slds-m-top_x-small"
+                            label="Add rule"
+                            icon-name="utility:add"
+                            disabled={field.addRuleDisabled}
+                            data-field-index={field.fieldIndex}
+                            onclick={handleAddRule}
+                        ></lightning-button>
+                        <template lwc:if={field.atLimit}>
+                            <p class="c-bucket-rule-limit slds-text-body_small slds-text-color_weak">
+                                A Bucket field has at most {maxRules} rules.
+                            </p>
+                        </template>
+                        <lightning-input
+                            class="c-bucket-fallback-label slds-m-top_x-small"
+                            label="Bucket for records matching no rule"
+                            placeholder={defaultFallbackLabel}
+                            value={field.fallbackLabel}
+                            disabled={field.exclude}
+                            data-field-index={field.fieldIndex}
+                            onchange={handleFallbackLabel}
+                        ></lightning-input>
+                        <lightning-input
+                            class="c-bucket-fallback-exclude slds-m-top_xx-small"
+                            type="checkbox"
+                            label="Leave out records matching no rule"
+                            checked={field.exclude}
+                            data-field-index={field.fieldIndex}
+                            onchange={handleFallbackExclude}
+                        ></lightning-input>
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template lwc:else>
+            <p class="c-bucket-empty slds-text-body_regular slds-text-color_weak slds-p-vertical_small">
+                No Bucket fields yet.
+            </p>
+        </template>
+        <template lwc:if={hasErrors}>
+            <ul class="c-bucket-field-errors slds-text-color_error slds-text-body_small">
+                <template for:each={errors} for:item="message">
+                    <li key={message}>{message}</li>
+                </template>
+            </ul>
+        </template>
+        <lightning-button
+            class="c-bucket-add-field slds-m-top_x-small"
+            label="Add Bucket field"
+            icon-name="utility:add"
+            onclick={handleAddField}
+        ></lightning-button>
+    </div>
+</template>

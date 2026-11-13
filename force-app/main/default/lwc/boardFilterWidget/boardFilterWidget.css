@@ -20,6 +20,20 @@
     justify-content: center;
 }
 
+.c-board-filter-section {
+    flex: 1 1 auto;
+    max-width: 100%;
+}
+
+.c-board-filter-section-heading {
+    display: inline-flex;
+    align-items: center;
+}
+
+.c-board-filter-bar_compact .c-board-filter-section {
+    flex-basis: 100%;
+}
+
 .c-board-filter-slot {
     min-width: 12rem;
     max-width: 18rem;

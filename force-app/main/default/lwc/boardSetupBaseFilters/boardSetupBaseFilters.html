@@ -1,0 +1,16 @@
+<template>
+    <fieldset class="c-setup-base-filters slds-m-top_medium">
+        <legend class="slds-text-heading_small slds-m-bottom_xx-small">Base filters</legend>
+        <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
+            The conditions apply together with the Board's Filter context. Use groups to combine conditions with AND or
+            OR.
+        </p>
+        <c-board-condition-editor
+            class="c-setup-base-filters-editor"
+            value={tree}
+            object-api-name={objectApiName}
+            id-prefix={idPrefix}
+            onconditionchange={handleConditionChange}
+        ></c-board-condition-editor>
+    </fieldset>
+</template>

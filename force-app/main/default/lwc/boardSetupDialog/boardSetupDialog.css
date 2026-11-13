@@ -1,0 +1,26 @@
+/* Step nav on the left at a fixed width; the step content takes the rest of the full-size modal. */
+.c-setup-nav {
+    width: 14rem;
+}
+
+.c-setup-step-select {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* Keep step settings at a readable line length. */
+.c-setup-content {
+    min-width: 0;
+    max-width: 48rem;
+}
+
+/* Live preview on the right: about 2/3 of the modal when open; collapsed it keeps only its toggle. */
+.c-setup-preview {
+    border-left: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-setup-preview_open {
+    flex: 0 0 60%;
+    min-width: 0;
+}

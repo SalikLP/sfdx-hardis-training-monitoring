@@ -1,4 +1,4 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { FlowAttributeChangeEvent } from 'lightning/flowSupport';
 import { registerRefreshHandler, unregisterRefreshHandler } from 'lightning/refresh';
@@ -6,7 +6,8 @@ import LOCALE from '@salesforce/i18n/locale';
 import getObjectFields from '@salesforce/apex/BoardSchemaService.getObjectFields';
 import queryTable from '@salesforce/apex/BoardQueryService.queryTable';
 import fetchTablePage from '@salesforce/apex/BoardQueryService.fetchTablePage';
-import queryChildRows from '@salesforce/apex/BoardQueryService.queryChildRows';
+import fetchGroupedTablePage from '@salesforce/apex/BoardQueryService.fetchGroupedTablePage';
+import fetchTableAggregateChunk from '@salesforce/apex/BoardQueryService.fetchTableAggregateChunk';
 import {
     parseAndMergeConfig,
     normalizeBoardError,
@@ -15,20 +16,64 @@ import {
     buildFilterBindingSummary,
     buildQuerySignature
 } from 'c/boardConfigUtils';
-import { subscribeFilterContext, publishFilterContext, acceptExternalFilterContext } from 'c/boardContextStore';
+import {
+    subscribeFilterContext,
+    publishFilterContext,
+    acceptExternalFilterContext,
+    getDisplayCurrency,
+    getConfigCurrency,
+    getBoardBucketFields
+} from 'c/boardContextStore';
+import { waitsForFilterWidget, waitingForBoardId } from 'c/boardConfigUtils';
+import { createHiddenDeferral } from 'c/boardVisibilityWatcher';
+import { formatCount } from 'c/boardCursorProgress';
+import { columnBucketFields } from 'c/boardBucketFields';
+import BoardTableFlowModal from 'c/boardTableFlowModal';
+import { getObjectInfos } from 'lightning/uiObjectInfoApi';
+import { encodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
+import {
+    normalizeRowActions,
+    serverRowActionRequest,
+    permissionObjectApiNames,
+    withPolymorphicCandidates,
+    buildCreatePageReference,
+    buildActionHeaders,
+    buildActionCells,
+    buildFlowInputVariables,
+    resolveActionRecordId
+} from './rowActions';
 import { buildColumnViews, buildCellView, buildHighlightPattern } from './tableCells';
+import { withGroupRowActions, resolveGroupActionRow } from './groupRowActions';
+import { withTotalRowRequest, buildTotalRowView } from './totalRow';
+import { withGroupSummariesRequest, withGroupSummaryRows } from './groupSummaries';
+import {
+    GROUP_COLUMN_ID,
+    groupByRequest,
+    mergeGroups,
+    toggledGroupDirection,
+    buildGroupHeader,
+    groupSpacerCell,
+    buildGroupedRows
+} from './rowGrouping';
+import {
+    aggregateRequestFields,
+    buildAggregateGroupHeader,
+    buildAggregateRowViews,
+    sortAggregateTable
+} from './aggregateTable';
+import { followAggregateCursor, isIncompleteAggregateCursor } from './aggregateCursor';
 
 const DEFAULT_PAGE_SIZE = 25;
 const MIN_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
 /** Rows a `Database.PaginationCursor` spans at most; the count badge shows `100,000+` at the cap. */
 const MAX_TABLE_ROWS = 100000;
+/** Largest Row limit (Top N) a Table accepts. */
+const MAX_ROW_LIMIT = 2000;
 /** Distance (px) from the bottom of the scroll container that triggers the next page. */
 const SCROLL_THRESHOLD_PX = 48;
 /** `fieldPath` of the retryable `QUERY_ERROR` `fetchTablePage` raises when the held cursor expired. */
 const CURSOR_EXPIRED_PATH = 'paginationCursor';
-const DEFAULT_CHILD_LIMIT = 10;
-const MAX_CHILD_LIMIT = 50;
 let widgetInstanceCount = 0;
 
 function clampPageSize(value) {
@@ -39,14 +84,6 @@ function clampPageSize(value) {
     return Math.min(MAX_PAGE_SIZE, Math.max(MIN_PAGE_SIZE, Math.round(size)));
 }
 
-function clampChildLimit(value) {
-    const limit = Number(value);
-    if (!Number.isFinite(limit)) {
-        return DEFAULT_CHILD_LIMIT;
-    }
-    return Math.min(MAX_CHILD_LIMIT, Math.max(1, Math.round(limit)));
-}
-
 function serverColumnRequest(column) {
     return {
         id: column.id || column.fieldPath,
@@ -55,27 +92,51 @@ function serverColumnRequest(column) {
     };
 }
 
-function configuredColumns(columns) {
-    return Array.isArray(columns) ? columns.filter((column) => column && column.fieldPath) : [];
+/** Row limit from config: a whole number from 1 to 2,000, else null (no limit). */
+function validRowLimit(value) {
+    const limit = Number(value);
+    return Number.isInteger(limit) && limit >= 1 && limit <= MAX_ROW_LIMIT ? limit : null;
+}
+
+/** Stable client-side sort of loaded rows by one field; blank values sort last in either direction. */
+function sortRowsClientSide(rows, fieldPath, sortDirection) {
+    const factor = sortDirection === 'DESC' ? -1 : 1;
+    const isBlank = (value) => value === null || value === undefined || value === '';
+    return rows
+        .map((row, index) => ({ row, index }))
+        .sort((a, b) => {
+            const left = a.row.values?.[fieldPath];
+            const right = b.row.values?.[fieldPath];
+            if (isBlank(left) || isBlank(right)) {
+                return isBlank(left) === isBlank(right) ? a.index - b.index : isBlank(left) ? 1 : -1;
+            }
+            const order =
+                typeof left === 'number' && typeof right === 'number'
+                    ? left - right
+                    : String(left).localeCompare(String(right), LOCALE, { numeric: true });
+            return order * factor || a.index - b.index;
+        })
+        .map((entry) => entry.row);
 }
 
 /**
- * Child state of rows the server auto-expanded because the text search matched their child records. The seeded
- * rows are the matches only (`matchedOnly`); a manual re-expand fetches the full child list.
+ * `{ bucketFields }` with the Bucket fields the columns show or the Table groups by (`bucket:<id>`), or `{}` when
+ * there are none.
  */
-function autoExpandedChildState(rows) {
-    const state = {};
-    (rows || []).forEach((row) => {
-        if (row.autoExpanded && row.children) {
-            state[row.id] = { expanded: true, loading: false, result: row.children, error: null, matchedOnly: true };
-        }
-    });
-    return state;
+function bucketColumnRequestFields(config, columns) {
+    const groupEntries = Array.isArray(config.groupBy) ? config.groupBy : [];
+    const bucketFields = columnBucketFields(config.bucketFields, [...columns, ...groupEntries]);
+    return bucketFields.length ? { bucketFields } : {};
+}
+
+function configuredColumns(columns) {
+    return Array.isArray(columns) ? columns.filter((column) => column && column.fieldPath) : [];
 }
 
 export default class BoardTableWidget extends NavigationMixin(LightningElement) {
     _boardId = 'default';
     _boardIdExplicitlySet = false;
+    _livePreview = false;
     _title = '';
     _objectApiName = '';
     _recordId = '';
@@ -95,19 +156,19 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
     loadMoreError = null;
     isQuerying = false;
     isLoadingMore = false;
+    /** Detail rows off, cursor tier: progress `{ percent, label, ... }` while chunks load; null otherwise. */
+    _cursorProgress = null;
     bindingApplied = [];
     bindingIgnored = [];
     /** `ignoredFilterIds` of the last completed query; re-applied after every binding resolve. */
     _serverIgnoredIds = [];
-    /**
-     * Child sub-tables of the loaded query, keyed by parent row Id: `{ expanded, loading, result, error,
-     * matchedOnly }` (`result` = `BoardQueryService.ChildRowsResult`). Cleared whenever `queryTable` loads a new
-     * result, so filters, sorting, and refresh invalidate it.
-     */
-    childState = {};
-
     /** End-user header sort (`{ sortBy, sortDirection }`); overrides the configured default until config changes. */
     _sortOverride = null;
+    /** End-user group order from the group column header; overrides the configured one until config changes. */
+    _groupDirectionOverride = null;
+    /** Row grouping collapse: every group follows `_collapseAllGroups` except the toggled ones. */
+    _collapseAllGroups = false;
+    _toggledGroups = new Set();
     _activeRequest = null;
     _cursorGeneration = 0;
     _latestRequestId = 0;
@@ -117,6 +178,36 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
     _unsubscribe = null;
     _refreshHandlerId = null;
     _isConnected = false;
+
+    /** Setup dialog live preview: never waits for the Filter widget, whatever the config says. */
+    @api
+    get livePreview() {
+        return this._livePreview;
+    }
+    set livePreview(value) {
+        this._livePreview = Boolean(value);
+        if (this._isConnected) {
+            this.setupSubscription();
+        }
+    }
+
+    /** `{ updateable, createable }` per object API name, from `getObjectInfos` for the Edit targets and Create objects. */
+    permissionsByObject = new Map();
+
+    @wire(getObjectInfos, { objectApiNames: '$permissionObjectApiNames' })
+    wiredObjectInfos({ data }) {
+        const permissions = new Map();
+        (data?.results || []).forEach((entry) => {
+            if (entry?.result?.apiName) {
+                permissions.set(entry.result.apiName, {
+                    updateable: entry.result.updateable === true,
+                    createable: entry.result.createable === true,
+                    keyPrefix: entry.result.keyPrefix || null
+                });
+            }
+        });
+        this.permissionsByObject = permissions;
+    }
 
     @api
     get boardId() {
@@ -150,6 +241,7 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
     set objectApiName(value) {
         this._objectApiName = value || '';
         this._sortOverride = null;
+        this._groupDirectionOverride = null;
         if (this._isConnected) {
             this.requestQuery();
         }
@@ -189,6 +281,7 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
     set configJson(value) {
         this._configJson = value || '';
         this._sortOverride = null;
+        this._groupDirectionOverride = null;
         if (this._isConnected) {
             this.setupSubscription();
         }
@@ -196,6 +289,7 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
 
     connectedCallback() {
         this._isConnected = true;
+        this._hiddenDeferral = createHiddenDeferral(this.template.host, () => this.handleShownStale());
         this.setupSubscription();
         if (this._pendingExternalContext) {
             const pending = this._pendingExternalContext;
@@ -215,6 +309,7 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
         this._lastQuerySignature = null;
         this.isQuerying = false;
         this.isLoadingMore = false;
+        this._hiddenDeferral?.dispose();
         this.teardownSubscription();
         if (this._refreshHandlerId) {
             try {
@@ -229,11 +324,16 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
     setupSubscription() {
         this.teardownSubscription();
         const effectiveBoardId = this.effectiveBoardId;
-        this._unsubscribe = subscribeFilterContext(effectiveBoardId, this._recordId, (ctx) => {
-            this.filterContext = ctx;
-            this.syncContextOutput(ctx);
-            this.requestQuery();
-        });
+        this._unsubscribe = subscribeFilterContext(
+            effectiveBoardId,
+            this._recordId,
+            (ctx) => {
+                this.filterContext = ctx;
+                this.syncContextOutput(ctx);
+                this.requestQuery();
+            },
+            { waitForFilterWidget: waitsForFilterWidget(this.resolvedConfig.config, this._livePreview) }
+        );
         this.requestQuery();
     }
 
@@ -274,8 +374,7 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
 
     /** Describe per object, re-fetched when the Board `refreshToken` changes (busts the cacheable Apex result). */
     loadFields(objectApiName, refreshToken) {
-        const cached = this._fieldsByObject.get(objectApiName);
-        if (!cached || cached.refreshToken !== refreshToken) {
+        if (this.needsFieldsFetch(objectApiName, refreshToken)) {
             const pending = Promise.resolve(getObjectFields({ objectApiName, refreshToken })).catch((error) => {
                 if (this._fieldsByObject.get(objectApiName)?.pending === pending) {
                     this._fieldsByObject.delete(objectApiName);
@@ -285,6 +384,10 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
             this._fieldsByObject.set(objectApiName, { refreshToken, pending });
         }
         return this._fieldsByObject.get(objectApiName).pending;
+    }
+
+    needsFieldsFetch(objectApiName, refreshToken) {
+        return this._fieldsByObject.get(objectApiName)?.refreshToken !== refreshToken;
     }
 
     get isQueryable() {
@@ -298,9 +401,14 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
             return;
         }
         const objectApiName = this.effectiveObjectApiName;
+        const refreshToken = this.filterContext.refreshToken || 0;
+        // A new describe always means a new query (refreshToken is in the request): defer before calling Apex.
+        if (this.needsFieldsFetch(objectApiName, refreshToken) && this._hiddenDeferral?.deferIfHidden()) {
+            return;
+        }
         let fields;
         try {
-            fields = await this.loadFields(objectApiName, this.filterContext.refreshToken || 0);
+            fields = await this.loadFields(objectApiName, refreshToken);
         } catch (error) {
             if (objectApiName === this.effectiveObjectApiName) {
                 this._latestRequestId += 1;
@@ -327,7 +435,9 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
             fields,
             filterContext: ctx,
             filterBindings: config.filterBindings,
-            widgetId: this._widgetId
+            widgetId: this._widgetId,
+            bucketFields: config.bucketFields,
+            boardBucketFields: getBoardBucketFields(this.effectiveBoardId)
         });
         this.applyBindingResolution(resolution);
         if (resolution.error) {
@@ -341,20 +451,35 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
         }
 
         const sort = this.requestedSort;
-        const request = {
+        const rowLimit = this.rowLimit;
+        const baseRequest = {
             objectApiName,
             columns: this.configColumns.map(serverColumnRequest),
             sortBy: sort.sortBy,
             sortDirection: sort.sortDirection,
+            ...(rowLimit ? { rowLimit } : {}),
             pageSize: clampPageSize(config.pageSize ?? DEFAULT_PAGE_SIZE),
-            childRelationship: this.childConfig,
             filters: resolution.filters,
             baseFilters: Array.isArray(config.baseFilters) ? config.baseFilters : [],
+            configCurrency: getConfigCurrency(this.effectiveBoardId),
+            rowActions: serverRowActionRequest(this.rowActions),
+            displayCurrency: getDisplayCurrency(this.effectiveBoardId),
             refreshToken: ctx.refreshToken || 0,
             widgetRefreshToken: this.widgetRefreshToken
         };
+        const request = withGroupSummariesRequest(
+            withTotalRowRequest(baseRequest, config, this.configColumns),
+            config,
+            this.configColumns
+        );
+        const groupBy = groupByRequest(config, this._groupDirectionOverride);
+        if (groupBy) {
+            request.groupBy = groupBy;
+        }
+        Object.assign(request, aggregateRequestFields(request, config));
+        Object.assign(request, bucketColumnRequestFields(config, this.configColumns));
         const signature = buildQuerySignature(request);
-        if (signature === this._lastQuerySignature) {
+        if (signature === this._lastQuerySignature || this._hiddenDeferral?.deferIfHidden()) {
             return;
         }
         this._lastQuerySignature = signature;
@@ -364,15 +489,30 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
         this.isQuerying = true;
         this.isLoadingMore = false;
         this.loadMoreError = null;
+        this._cursorProgress = null;
         try {
-            const result = await queryTable({ requestJson: JSON.stringify(request) });
+            let result = await queryTable({ requestJson: JSON.stringify(request) });
+            if (reqId !== this._latestRequestId) {
+                return;
+            }
+            if (isIncompleteAggregateCursor(result)) {
+                result = await this.followAggregateChunks(reqId, request, result);
+                if (!result) {
+                    return;
+                }
+            }
+            const actionTargets = await withPolymorphicCandidates(
+                this.rowActions,
+                result?.rowActions,
+                objectApiName,
+                (name) => this.loadFields(name, ctx.refreshToken || 0)
+            );
             if (reqId !== this._latestRequestId) {
                 return;
             }
             this._serverIgnoredIds = result?.ignoredFilterIds || [];
             this.applyBindingResolution(resolution);
             this._activeRequest = request;
-            this.childState = {};
             this.tableData = {
                 columns: result?.columns || [],
                 rows: result?.rows || [],
@@ -382,9 +522,17 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
                 totalCount: result?.totalCount ?? null,
                 sortBy: result?.sortBy || null,
                 sortDirection: result?.sortDirection || null,
-                searchChildIds: result?.searchChildIds || []
+                rowLimit: result?.rowLimit || null,
+                groupLimit: result?.groupLimit || null,
+                rowActions: actionTargets,
+                totals: result?.totals ?? null,
+                totalRowUnavailable: result?.totalRowUnavailable === true,
+                barScales: result?.barScales || [],
+
+                groupField: result?.groupField || null,
+                groups: mergeGroups(null, result?.groups),
+                aggregateGroups: result?.aggregateGroups || null
             };
-            this.applyAutoExpanded(result?.rows);
             this.queryError = null;
         } catch (error) {
             if (reqId === this._latestRequestId) {
@@ -396,6 +544,19 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
                 this.isQuerying = false;
             }
         }
+    }
+
+    /** Detail rows off, cursor tier: reads every chunk with a progress bar; null when a newer run superseded it. */
+    followAggregateChunks(reqId, request, first) {
+        return followAggregateCursor({
+            first,
+            request,
+            fetchChunk: fetchTableAggregateChunk,
+            isCurrent: () => reqId === this._latestRequestId,
+            onProgress: (progress) => {
+                this._cursorProgress = progress;
+            }
+        });
     }
 
     /**
@@ -414,12 +575,7 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
         try {
             let page;
             try {
-                page = await fetchTablePage({
-                    paginationCursor: data.paginationCursor,
-                    start: data.nextIndex,
-                    pageSize: request.pageSize,
-                    childConfig: this.pageChildConfig(request)
-                });
+                page = await this.fetchNextPage(request, data);
             } catch (error) {
                 if (normalizeBoardError(error).fieldPath !== CURSOR_EXPIRED_PATH || reqId !== this._latestRequestId) {
                     throw error;
@@ -441,9 +597,9 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
                 paginationCursor: page?.paginationCursor || null,
                 nextIndex: page?.nextIndex || data.nextIndex,
                 hasMore: Boolean(page?.hasMore),
-                totalCount: page?.totalCount ?? this.tableData.totalCount
+                totalCount: page?.totalCount ?? this.tableData.totalCount,
+                groups: mergeGroups(this.tableData.groups, page?.groups)
             };
-            this.applyAutoExpanded(page?.rows);
         } catch (error) {
             if (reqId === this._latestRequestId) {
                 this.loadMoreError = normalizeBoardError(error);
@@ -456,83 +612,23 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
     }
 
     /**
-     * Expands (lazily fetching once per loaded query) or collapses one parent row's child sub-table. Expanding a row
-     * that holds only search-matched children (or a failed load) fetches the full child list.
+     * Next cursor page; a grouped Table's page also carries the full-group counts of its groups, and a Table with
+     * Bucket field columns needs the request so the server can label the page's rows.
      */
-    toggleChildRows(parentId) {
-        const request = this._activeRequest;
-        if (!request?.childRelationship) {
-            return;
-        }
-        const current = this.childState[parentId];
-        if (current?.expanded) {
-            this.setChildState(parentId, { ...current, expanded: false });
-            return;
-        }
-        if (current && !current.error && !current.matchedOnly) {
-            this.setChildState(parentId, { ...current, expanded: true });
-            return;
-        }
-        this.fetchChildRows(parentId);
-    }
-
-    /** Fetches one parent row's full child list (expanded, with an inline spinner while loading). */
-    async fetchChildRows(parentId) {
-        const request = this._activeRequest;
-        if (!request?.childRelationship) {
-            return;
-        }
-        this.setChildState(parentId, { expanded: true, loading: true, result: null, error: null });
-        const reqId = this._latestRequestId;
-        try {
-            const result = await queryChildRows({
-                childConfig: JSON.stringify({
-                    ...request.childRelationship,
-                    refreshToken: request.refreshToken,
-                    widgetRefreshToken: request.widgetRefreshToken
-                }),
-                parentId
+    fetchNextPage(request, data) {
+        if (request.groupBy || request.bucketFields) {
+            return fetchGroupedTablePage({
+                requestJson: JSON.stringify(request),
+                paginationCursor: data.paginationCursor,
+                start: data.nextIndex
             });
-            if (reqId === this._latestRequestId) {
-                this.setChildRows(parentId, result);
-            }
-        } catch (error) {
-            if (reqId === this._latestRequestId) {
-                this.setChildState(parentId, {
-                    ...this.childState[parentId],
-                    loading: false,
-                    error: normalizeBoardError(error)
-                });
-            }
         }
-    }
-
-    /** Caches one parent row's full child rows for the loaded query (keeps its expanded state). */
-    setChildRows(parentId, result) {
-        this.setChildState(parentId, {
-            expanded: this.childState[parentId]?.expanded ?? false,
-            loading: false,
-            result,
-            error: null,
-            matchedOnly: false
+        return fetchTablePage({
+            paginationCursor: data.paginationCursor,
+            start: data.nextIndex,
+            pageSize: request.pageSize,
+            displayCurrency: request.displayCurrency
         });
-    }
-
-    /** Expands rows whose child records matched the text search, with their batch-fetched matching children. */
-    applyAutoExpanded(rows) {
-        const expanded = autoExpandedChildState(rows);
-        Object.keys(expanded).forEach((parentId) => this.setChildState(parentId, expanded[parentId]));
-    }
-
-    /** `fetchTablePage` child config: the relationship plus search-matched child Ids so later pages auto-expand. */
-    pageChildConfig(request) {
-        if (!request.childRelationship) {
-            return null;
-        }
-        const matchedChildIds = this.tableData?.searchChildIds || [];
-        return JSON.stringify(
-            matchedChildIds.length ? { ...request.childRelationship, matchedChildIds } : request.childRelationship
-        );
     }
 
     /** `<mark>` pattern for the text search terms applied to this Table's loaded query. */
@@ -541,10 +637,6 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
             .filter((filter) => filter.type === 'TEXT' && filter.text)
             .map((filter) => filter.text);
         return buildHighlightPattern(terms);
-    }
-
-    setChildState(parentId, state) {
-        this.childState = { ...this.childState, [parentId]: state };
     }
 
     /** Header disclosure: client binding resolution plus the filters the last completed query ignored server-side. */
@@ -574,35 +666,30 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
         return configuredColumns(this.resolvedConfig.config?.columns);
     }
 
-    /**
-     * Normalized `childRelationship` sent to `queryTable`, `fetchTablePage`, and `queryChildRows`; null when the
-     * Table has none or it is incomplete.
-     */
-    get childConfig() {
-        const child = this.resolvedConfig.config?.childRelationship;
-        const columns = configuredColumns(child?.columns);
-        if (!child || !child.childObjectApiName || !child.foreignKeyField || !columns.length) {
-            return null;
-        }
-        return {
-            relationshipName: child.relationshipName || null,
-            childObjectApiName: child.childObjectApiName,
-            foreignKeyField: child.foreignKeyField,
-            columns: columns.map(serverColumnRequest),
-            sortBy: child.sortBy || null,
-            sortDirection: String(child.sortDirection || '').toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
-            limit: clampChildLimit(child.limit ?? DEFAULT_CHILD_LIMIT)
-        };
+    /** Row actions show in the Setup dialog's Live preview but are disabled there (no navigation, no flow modal). */
+    get rowActionsDisabled() {
+        return this._livePreview;
     }
 
-    get childLabel() {
-        const child = this.resolvedConfig.config?.childRelationship;
-        return child?.label || child?.relationshipName || child?.childObjectApiName || 'Related records';
+    /** Configured Row actions the Table can run (view / edit / create / flow). */
+    get rowActions() {
+        return normalizeRowActions(this.resolvedConfig.config?.rowActions);
     }
 
-    /** Sort sent to `queryTable`: the end user's header choice, else the configured default. */
+    /** Objects whose Edit/Create permission the Row actions need, or `undefined` (wire idle) when there are none. */
+    get permissionObjectApiNames() {
+        const names = permissionObjectApiNames(this.rowActions, this.tableData?.rowActions);
+        return names.length ? names : undefined;
+    }
+
+    /** Configured Row limit (Top N), or null; a limited Table is one bounded page that header clicks re-sort locally. */
+    get rowLimit() {
+        return validRowLimit(this.resolvedConfig.config?.rowLimit);
+    }
+
+    /** Sort sent to `queryTable`: the end user's header choice, else the configured default (always, when limited). */
     get requestedSort() {
-        if (this._sortOverride) {
+        if (this._sortOverride && (!this.rowLimit || this.isGroupedConfig)) {
             return this._sortOverride;
         }
         const config = this.resolvedConfig.config || {};
@@ -618,6 +705,11 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
 
     get effectiveObjectApiName() {
         return this.resolvedConfig.config?.objectApiName || '';
+    }
+
+    /** Board id for the Wait for Filter widget hint card while this Widget waits, else empty. */
+    get waitingBoardId() {
+        return waitingForBoardId(this.resolvedConfig.config, this._livePreview, this.filterContext);
     }
 
     get effectiveBoardId() {
@@ -642,14 +734,26 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
         if (!this.tableData) {
             return 'INITIAL_LOADING';
         }
-        if (!this.tableData.rows.length) {
+        if (!this.tableData.rows.length && !this.tableData.aggregateGroups?.length) {
             return 'EMPTY';
         }
         return 'READY';
     }
 
     get showWidgetState() {
+        if (this.showCursorProgress && this.viewState === 'INITIAL_LOADING') {
+            return false;
+        }
         return this.viewState !== 'READY';
+    }
+
+    /** Cursor-tier progress of the latest run while it loads; null otherwise. */
+    get cursorProgress() {
+        return this.isQuerying ? this._cursorProgress : null;
+    }
+
+    get showCursorProgress() {
+        return Boolean(this.cursorProgress);
     }
 
     get errorPayload() {
@@ -690,86 +794,131 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
         );
     }
 
+    /** Row grouping configured: a Row limit then counts first-level groups, and header clicks re-query. */
+    get isGroupedConfig() {
+        return Boolean(groupByRequest(this.resolvedConfig.config || {}, null));
+    }
+
     get rowCountLabel() {
         const total = this.tableData?.totalCount || 0;
-        const formatted = new Intl.NumberFormat(LOCALE).format(total);
-        const suffix = total >= MAX_TABLE_ROWS ? '+' : '';
+        const groupLimit = this.tableData?.groupLimit;
+        if (groupLimit) {
+            return `Top ${formatCount(groupLimit)} groups · ${formatCount(total)} ${total === 1 ? 'record' : 'records'}`;
+        }
+        const limit = this.tableData?.rowLimit;
+        if (limit && total > limit) {
+            return `Top ${formatCount(limit)} of ${formatCount(total)}`;
+        }
+        const formatted = formatCount(total);
+        // Detail rows off counts every record exactly (the cursor tier reads up to 200,000); no pagination cap.
+        const suffix = total >= MAX_TABLE_ROWS && !this.isAggregate ? '+' : '';
         return `${formatted}${suffix} ${total === 1 ? 'record' : 'records'}`;
     }
 
     get columnViews() {
-        return buildColumnViews(this.tableData?.columns, this.configColumns, {
-            sortBy: this.tableData?.sortBy,
-            sortDirection: this.tableData?.sortDirection
-        });
+        return buildColumnViews(
+            this.tableData?.columns,
+            this.configColumns,
+            {
+                sortBy: this.tableData?.sortBy,
+                sortDirection: this.tableData?.sortDirection
+            },
+            this.tableData?.barScales
+        );
     }
 
-    /**
-     * Rendered rows: `{ key, id, cells[], hasChildren, child }`. With a child relationship, the first cell
-     * renders the count badge + expand chevron, and an expanded row's `child` renders the sibling
-     * `<tr colspan>` sub-row (`key: ${row.key}-children`).
-     */
+    /** Column headers: the group column (Row grouping), the data columns, then the Row action columns. */
+    get headerViews() {
+        const groupHeader = this.isAggregate
+            ? buildAggregateGroupHeader(this.groupField, this.tableData.sortBy)
+            : buildGroupHeader(this.groupField);
+        const groupHeaders = this.groupField ? [groupHeader] : [];
+        return [...groupHeaders, ...this.columnViews, ...buildActionHeaders(this.rowActions)];
+    }
+
+    /** Resolved group field of a grouped Table (`{ fieldPath, labelPath, label, sortDirection }`), else null. */
+    get groupField() {
+        return this.tableData?.groupField || null;
+    }
+
+    get isGrouped() {
+        return Boolean(this.groupField);
+    }
+
+    /** Detail rows off: the Table shows only its Group rows (an aggregated table). */
+    get isAggregate() {
+        return Boolean(this.tableData?.aggregateGroups);
+    }
+
+    /** Collapse all / Expand all: grouped Tables with Detail rows on. */
+    get showGroupCollapse() {
+        return this.isGrouped && !this.isAggregate;
+    }
+
+    isGroupCollapsed(token) {
+        return this._collapseAllGroups !== this._toggledGroups.has(token);
+    }
+
+    /** Rendered rows: `{ key, id, cells[] }` (data cells, then action cells). */
     get rowViews() {
+        if (this.isAggregate) {
+            return this.withGroupRowActions(
+                buildAggregateRowViews(this.tableData.aggregateGroups, this.headerViews, this.columnViews, formatCount)
+            );
+        }
         const columns = this.columnViews;
         const highlight = this.highlightPattern;
-        const hasChildren = Boolean(this._activeRequest?.childRelationship);
-        return (this.tableData?.rows || []).map((row) => {
-            const cells = columns.map((column) => buildCellView(column, row, highlight));
-            const view = { key: row.id, id: row.id, cells, hasChildren, child: null };
-            if (hasChildren && cells.length) {
-                cells[0] = { ...cells[0], showExpander: true };
-                Object.assign(view, this.buildChildView(row, columns.length, highlight));
-            }
-            return view;
+        const actions = this.rowActions;
+        const targets = this.tableData?.rowActions || [];
+        const groupField = this.groupField;
+        const buildDetail = (row) => ({
+            key: row.id,
+            id: row.id,
+            rowClass: groupField ? 'slds-hint-parent c-board-table-detail-row' : 'slds-hint-parent',
+            cells: [
+                ...(groupField ? [groupSpacerCell(row.id)] : []),
+                ...columns.map((column) => buildCellView(column, row, highlight)),
+                ...buildActionCells(actions, row, targets, this.permissionsByObject)
+            ]
+        });
+        const rows = this.tableData?.rows || [];
+        if (!groupField) {
+            return rows.map(buildDetail);
+        }
+        const views = buildGroupedRows(
+            rows,
+            groupField,
+            this.tableData.groups,
+            (token) => this.isGroupCollapsed(token),
+            buildDetail,
+            formatCount
+        );
+        return this.withGroupRowActions(
+            withGroupSummaryRows(views, {
+                groupsByToken: this.tableData.groups,
+                headerViews: this.headerViews,
+                columnViews: columns,
+                showSubtotals: this.resolvedConfig.config?.showSubtotals === true,
+                complete: !this.tableData.hasMore
+            })
+        );
+    }
+
+    /** Group rows offer only the Row actions acting on the group's lookup record (`groupRowActions`). */
+    withGroupRowActions(views) {
+        return withGroupRowActions(views, {
+            actions: this.rowActions,
+            actionHeaders: buildActionHeaders(this.rowActions),
+            headerCount: this.headerViews.length,
+            tableData: this.tableData,
+            permissionsByObject: this.permissionsByObject
         });
     }
 
-    buildChildView(row, colspan, highlight) {
-        // A null count with `childCountCapped` means the server could not count this parent's children.
-        const unknownCount = row.childCountCapped === true && (row.childCount === null || row.childCount === undefined);
-        const childCount = row.childCount || 0;
-        const canExpand = childCount > 0 || unknownCount;
-        const state = this.childState[row.id];
-        const expanded = Boolean(state?.expanded) && canExpand;
-        const view = {
-            childBadgeLabel: unknownCount ? '?' : `${childCount}${row.childCountCapped ? '+' : ''}`,
-            canExpand,
-            ariaExpanded: expanded ? 'true' : 'false',
-            chevron: expanded ? '▾' : '▸',
-            expandLabel: `${expanded ? 'Collapse' : 'Expand'} ${this.childLabel}`
-        };
-        if (expanded) {
-            const result = state.result;
-            const columns = result
-                ? buildColumnViews(result.columns, this.resolvedConfig.config?.childRelationship?.columns, {
-                      sortBy: result.sortBy,
-                      sortDirection: result.sortDirection
-                  })
-                : [];
-            const rows = (result?.rows || []).map((childRow) => ({
-                key: childRow.id,
-                cells: columns.map((column) => buildCellView(column, childRow, highlight))
-            }));
-            view.child = {
-                key: `${row.id}-children`,
-                rowId: row.id,
-                colspan,
-                label: this.childLabel,
-                isLoading: Boolean(state.loading),
-                errorMessage: state.error?.message || '',
-                hasRows: rows.length > 0,
-                isEmpty: Boolean(result) && !rows.length,
-                // Search auto-expansion seeds only the matching children; say so and offer the full list.
-                matchSummary:
-                    state.matchedOnly && result
-                        ? `Showing ${rows.length} of ${view.childBadgeLabel} ${this.childLabel} matching the search.`
-                        : '',
-                showAllLabel: `Show all ${this.childLabel}`,
-                columns,
-                rows
-            };
-        }
-        return view;
+    /** Total row (sticky footer), or null when the Total row is off. */
+    get totalRowView() {
+        const data = this.tableData;
+        return buildTotalRowView(this.headerViews, this.columnViews, data?.totals, data?.totalRowUnavailable === true);
     }
 
     get showLoadMore() {
@@ -785,14 +934,58 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
     // -----------------------------------------------------------------------------------------------------
 
     handleSort(event) {
+        if (this.isAggregate) {
+            this.tableData = sortAggregateTable(this.tableData, event.currentTarget.dataset);
+            return;
+        }
+        if (event.currentTarget.dataset.columnId === GROUP_COLUMN_ID) {
+            this.toggleGroupOrder();
+            return;
+        }
         const fieldPath = event.currentTarget.dataset.fieldPath;
         if (!fieldPath) {
             return;
         }
         const current = this.tableData || {};
         const sortDirection = current.sortBy === fieldPath && current.sortDirection === 'ASC' ? 'DESC' : 'ASC';
+        if (current.rowLimit) {
+            this.tableData = {
+                ...current,
+                rows: sortRowsClientSide(current.rows, fieldPath, sortDirection),
+                sortBy: fieldPath,
+                sortDirection
+            };
+            return;
+        }
         this._sortOverride = { sortBy: fieldPath, sortDirection };
         this.requestQuery();
+    }
+
+    /** Group column header: flips the group order and keeps the within-group sort. */
+    toggleGroupOrder() {
+        this._groupDirectionOverride = toggledGroupDirection(this.groupField);
+        this.requestQuery();
+    }
+
+    handleGroupToggle(event) {
+        const token = event.currentTarget.dataset.groupToken || '';
+        const toggled = new Set(this._toggledGroups);
+        if (toggled.has(token)) {
+            toggled.delete(token);
+        } else {
+            toggled.add(token);
+        }
+        this._toggledGroups = toggled;
+    }
+
+    handleCollapseAll() {
+        this._collapseAllGroups = true;
+        this._toggledGroups = new Set();
+    }
+
+    handleExpandAll() {
+        this._collapseAllGroups = false;
+        this._toggledGroups = new Set();
     }
 
     handleScroll(event) {
@@ -806,20 +999,6 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
         this.loadMore();
     }
 
-    handleToggleChildren(event) {
-        const parentId = event.currentTarget.dataset.rowId;
-        if (parentId) {
-            this.toggleChildRows(parentId);
-        }
-    }
-
-    handleShowAllChildren(event) {
-        const parentId = event.currentTarget.dataset.rowId;
-        if (parentId) {
-            this.fetchChildRows(parentId);
-        }
-    }
-
     handleRecordLinkClick(event) {
         event.preventDefault();
         const recordId = event.currentTarget.dataset.recordId;
@@ -830,6 +1009,68 @@ export default class BoardTableWidget extends NavigationMixin(LightningElement) 
             type: 'standard__recordPage',
             attributes: { recordId, actionName: 'view' }
         });
+    }
+
+    handleActionClick(event) {
+        this.runRowAction(event.currentTarget.dataset.rowId, event.currentTarget.dataset.actionId);
+    }
+
+    handleActionSelect(event) {
+        this.runRowAction(event.currentTarget.dataset.rowId, event.detail.value);
+    }
+
+    /**
+     * View / Edit open the target record's standard page; Create opens the standard create modal pre-filled from the
+     * row. The platform enforces CRUD/FLS. The Setup dialog's Live preview is inert: no action runs.
+     */
+    runRowAction(rowId, actionId) {
+        if (this.rowActionsDisabled) {
+            return;
+        }
+        const action = this.rowActions.find((candidate) => candidate.id === actionId);
+        const row =
+            (this.tableData?.rows || []).find((candidate) => candidate.id === rowId) ||
+            resolveGroupActionRow(rowId, this.tableData);
+        if (action?.type === 'create' && row) {
+            const serverTarget = (this.tableData.rowActions || []).find((target) => target.id === action.id);
+            this[NavigationMixin.Navigate](
+                buildCreatePageReference(action, row, serverTarget, encodeDefaultFieldValues)
+            );
+            return;
+        }
+        if (action?.type === 'flow' && row) {
+            this.runFlowAction(action, row);
+            return;
+        }
+        const recordId = action && row ? resolveActionRecordId(action, row, this.tableData.rowActions) : null;
+        if (!recordId) {
+            return;
+        }
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: { recordId, actionName: action.type }
+        });
+    }
+
+    /** Shown again after a Filter change while hidden: loading state instead of stale data, then one query. */
+    handleShownStale() {
+        this.tableData = null;
+        this.queryError = null;
+        this.requestQuery();
+    }
+
+    /** Opens the Screen Flow in a modal with the mapped row values; refreshes the Table only when the flow finishes. */
+    async runFlowAction(action, row) {
+        const serverTarget = (this.tableData.rowActions || []).find((target) => target.id === action.id);
+        const result = await BoardTableFlowModal.open({
+            size: 'medium',
+            label: action.label,
+            flowApiName: action.flowApiName,
+            inputVariables: buildFlowInputVariables(action, row, serverTarget)
+        });
+        if (result?.finished) {
+            this.handleRefresh();
+        }
     }
 
     handleRefresh() {

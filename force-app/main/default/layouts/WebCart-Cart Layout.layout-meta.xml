@@ -100,6 +100,10 @@
                 <behavior>Readonly</behavior>
                 <field>LastRepricingDate</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
+                <field>CurrencyIsoCode</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

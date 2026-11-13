@@ -1,0 +1,66 @@
+.c-board-panel-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+/* Rows of Panels; the Widget grows with them, nothing scrolls inside. */
+.c-board-panel-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--board-panel-columns, 3), minmax(0, 1fr));
+    gap: var(--slds-g-spacing-3, 0.75rem);
+}
+
+.c-board-panel {
+    min-width: 0;
+}
+
+/* Panel title left, Panel headline (one number) right. */
+.c-board-panel-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+    margin-bottom: var(--slds-g-spacing-1, 0.25rem);
+}
+
+.c-board-panel-title {
+    min-width: 0;
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+}
+
+.c-board-panel-headline {
+    flex-shrink: 0;
+    max-width: 60%;
+    color: var(--slds-g-color-on-surface-3, #181818);
+}
+
+.c-board-panel-canvas {
+    position: relative;
+    height: var(--board-panel-height, 250px);
+}
+
+.c-board-panel-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--slds-g-spacing-1, 0.25rem) var(--slds-g-spacing-3, 0.75rem);
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+}
+
+.c-board-panel-legend_bottom {
+    order: 1;
+}
+
+.c-board-panel-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--slds-g-spacing-1, 0.25rem);
+}
+
+.c-board-panel-legend-swatch {
+    display: inline-block;
+    width: var(--slds-g-sizing-4, 0.75rem);
+    height: var(--slds-g-sizing-4, 0.75rem);
+    border-radius: var(--slds-g-radius-border-1, 0.125rem);
+}

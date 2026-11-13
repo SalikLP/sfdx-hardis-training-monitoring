@@ -1,0 +1,33 @@
+<template>
+    <div class="c-board-panel-layout">
+        <template lwc:if={hasLegend}>
+            <ul class={legendClass} aria-label="Legend">
+                <template for:each={legendItems} for:item="item">
+                    <li key={item.key} class="c-board-panel-legend-item">
+                        <span class="c-board-panel-legend-swatch" style={item.swatchStyle}></span>
+                        {item.label}
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <div class="c-board-panel-grid" style={gridStyle}>
+            <template for:each={panels} for:item="panel">
+                <section key={panel.key} class="c-board-panel" aria-label={panel.label}>
+                    <div class="c-board-panel-header">
+                        <h3 class="c-board-panel-title slds-text-title slds-truncate" title={panel.label}>
+                            {panel.label}
+                        </h3>
+                        <template lwc:if={panel.headline}>
+                            <span
+                                class="c-board-panel-headline slds-text-title_bold slds-truncate"
+                                title={panel.headline}
+                                >{panel.headline}</span
+                            >
+                        </template>
+                    </div>
+                    <div class="c-board-panel-canvas" data-key={panel.key} lwc:dom="manual"></div>
+                </section>
+            </template>
+        </div>
+    </div>
+</template>

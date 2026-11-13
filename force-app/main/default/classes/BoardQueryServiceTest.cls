@@ -365,20 +365,55 @@ private class BoardQueryServiceTest {
     }
 
     @IsTest
-    static void barAggregatesParentPathValueFieldsInBothTiers() {
-        Map<String, Object> request = barRequest('Opportunity', 'SUM', 'Account.AnnualRevenue', 'AccountId');
-        Map<String, BoardQueryService.BarBucket> buckets = bucketsByLabel(runBar(request));
-        Assert.areEqual(2000, buckets.get('Board Alpha').value);
-        Assert.areEqual(1000, buckets.get('Board Beta').value);
+    static void cursorChunksSpanMultipleFetchCalls() {
+        BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 2;
+        BoardQueryService.CURSOR_CHUNK_SIZE = 4;
+        BoardQueryService.CURSOR_FETCH_SIZE = 3;
+        Map<String, Object> request = metricRequest('Opportunity', 'SUM', 'Amount');
+        BoardQueryService.MetricResult first = run(request);
+        Assert.areEqual('CURSOR', first.mode);
+        Assert.areEqual(4, first.chunk.nextOffset, 'Chunk of 4 read as fetches of 3 + 1');
+        Assert.isFalse(first.chunk.isComplete);
+
+        Map<String, Object> next = request.clone();
+        next.put('cursor', first.chunk.cursor);
+        next.put('offset', first.chunk.nextOffset);
+        BoardQueryService.AggregateChunk last = BoardQueryService.fetchAggregateChunk(JSON.serialize(next));
+        Assert.isTrue(last.isComplete);
+        Assert.areEqual(5, last.nextOffset);
+        Assert.areEqual(1000, first.chunk.buckets[0].sum + last.buckets[0].sum);
+        Assert.areEqual(4, first.chunk.buckets[0].count + last.buckets[0].count, 'Board Opp 5 has no Amount');
+    }
+
+    @IsTest
+    static void cursorFetchErrorsAreNotReportedAsExpiredCursors() {
+        BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 2;
+        // An invalid fetch size (like the original 40,000 > 2,000 platform cap) throws InvalidParameterValueException;
+        // it must surface as a real failure, not the retryable "cursor no longer available".
+        BoardQueryService.CURSOR_FETCH_SIZE = -1;
+        Map<String, Object> request = metricRequest('Opportunity', 'SUM', 'Amount');
+        Map<String, Object> payload = expectError(request, 'QUERY_ERROR');
+        Assert.areEqual(BoardErrors.GENERIC_MESSAGE, payload.get('message'));
+    }
+
+    @IsTest
+    static void chartAggregatesParentPathValueFieldsInBothTiers() {
+        Map<String, Object> request = chartRequest('Opportunity', 'SUM', 'Account.AnnualRevenue', 'AccountId');
+        Map<String, Decimal> single = valuesByLabel(chart(request));
+        Assert.areEqual(2000, single.get('Board Alpha'));
+        Assert.areEqual(1000, single.get('Board Beta'));
 
         BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 2;
         BoardQueryService.CURSOR_CHUNK_SIZE = 2;
-        BoardQueryService.BarResult first = runBar(request);
+        BoardChartQuery.ChartResult first = BoardChartQuery.queryChart(JSON.serialize(request));
         Assert.areEqual('CURSOR', first.mode);
-        Map<String, Decimal> merged = mergeChunks(request, first);
+        Map<String, Decimal> merged = valuesByLabel(chart(request));
         Assert.areEqual(2000, merged.get('Board Alpha'));
         Assert.areEqual(1000, merged.get('Board Beta'));
-        Assert.areEqual(0, merged.get('Board Alpha Child'));
+        Assert.isTrue(
+            merged.get('Board Alpha Child') == null || merged.get('Board Alpha Child') == 0,
+            'No parent revenue: ' + merged.get('Board Alpha Child')
+        );
     }
 
     @IsTest
@@ -558,8 +593,8 @@ private class BoardQueryServiceTest {
         Integer calls = 1;
         BoardQueryService.AggregateChunk chunk = first.chunk;
         while (true) {
-            BoardQueryService.AggregateBucket bucket = chunk.buckets[0];
-            Assert.isTrue(bucket.groupValues.isEmpty());
+            BoardChartEngine.Partial bucket = chunk.buckets[0];
+            Assert.areEqual(1, chunk.buckets.size(), 'One ungrouped bucket per chunk');
             sum += bucket.sum;
             count += bucket.count;
             min = min == null || (bucket.min != null && bucket.min < min) ? bucket.min : min;
@@ -611,105 +646,101 @@ private class BoardQueryServiceTest {
     }
 
     // ---------------------------------------------------------------------------------------------------------
-    // Bar Chart
+    // Chart dimensions (category / series fields of `scanChart`)
     // ---------------------------------------------------------------------------------------------------------
 
     @IsTest
-    static void barReferenceGroupsDisplayRelatedRecordNames() {
-        BoardQueryService.BarResult byAccount = runBar(barRequest('Opportunity', 'COUNT', null, 'AccountId'));
+    static void chartReferenceGroupsDisplayRelatedRecordNames() {
+        BoardChartQuery.ChartResult byAccount = chart(chartRequest('Opportunity', 'COUNT', null, 'AccountId'));
         Assert.areEqual('SINGLE', byAccount.mode);
         Assert.areEqual('Account.Name', byAccount.groupBy.labelFieldPath);
         Assert.areEqual('REFERENCE', byAccount.groupBy.dataType);
         Assert.isNull(byAccount.stackBy);
-        Map<String, BoardQueryService.BarBucket> accounts = bucketsByLabel(byAccount);
+        Map<String, Decimal> accounts = valuesByLabel(byAccount);
         Assert.areEqual(new Set<String>{ 'Board Alpha', 'Board Beta', 'Board Alpha Child' }, accounts.keySet());
-        Assert.areEqual(2, accounts.get('Board Alpha').value);
-        Assert.areEqual(String.valueOf(accountId('Board Alpha')), accounts.get('Board Alpha').groupValue);
-        Assert.areEqual(2, byAccount.buckets[0].value, 'Largest buckets first');
+        Assert.areEqual(2, accounts.get('Board Alpha'));
+        Assert.areEqual(
+            String.valueOf(accountId('Board Alpha')),
+            categoriesByLabel(byAccount).get('Board Alpha').value
+        );
 
-        BoardQueryService.BarResult byOwner = runBar(barRequest('Case', 'COUNT', null, 'OwnerId'));
+        BoardChartQuery.ChartResult byOwner = chart(chartRequest('Case', 'COUNT', null, 'OwnerId'));
         Assert.areEqual('Owner.Name', byOwner.groupBy.labelFieldPath, 'Polymorphic owner resolves the User name');
-        Assert.areEqual(1, byOwner.buckets.size());
-        Assert.areEqual(RESTRICTED_LAST_NAME, byOwner.buckets[0].groupLabel);
-        Assert.areEqual(3, byOwner.buckets[0].value);
+        Assert.areEqual(new Map<String, Decimal>{ RESTRICTED_LAST_NAME => 3 }, valuesByLabel(byOwner));
 
-        BoardQueryService.BarResult byIndustry = runBar(barRequest('Opportunity', 'SUM', 'Amount', 'Account.Industry'));
-        Map<String, BoardQueryService.BarBucket> industries = bucketsByLabel(byIndustry);
-        Assert.areEqual(300, (Decimal) industries.get('Banking').value);
-        Assert.areEqual(700, (Decimal) industries.get('Energy').value, 'Parent dot-path: Beta 300 + Alpha Child 400');
+        BoardChartQuery.ChartResult byIndustry = chart(
+            chartRequest('Opportunity', 'SUM', 'Amount', 'Account.Industry')
+        );
+        Map<String, Decimal> industries = valuesByLabel(byIndustry);
+        Assert.areEqual(300, industries.get('Banking'));
+        Assert.areEqual(700, industries.get('Energy'), 'Parent dot-path: Beta 300 + Alpha Child 400');
         Assert.areEqual(5, byIndustry.totalRows);
-        Assert.areEqual('CURRENCY', byIndustry.valueType);
+        Assert.areEqual('CURRENCY', byIndustry.valueTypes[0]);
     }
 
     @IsTest
-    static void barNullBucketsAreKeptByDefaultAndExcludedOnRequest() {
-        Map<String, Object> request = barRequest('Opportunity', 'COUNT', null, 'Account.ParentId');
-        BoardQueryService.BarResult withBlank = runBar(request);
-        Assert.areEqual(2, withBlank.buckets.size());
-        Assert.isNull(withBlank.buckets[0].groupValue, 'Null parent bucket (4 rows) sorts first');
-        Assert.isNull(withBlank.buckets[0].groupLabel);
-        Assert.areEqual(4, withBlank.buckets[0].value);
-        Assert.areEqual('Board Alpha', withBlank.buckets[1].groupLabel, 'Account.Parent.Name label');
+    static void chartBlankCategoriesAreKeptByDefaultAndExcludedOnRequest() {
+        Map<String, Object> request = chartRequest('Opportunity', 'COUNT', null, 'Account.ParentId');
+        BoardChartQuery.ChartResult withBlank = chart(request);
+        Map<String, BoardChartEngine.ChartKey> categories = categoriesByLabel(withBlank);
+        Assert.areEqual(2, categories.size());
+        Assert.isTrue(categories.get(BoardChartEngine.BLANK_LABEL).isBlank, 'Null parent category (4 rows)');
+        Assert.areEqual(4, valuesByLabel(withBlank).get(BoardChartEngine.BLANK_LABEL));
+        Assert.isTrue(categories.containsKey('Board Alpha'), 'Account.Parent.Name label');
 
         request.put('includeNullBucket', false);
-        BoardQueryService.BarResult withoutBlank = runBar(request);
-        Assert.areEqual(1, withoutBlank.buckets.size());
-        Assert.areEqual('Board Alpha', withoutBlank.buckets[0].groupLabel);
+        Assert.areEqual(new Set<String>{ 'Board Alpha' }, valuesByLabel(chart(request)).keySet());
     }
 
     @IsTest
-    static void barDateGroupsBucketByGranularityWithSortableKeys() {
+    static void chartDateGroupsBucketByGranularityWithSortableKeys() {
         Date today = Date.today();
         Date older = today.addYears(-2);
         String year = String.valueOf(today.year());
         String month = year + '-' + String.valueOf(today.month()).leftPad(2, '0');
         String quarter = year + '-Q' + ((today.month() - 1) / 3 + 1);
 
-        Map<String, BoardQueryService.BarBucket> years = bucketsByKey(
-            runBar(dateBarRequest('CloseDate', 'CALENDAR_YEAR'))
-        );
-        Assert.areEqual(4, years.get(year).value);
-        Assert.areEqual(1, years.get(String.valueOf(older.year())).value);
-        Assert.areEqual(year, years.get(year).groupLabel);
+        BoardChartQuery.ChartResult years = chart(dateChartRequest('CloseDate', 'CALENDAR_YEAR'));
+        Assert.areEqual(4, valuesByValue(years).get(year));
+        Assert.areEqual(1, valuesByValue(years).get(String.valueOf(older.year())));
+        Assert.areEqual(year, categoriesByValue(years).get(year).label);
 
-        Map<String, BoardQueryService.BarBucket> months = bucketsByKey(
-            runBar(dateBarRequest('CloseDate', 'CALENDAR_MONTH'))
-        );
-        Assert.areEqual(4, months.get(month).value);
+        BoardChartQuery.ChartResult months = chart(dateChartRequest('CloseDate', 'CALENDAR_MONTH'));
+        Assert.areEqual(4, valuesByValue(months).get(month));
         Assert.areEqual(
             Datetime.newInstance(today.year(), today.month(), 1).format('MMM yyyy'),
-            months.get(month).groupLabel
+            categoriesByValue(months).get(month).label
         );
 
-        BoardQueryService.BarResult quarters = runBar(dateBarRequest('CloseDate', 'CALENDAR_QUARTER'));
+        BoardChartQuery.ChartResult quarters = chart(dateChartRequest('CloseDate', 'CALENDAR_QUARTER'));
         Assert.areEqual('CALENDAR_QUARTER', quarters.groupBy.dateGranularity);
-        Assert.areEqual(4, bucketsByKey(quarters).get(quarter).value);
+        Assert.areEqual(4, valuesByValue(quarters).get(quarter));
 
-        BoardQueryService.BarResult days = runBar(dateBarRequest('CloseDate', null));
+        BoardChartQuery.ChartResult days = chart(dateChartRequest('CloseDate', null));
         Assert.areEqual('DAY', days.groupBy.dateGranularity, 'Date fields default to DAY buckets');
-        Assert.areEqual(today.format(), bucketsByKey(days).get(String.valueOf(today)).groupLabel);
+        Assert.areEqual(today.format(), categoriesByValue(days).get(String.valueOf(today)).label);
 
-        BoardQueryService.BarResult created = runBar(dateBarRequest('CreatedDate', 'CALENDAR_MONTH'));
-        Assert.areEqual(5, bucketsByKey(created).get(month).value, 'DateTime buckets in the user time zone');
-        Assert.areEqual(5, bucketsByKey(runBar(dateBarRequest('CreatedDate', 'DAY'))).get(String.valueOf(today)).value);
+        BoardChartQuery.ChartResult created = chart(dateChartRequest('CreatedDate', 'CALENDAR_MONTH'));
+        Assert.areEqual(5, valuesByValue(created).get(month), 'DateTime buckets in the user time zone');
+        Assert.areEqual(5, valuesByValue(chart(dateChartRequest('CreatedDate', 'DAY'))).get(String.valueOf(today)));
 
-        BoardQueryService.BarResult fiscalYears = runBar(dateBarRequest('CloseDate', 'FISCAL_YEAR'));
-        Assert.areEqual(2, fiscalYears.buckets.size());
-        for (BoardQueryService.BarBucket bucket : fiscalYears.buckets) {
-            Assert.isTrue(Pattern.matches('FY\\d{4}', bucket.groupValue), bucket.groupValue);
-            Assert.areEqual(bucket.groupValue, bucket.groupLabel);
+        BoardChartQuery.ChartResult fiscalYears = chart(dateChartRequest('CloseDate', 'FISCAL_YEAR'));
+        Assert.areEqual(2, fiscalYears.categories.size());
+        for (BoardChartEngine.ChartKey category : fiscalYears.categories) {
+            Assert.isTrue(Pattern.matches('FY\\d{4}', category.value), category.value);
+            Assert.areEqual(category.value, category.label);
         }
-        for (BoardQueryService.BarBucket bucket : runBar(dateBarRequest('CloseDate', 'FISCAL_QUARTER')).buckets) {
-            Assert.isTrue(Pattern.matches('FY\\d{4}-Q[1-4]', bucket.groupValue), bucket.groupValue);
-            Assert.isTrue(Pattern.matches('Q[1-4] FY\\d{4}', bucket.groupLabel), bucket.groupLabel);
+        for (BoardChartEngine.ChartKey category : chart(dateChartRequest('CloseDate', 'FISCAL_QUARTER')).categories) {
+            Assert.isTrue(Pattern.matches('FY\\d{4}-Q[1-4]', category.value), category.value);
+            Assert.isTrue(Pattern.matches('Q[1-4] FY\\d{4}', category.label), category.label);
         }
 
-        expectBarError(dateBarRequest('StageName', 'CALENDAR_MONTH'), 'CONFIG_ERROR');
-        expectBarError(dateBarRequest('CloseDate', 'WEEK'), 'CONFIG_ERROR');
+        expectChartError(dateChartRequest('StageName', 'CALENDAR_MONTH'), 'CONFIG_ERROR');
+        expectChartError(dateChartRequest('CloseDate', 'WEEK'), 'CONFIG_ERROR');
     }
 
     @IsTest
-    static void barPicklistGroupsReturnDescribeOrderAndStackedSeries() {
+    static void chartPicklistGroupsReturnDescribeOrderAndSeries() {
         List<String> activePriorities = new List<String>();
         Map<String, String> priorityLabels = new Map<String, String>();
         for (Schema.PicklistEntry entry : Case.Priority.getDescribe().getPicklistValues()) {
@@ -718,85 +749,54 @@ private class BoardQueryServiceTest {
                 priorityLabels.put(entry.getValue(), entry.getLabel());
             }
         }
-        BoardQueryService.BarResult byPriority = runBar(barRequest('Case', 'COUNT', null, 'Priority'));
+        BoardChartQuery.ChartResult byPriority = chart(chartRequest('Case', 'COUNT', null, 'Priority'));
         Assert.areEqual(activePriorities, byPriority.groupBy.picklistOrder);
-        Map<String, BoardQueryService.BarBucket> priorities = bucketsByKey(byPriority);
-        Assert.areEqual(2, priorities.get('Low').value);
-        Assert.areEqual(priorityLabels.get('High'), priorities.get('High').groupLabel, 'Translated picklist label');
+        Assert.areEqual(2, valuesByValue(byPriority).get('Low'));
+        Assert.areEqual(
+            priorityLabels.get('High'),
+            categoriesByValue(byPriority).get('High').label,
+            'Translated picklist label'
+        );
 
-        Map<String, Object> stacked = barRequest('Case', 'COUNT', null, 'AccountId');
-        stacked.put('stackByField', 'Priority');
-        BoardQueryService.BarResult series = runBar(stacked);
+        Map<String, Object> split = chartRequest('Case', 'COUNT', null, 'AccountId');
+        split.put('stackByField', 'Priority');
+        BoardChartQuery.ChartResult series = chart(split);
         Assert.areEqual('Priority', series.stackBy.fieldPath);
         Assert.areEqual(activePriorities, series.stackBy.picklistOrder);
-        Map<String, Integer> counts = new Map<String, Integer>();
-        for (BoardQueryService.BarBucket bucket : series.buckets) {
-            counts.put(bucket.groupLabel + '|' + bucket.stackValue, (Integer) bucket.value);
+        Map<String, String> categoryLabels = new Map<String, String>();
+        for (BoardChartEngine.ChartKey category : series.categories) {
+            categoryLabels.put(category.key, category.label);
+        }
+        Map<String, String> seriesValues = new Map<String, String>();
+        for (BoardChartEngine.ChartKey entry : series.series) {
+            seriesValues.put(entry.key, entry.value);
+        }
+        Map<String, Decimal> counts = new Map<String, Decimal>();
+        for (BoardChartEngine.ChartPoint point : series.points) {
+            if (point.value != null && point.value != 0) {
+                counts.put(
+                    categoryLabels.get(point.categoryKey) + '|' + seriesValues.get(point.seriesKey),
+                    point.value
+                );
+            }
         }
         Assert.areEqual(
-            new Map<String, Integer>{ 'Board Alpha|High' => 1, 'Board Alpha|Low' => 1, 'Board Beta|Low' => 1 },
+            new Map<String, Decimal>{ 'Board Alpha|High' => 1, 'Board Alpha|Low' => 1, 'Board Beta|Low' => 1 },
             counts
         );
     }
 
     @IsTest
-    static void barValueAggregatesRunPerGroup() {
-        Map<String, BoardQueryService.BarBucket> averages = bucketsByLabel(
-            runBar(barRequest('Opportunity', 'AVG', 'Amount', 'AccountId'))
+    static void chartValueAggregatesRunPerGroup() {
+        Map<String, Decimal> averages = valuesByLabel(chart(chartRequest('Opportunity', 'AVG', 'Amount', 'AccountId')));
+        Assert.areEqual(150, averages.get('Board Alpha'));
+        Assert.areEqual(300, averages.get('Board Beta'), 'Null amounts ignored');
+        Map<String, Decimal> minimums = valuesByLabel(chart(chartRequest('Opportunity', 'MIN', 'Amount', 'AccountId')));
+        Assert.areEqual(100, minimums.get('Board Alpha'));
+        Map<String, Decimal> distinct = valuesByLabel(
+            chart(chartRequest('Opportunity', 'COUNT_DISTINCT', 'AccountId', 'Account.Industry'))
         );
-        Assert.areEqual(150, (Decimal) averages.get('Board Alpha').value);
-        Assert.areEqual(300, (Decimal) averages.get('Board Beta').value, 'Null amounts ignored');
-        Map<String, BoardQueryService.BarBucket> minimums = bucketsByLabel(
-            runBar(barRequest('Opportunity', 'MIN', 'Amount', 'AccountId'))
-        );
-        Assert.areEqual(100, (Decimal) minimums.get('Board Alpha').value);
-        Map<String, BoardQueryService.BarBucket> distinct = bucketsByLabel(
-            runBar(barRequest('Opportunity', 'COUNT_DISTINCT', 'AccountId', 'Account.Industry'))
-        );
-        Assert.areEqual(2, distinct.get('Energy').value);
-    }
-
-    @IsTest
-    static void barGroupCapFallsBackToCursorChunksWithEveryGroup() {
-        BoardQueryService.BAR_GROUP_LIMIT = 2;
-
-        BoardQueryService.BarResult sums = runBar(barRequest('Opportunity', 'SUM', 'Amount', 'AccountId'));
-        Assert.areEqual('CURSOR', sums.mode);
-        Assert.isFalse(sums.hasMoreGroups);
-        Assert.isTrue(sums.buckets.isEmpty());
-        Map<String, Decimal> sumByAccount = mergeChunks(barRequest('Opportunity', 'SUM', 'Amount', 'AccountId'), sums);
-        Assert.areEqual(3, sumByAccount.size(), 'Every group, not just the largest 2');
-        Assert.areEqual(300, sumByAccount.get('Board Alpha'));
-        Assert.areEqual(300, sumByAccount.get('Board Beta'));
-        Assert.areEqual(400, sumByAccount.get('Board Alpha Child'));
-
-        BoardQueryService.CURSOR_CHUNK_SIZE = 2;
-        Map<String, Object> countRequest = barRequest('Opportunity', 'COUNT', null, 'AccountId');
-        BoardQueryService.BarResult counts = runBar(countRequest);
-        Assert.areEqual('CURSOR', counts.mode, 'Grouped COUNT falls back too');
-        Assert.areEqual(5, counts.totalRows);
-        Assert.isFalse(counts.isComplete);
-        Map<String, Decimal> countByAccount = mergeChunks(countRequest, counts);
-        Assert.areEqual(3, countByAccount.size());
-        Assert.areEqual(2, countByAccount.get('Board Alpha'), 'COUNT buckets add 1 per row across chunks');
-        Assert.areEqual(2, countByAccount.get('Board Beta'));
-        Assert.areEqual(1, countByAccount.get('Board Alpha Child'));
-    }
-
-    @IsTest
-    static void barGroupCapReportsPartialResultsWhenTheCursorTierCannotRun() {
-        BoardQueryService.BAR_GROUP_LIMIT = 2;
-        BoardQueryService.BarResult distinct = runBar(barRequest('Opportunity', 'COUNT_DISTINCT', 'Name', 'AccountId'));
-        Assert.areEqual('SINGLE', distinct.mode, 'COUNT_DISTINCT cannot merge cursor chunks');
-        Assert.isTrue(distinct.hasMoreGroups);
-        Assert.areEqual(2, distinct.buckets.size());
-
-        BoardQueryService.CURSOR_MAX_ROWS = 4;
-        BoardQueryService.BarResult capped = runBar(barRequest('Opportunity', 'SUM', 'Amount', 'AccountId'));
-        Assert.areEqual('SINGLE', capped.mode, '5 rows exceed the cursor tier');
-        Assert.isTrue(capped.hasMoreGroups);
-        Assert.areEqual(2, capped.buckets.size());
-        Assert.areEqual('Board Alpha Child', capped.buckets[0].groupLabel, 'Largest sums kept: 400');
+        Assert.areEqual(2, distinct.get('Energy'));
     }
 
     @IsTest
@@ -816,111 +816,71 @@ private class BoardQueryServiceTest {
     }
 
     @IsTest
-    static void barTierTwoMergesGroupedCursorChunksMatchingSingleCallBuckets() {
-        Map<String, Object> request = dateBarRequest('CloseDate', 'FISCAL_QUARTER');
-        request.put('aggregateFunction', 'SUM');
-        request.put('valueFieldApiName', 'Amount');
+    static void chartCursorTierGroupsLikeTheSoqlDateFunctions() {
+        Map<String, Object> request = dateChartRequest('CloseDate', 'FISCAL_QUARTER');
+        request.put('measures', new List<Object>{ measure('SUM', 'Amount') });
         request.put('stackByField', 'AccountId');
-        Map<String, Object> single = new Map<String, Object>();
-        for (BoardQueryService.BarBucket bucket : runBar(request).buckets) {
-            single.put(bucket.groupValue + '|' + bucket.stackLabel, (Decimal) bucket.value);
-        }
+        Map<String, Decimal> single = valuesBySeries(chart(request));
 
         BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 2;
         BoardQueryService.CURSOR_CHUNK_SIZE = 2;
-        BoardQueryService.BarResult first = runBar(request);
+        BoardChartQuery.ChartResult first = BoardChartQuery.queryChart(JSON.serialize(request));
         Assert.areEqual('CURSOR', first.mode);
         Assert.isFalse(first.isComplete);
         Assert.areEqual(5, first.totalRows);
-
-        Map<String, Object> merged = new Map<String, Object>();
-        Integer calls = 1;
-        BoardQueryService.AggregateChunk chunk = first.chunk;
-        while (true) {
-            for (BoardQueryService.AggregateBucket bucket : chunk.buckets) {
-                Assert.areEqual(2, bucket.groupValues.size(), 'Group and stack values');
-                String key = String.valueOf(bucket.groupValues[0]) + '|' + bucket.groupLabels[1];
-                Decimal sum = (Decimal) merged.get(key);
-                merged.put(key, (sum == null ? bucket.sum : sum + bucket.sum));
-            }
-            if (chunk.isComplete) {
-                break;
-            }
-            Map<String, Object> next = request.clone();
-            next.put('cursor', chunk.cursor);
-            next.put('offset', chunk.nextOffset);
-            chunk = BoardQueryService.fetchAggregateChunk(JSON.serialize(next));
-            calls++;
-        }
-        Assert.areEqual(3, calls);
-        // The single-call path drops all-null SUM groups' values to null; the cursor reports 0 for them.
+        Map<String, Decimal> merged = valuesBySeries(chart(request));
+        Assert.areEqual(single.keySet(), merged.keySet(), 'Cursor groups match SOQL fiscal date functions');
         for (String key : single.keySet()) {
-            Decimal expected = (Decimal) single.get(key);
-            if (expected == null) {
-                expected = 0;
-            }
-            Assert.areEqual(expected, (Decimal) merged.get(key), key);
+            Decimal expected = single.get(key) == null ? 0 : single.get(key);
+            Decimal actual = merged.get(key) == null ? 0 : merged.get(key);
+            Assert.areEqual(expected, actual, key);
         }
-        Assert.areEqual(single.keySet(), merged.keySet(), 'Cursor buckets match SOQL fiscal date functions');
 
-        Map<String, Object> created = dateBarRequest('CreatedDate', 'CALENDAR_MONTH');
-        created.put('aggregateFunction', 'MAX');
-        created.put('valueFieldApiName', 'Amount');
+        Map<String, Object> created = dateChartRequest('CreatedDate', 'CALENDAR_MONTH');
+        created.put('measures', new List<Object>{ measure('MAX', 'Amount') });
         BoardQueryService.CURSOR_CHUNK_SIZE = 10;
-        BoardQueryService.BarResult dateTimes = runBar(created);
-        Assert.isTrue(dateTimes.chunk.isComplete);
         Date today = Date.today();
-        Assert.areEqual(
-            String.valueOf(today.year()) + '-' + String.valueOf(today.month()).leftPad(2, '0'),
-            dateTimes.chunk.buckets[0].groupValues[0]
-        );
-        Assert.areEqual(400, dateTimes.chunk.buckets[0].max);
+        String month = String.valueOf(today.year()) + '-' + String.valueOf(today.month()).leftPad(2, '0');
+        Assert.areEqual(400, valuesByValue(chart(created)).get(month), 'DateTime cursor rows in the user time zone');
 
         for (String granularity : new List<String>{ 'DAY', 'CALENDAR_QUARTER', 'CALENDAR_YEAR', 'FISCAL_YEAR' }) {
-            Map<String, Object> bucketed = dateBarRequest('CloseDate', granularity);
-            bucketed.put('aggregateFunction', 'AVG');
-            bucketed.put('valueFieldApiName', 'Amount');
-            Set<Object> cursorKeys = new Set<Object>();
-            for (BoardQueryService.AggregateBucket bucket : runBar(bucketed).chunk.buckets) {
-                cursorKeys.add(bucket.groupValues[0]);
-            }
+            Map<String, Object> bucketed = dateChartRequest('CloseDate', granularity);
+            bucketed.put('measures', new List<Object>{ measure('AVG', 'Amount') });
+            Set<String> cursorKeys = valuesByValue(chart(bucketed)).keySet();
             BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 49900;
-            Set<Object> singleKeys = new Set<Object>();
-            for (BoardQueryService.BarBucket bucket : runBar(bucketed).buckets) {
-                singleKeys.add(bucket.groupValue);
-            }
+            Set<String> singleKeys = valuesByValue(chart(bucketed)).keySet();
             BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 2;
             Assert.areEqual(singleKeys, cursorKeys, granularity);
         }
     }
 
     @IsTest
-    static void barFailsClosedOnLimitsInvalidDimensionsAndInaccessibleFields() {
-        expectBarError(barRequest('Opportunity', 'COUNT', null, null), 'CONFIG_ERROR');
-        expectBarError(barRequest('Opportunity', 'COUNT', null, 'Description'), 'CONFIG_ERROR');
-        expectBarError(
-            barRequest('Opportunity', 'COUNT', null, 'OpportunityLineItem(OpportunityId).Quantity'),
+    static void chartFailsClosedOnLimitsInvalidDimensionsAndInaccessibleFields() {
+        expectChartError(chartRequest('Opportunity', 'COUNT', null, null), 'CONFIG_ERROR');
+        expectChartError(chartRequest('Opportunity', 'COUNT', null, 'Description'), 'CONFIG_ERROR');
+        expectChartError(
+            chartRequest('Opportunity', 'COUNT', null, 'OpportunityLineItem(OpportunityId).Quantity'),
             'CONFIG_ERROR'
         );
-        expectBarError(barRequest('Opportunity', 'SUM', 'Name', 'StageName'), 'CONFIG_ERROR');
-        expectBarError(barRequest('Opportunity', 'MEDIAN', 'Amount', 'StageName'), 'CONFIG_ERROR');
-        Map<String, Object> badStack = barRequest('Opportunity', 'COUNT', null, 'StageName');
-        badStack.put('stackByField', 'Nope__c');
-        Assert.areEqual('Nope__c', expectBarError(badStack, 'CONFIG_ERROR').get('fieldPath'));
+        expectChartError(chartRequest('Opportunity', 'SUM', 'Name', 'StageName'), 'CONFIG_ERROR');
+        expectChartError(chartRequest('Opportunity', 'MEDIAN', 'Amount', 'StageName'), 'CONFIG_ERROR');
+        Map<String, Object> badSeries = chartRequest('Opportunity', 'COUNT', null, 'StageName');
+        badSeries.put('stackByField', 'Nope__c');
+        Assert.areEqual('Nope__c', expectChartError(badSeries, 'CONFIG_ERROR').get('fieldPath'));
 
         BoardQueryService.CURSOR_AGGREGATE_THRESHOLD = 2;
-        expectBarError(barRequest('Opportunity', 'COUNT_DISTINCT', 'AccountId', 'StageName'), 'LIMIT_EXCEEDED');
+        expectChartError(chartRequest('Opportunity', 'COUNT_DISTINCT', 'AccountId', 'StageName'), 'LIMIT_EXCEEDED');
         BoardQueryService.CURSOR_MAX_ROWS = 4;
-        expectBarError(barRequest('Opportunity', 'SUM', 'Amount', 'StageName'), 'LIMIT_EXCEEDED');
+        expectChartError(chartRequest('Opportunity', 'SUM', 'Amount', 'StageName'), 'LIMIT_EXCEEDED');
         Assert.areEqual(
             'SINGLE',
-            runBar(barRequest('Opportunity', 'COUNT', null, 'StageName')).mode,
+            BoardChartQuery.queryChart(JSON.serialize(chartRequest('Opportunity', 'COUNT', null, 'StageName'))).mode,
             'Grouped COUNT is never limited'
         );
 
         Map<String, Object> accessError;
         System.runAs(restrictedUser()) {
-            accessError = expectBarError(barRequest('Case', 'COUNT', null, 'Priority'), 'ACCESS_ERROR');
+            accessError = expectChartError(chartRequest('Case', 'COUNT', null, 'Priority'), 'ACCESS_ERROR');
         }
         Assert.areEqual('Priority', accessError.get('fieldPath'));
     }
@@ -929,68 +889,109 @@ private class BoardQueryServiceTest {
     // Helpers
     // ---------------------------------------------------------------------------------------------------------
 
-    private static Map<String, Object> barRequest(
+    /** A Chart widget request with one Measure (all categories kept, so every group is visible). */
+    private static Map<String, Object> chartRequest(
         String objectApiName,
         String aggregateFunction,
         String valueField,
         String groupByField
     ) {
         Map<String, Object> request = metricRequest(objectApiName, aggregateFunction, valueField);
+        request.remove('aggregateFunction');
+        request.remove('valueFieldApiName');
+        request.put('measures', new List<Object>{ measure(aggregateFunction, valueField) });
         request.put('groupByField', groupByField);
+        request.put('maxCategories', 200);
         return request;
     }
 
-    private static Map<String, Object> dateBarRequest(String groupByField, String dateGranularity) {
-        Map<String, Object> request = barRequest('Opportunity', 'COUNT', null, groupByField);
+    private static Map<String, Object> measure(String aggregateFunction, String valueField) {
+        Map<String, Object> entry = new Map<String, Object>{ 'aggregateFunction' => aggregateFunction };
+        if (valueField != null) {
+            entry.put('valueFieldApiName', valueField);
+        }
+        return entry;
+    }
+
+    private static Map<String, Object> dateChartRequest(String groupByField, String dateGranularity) {
+        Map<String, Object> request = chartRequest('Opportunity', 'COUNT', null, groupByField);
         request.put('dateGranularity', dateGranularity);
         return request;
     }
 
-    private static BoardQueryService.BarResult runBar(Map<String, Object> request) {
-        return BoardQueryService.queryBar(JSON.serialize(request));
+    /** The complete chart: the first call, then every cursor chunk until `isComplete`. */
+    private static BoardChartQuery.ChartResult chart(Map<String, Object> request) {
+        BoardChartQuery.ChartResult result = BoardChartQuery.queryChart(JSON.serialize(request));
+        while (!result.isComplete) {
+            Map<String, Object> next = request.clone();
+            next.put('cursor', result.cursor);
+            next.put('offset', result.nextOffset);
+            next.put('partialState', result.partialState);
+            result = BoardChartQuery.fetchChartChunk(JSON.serialize(next));
+        }
+        return result;
     }
 
-    /** Sums every cursor chunk's bucket `sum` by group label, following `nextOffset` until complete. */
-    private static Map<String, Decimal> mergeChunks(Map<String, Object> request, BoardQueryService.BarResult first) {
-        Map<String, Decimal> merged = new Map<String, Decimal>();
-        BoardQueryService.AggregateChunk chunk = first.chunk;
-        Boolean complete = false;
-        while (!complete) {
-            for (BoardQueryService.AggregateBucket bucket : chunk.buckets) {
-                String key = bucket.groupLabels[0];
-                Decimal current = merged.containsKey(key) ? merged.get(key) : 0.0;
-                merged.put(key, current + bucket.sum);
+    private static Map<String, BoardChartEngine.ChartKey> categoriesByLabel(BoardChartQuery.ChartResult result) {
+        Map<String, BoardChartEngine.ChartKey> categories = new Map<String, BoardChartEngine.ChartKey>();
+        for (BoardChartEngine.ChartKey category : result.categories) {
+            categories.put(category.label, category);
+        }
+        return categories;
+    }
+
+    private static Map<String, BoardChartEngine.ChartKey> categoriesByValue(BoardChartQuery.ChartResult result) {
+        Map<String, BoardChartEngine.ChartKey> categories = new Map<String, BoardChartEngine.ChartKey>();
+        for (BoardChartEngine.ChartKey category : result.categories) {
+            categories.put(category.value, category);
+        }
+        return categories;
+    }
+
+    /** The first Measure's value per category label (charts without a series field). */
+    private static Map<String, Decimal> valuesByLabel(BoardChartQuery.ChartResult result) {
+        return valuesBy(result, false);
+    }
+
+    /** The first Measure's value per category stored value (charts without a series field). */
+    private static Map<String, Decimal> valuesByValue(BoardChartQuery.ChartResult result) {
+        return valuesBy(result, true);
+    }
+
+    private static Map<String, Decimal> valuesBy(BoardChartQuery.ChartResult result, Boolean byValue) {
+        Map<String, String> names = new Map<String, String>();
+        for (BoardChartEngine.ChartKey category : result.categories) {
+            names.put(category.key, byValue ? category.value : category.label);
+        }
+        Map<String, Decimal> values = new Map<String, Decimal>();
+        for (BoardChartEngine.ChartPoint point : result.points) {
+            if (point.measureIndex == 0) {
+                values.put(names.get(point.categoryKey), point.value);
             }
-            complete = chunk.isComplete;
-            if (!complete) {
-                Map<String, Object> next = request.clone();
-                next.put('cursor', chunk.cursor);
-                next.put('offset', chunk.nextOffset);
-                chunk = BoardQueryService.fetchAggregateChunk(JSON.serialize(next));
-            }
         }
-        return merged;
+        return values;
     }
 
-    private static Map<String, BoardQueryService.BarBucket> bucketsByLabel(BoardQueryService.BarResult result) {
-        Map<String, BoardQueryService.BarBucket> buckets = new Map<String, BoardQueryService.BarBucket>();
-        for (BoardQueryService.BarBucket bucket : result.buckets) {
-            buckets.put(bucket.groupLabel, bucket);
+    /** Values keyed `categoryValue|seriesLabel`. */
+    private static Map<String, Decimal> valuesBySeries(BoardChartQuery.ChartResult result) {
+        Map<String, String> categories = new Map<String, String>();
+        for (BoardChartEngine.ChartKey category : result.categories) {
+            categories.put(category.key, category.value);
         }
-        return buckets;
+        Map<String, String> series = new Map<String, String>();
+        for (BoardChartEngine.ChartKey entry : result.series) {
+            series.put(entry.key, entry.label);
+        }
+        Map<String, Decimal> values = new Map<String, Decimal>();
+        for (BoardChartEngine.ChartPoint point : result.points) {
+            values.put(categories.get(point.categoryKey) + '|' + series.get(point.seriesKey), point.value);
+        }
+        return values;
     }
 
-    private static Map<String, BoardQueryService.BarBucket> bucketsByKey(BoardQueryService.BarResult result) {
-        Map<String, BoardQueryService.BarBucket> buckets = new Map<String, BoardQueryService.BarBucket>();
-        for (BoardQueryService.BarBucket bucket : result.buckets) {
-            buckets.put(bucket.groupValue, bucket);
-        }
-        return buckets;
-    }
-
-    private static Map<String, Object> expectBarError(Map<String, Object> request, String category) {
+    private static Map<String, Object> expectChartError(Map<String, Object> request, String category) {
         try {
-            runBar(request);
+            chart(request);
         } catch (AuraHandledException error) {
             Map<String, Object> payload = (Map<String, Object>) JSON.deserializeUntyped(error.getMessage());
             Assert.areEqual(category, payload.get('category'), String.valueOf(payload));

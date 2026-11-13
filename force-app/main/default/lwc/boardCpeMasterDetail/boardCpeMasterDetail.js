@@ -2,11 +2,12 @@ import { LightningElement, api } from 'lwc';
 import { NO_DRAG, dragRowClass, dropRowDrag, overRowDrag, startRowDrag } from 'c/boardCpeUtils';
 
 /**
- * Master-detail body of a Config dialog: an ordered item list on the left (select, move up/down, remove; an error icon
- * on invalid items; rows reorder by drag handle too) and the selected item's editor on the right (default slot). Add controls go in the `actions` slot
- * under the list. The layout fills the large modal body's height; each pane scrolls on its own.
+ * Master-detail editor inside a Setup dialog step (e.g. the Filter widget's Filters step): an ordered item list on the
+ * left (select, move up/down, remove; an error icon on invalid items; rows reorder by drag handle too) and the selected
+ * item's editor on the right (default slot). Add controls go in the `actions` slot under the list. The layout fills
+ * the modal body's height; each pane scrolls on its own.
  *
- * Stateless: the dialog owns the items and the selection and handles the non-bubbling events
+ * Stateless: the step owns the items and the selection and handles the non-bubbling events
  * `itemselect` (`{ key, index }`), `itemmove` (`{ index, offset }`, ±1 from the buttons or any offset from a drag), and `itemremove` (`{ index }`).
  */
 export default class BoardCpeMasterDetail extends LightningElement {

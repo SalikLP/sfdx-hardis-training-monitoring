@@ -250,12 +250,12 @@ private class BoardQueryServiceTableTest {
 
     @IsTest
     static void cursorSpansAtMostTheTableRowLimitAndHonoursFilters() {
-        BoardQueryService.TABLE_MAX_ROWS = 12;
+        BoardTableQuery.TABLE_MAX_ROWS = 12;
         Map<String, Object> request = tableRequest(new List<Map<String, Object>>{ column('s', 'Subject', null) });
         BoardQueryService.TableResult capped = BoardQueryService.queryTable(JSON.serialize(request));
         Assert.areEqual(12, capped.totalCount);
 
-        BoardQueryService.TABLE_MAX_ROWS = 100000;
+        BoardTableQuery.TABLE_MAX_ROWS = 100000;
         request.put(
             'baseFilters',
             new List<Object>{
@@ -284,6 +284,164 @@ private class BoardQueryServiceTableTest {
         Assert.areEqual(2, filtered.totalCount, 'High priority among 01..03');
         Assert.areEqual(new List<String>{ 'subject' }, filtered.appliedFilterIds);
         Assert.isFalse(filtered.hasMore);
+    }
+
+    @IsTest
+    static void rowLimitReturnsTheFirstNInTheConfiguredSortWithTheFullCount() {
+        Map<String, Object> request = tableRequest(new List<Map<String, Object>>{ column('s', 'Subject', null) });
+        request.put('sortBy', 'Subject');
+        request.put('sortDirection', 'DESC');
+        request.put('rowLimit', 3);
+        request.put('pageSize', 10);
+        BoardQueryService.TableResult result = BoardQueryService.queryTable(JSON.serialize(request));
+
+        Assert.areEqual(3, result.rows.size(), 'First N records');
+        Assert.areEqual('Board Table 25', result.rows[0].values.get('Subject'));
+        Assert.areEqual('Board Table 23', result.rows[2].values.get('Subject'));
+        Assert.areEqual(CASE_COUNT, result.totalCount, 'Full matching count, not N');
+        Assert.areEqual(3, result.rowLimit);
+        Assert.isFalse(result.hasMore, 'A limited Table has no infinite scroll');
+        Assert.isNull(result.paginationCursor, 'A limited Table holds no cursor');
+
+        request.put(
+            'baseFilters',
+            new List<Object>{
+                new Map<String, Object>{
+                    'id' => 'high',
+                    'fieldPath' => 'Priority',
+                    'operator' => 'EQ',
+                    'value' => 'High'
+                }
+            }
+        );
+        BoardQueryService.TableResult filtered = BoardQueryService.queryTable(JSON.serialize(request));
+        Assert.areEqual(13, filtered.totalCount, 'Count honours filters (13 High of 25)');
+        Assert.areEqual(3, filtered.rows.size());
+    }
+
+    @IsTest
+    static void rowLimitAboveTheMatchingRecordsReturnsThemAllAndMaxIs2000() {
+        Map<String, Object> request = tableRequest(new List<Map<String, Object>>{ column('s', 'Subject', null) });
+        request.put('sortBy', 'Subject');
+        request.put('rowLimit', 2000);
+        BoardQueryService.TableResult all = BoardQueryService.queryTable(JSON.serialize(request));
+        Assert.areEqual(CASE_COUNT, all.rows.size());
+        Assert.areEqual(CASE_COUNT, all.totalCount);
+
+        request.put('rowLimit', 2001);
+        Map<String, Object> payload = expectError(request, 'CONFIG_ERROR');
+        Assert.areEqual('rowLimit', payload.get('fieldPath'));
+    }
+
+    @IsTest
+    static void rowLimitWithoutASortFailsClosed() {
+        Map<String, Object> request = tableRequest(new List<Map<String, Object>>{ column('s', 'Subject', null) });
+        request.put('rowLimit', 5);
+        Map<String, Object> payload = expectError(request, 'CONFIG_ERROR');
+        Assert.areEqual('rowLimit', payload.get('fieldPath'));
+    }
+
+    @IsTest
+    static void dataBarScaleSpansTheWholeScopeNotTheFirstPage() {
+        List<Account> accounts = new List<Account>();
+        for (Integer i = 1; i <= 30; i++) {
+            accounts.add(new Account(Name = 'Bar Acct ' + String.valueOf(i).leftPad(2, '0'), AnnualRevenue = i * 100));
+        }
+        insert accounts;
+        Map<String, Object> revenue = column('rev', 'AnnualRevenue', null);
+        revenue.put('displayAs', 'dataBar');
+        Map<String, Object> request = tableRequest(new List<Map<String, Object>>{ column('n', 'Name', null), revenue });
+        request.put('objectApiName', 'Account');
+        request.put('pageSize', 10);
+        request.put(
+            'baseFilters',
+            new List<Object>{
+                new Map<String, Object>{
+                    'id' => 'bar',
+                    'fieldPath' => 'Name',
+                    'operator' => 'LIKE',
+                    'value' => 'Bar Acct%'
+                }
+            }
+        );
+
+        BoardQueryService.TableResult result = BoardQueryService.queryTable(JSON.serialize(request));
+        Assert.areEqual(10, result.rows.size(), 'Only the first page of rows');
+        Assert.areEqual(1, result.barScales.size());
+        Assert.areEqual('rev', result.barScales[0].columnId);
+        Assert.areEqual(3000, result.barScales[0].max, 'Max over all 30 matching records');
+        Assert.areEqual(100, result.barScales[0].min);
+
+        request.put('sortBy', 'Name');
+        request.put('rowLimit', 5);
+        BoardQueryService.TableResult limited = BoardQueryService.queryTable(JSON.serialize(request));
+        Assert.areEqual(5, limited.rows.size());
+        Assert.areEqual(3000, limited.barScales[0].max, 'A Row limit does not shrink the scale');
+
+        request.remove('rowLimit');
+        request.put(
+            'baseFilters',
+            new List<Object>{
+                new Map<String, Object>{
+                    'id' => 'bar',
+                    'fieldPath' => 'Name',
+                    'operator' => 'LIKE',
+                    'value' => 'Bar Acct 0%'
+                }
+            }
+        );
+        BoardQueryService.TableResult filtered = BoardQueryService.queryTable(JSON.serialize(request));
+        Assert.areEqual(900, filtered.barScales[0].max, 'The scale honours the filters');
+    }
+
+    @IsTest
+    static void dataBarScalesCostOneQueryRowPerExtremeNotOnePerRecord() {
+        List<Account> accounts = new List<Account>();
+        for (Integer i = 1; i <= 30; i++) {
+            accounts.add(new Account(Name = 'Bar Cost ' + i, AnnualRevenue = i * 100));
+        }
+        insert accounts;
+        Map<String, Object> plain = tableRequest(new List<Map<String, Object>>{ column('n', 'Name', null) });
+        plain.put('objectApiName', 'Account');
+        plain.put('pageSize', 5);
+        Map<String, Object> revenue = column('rev', 'AnnualRevenue', null);
+        revenue.put('displayAs', 'dataBar');
+        Map<String, Object> withBars = plain.clone();
+        withBars.put('columns', new List<Object>{ column('n', 'Name', null), revenue });
+
+        Integer before = Limits.getQueryRows();
+        BoardQueryService.queryTable(JSON.serialize(plain));
+        Integer plainRows = Limits.getQueryRows() - before;
+        before = Limits.getQueryRows();
+        BoardQueryService.TableResult result = BoardQueryService.queryTable(JSON.serialize(withBars));
+        Integer barRows = Limits.getQueryRows() - before;
+
+        Assert.areEqual(3000, result.barScales[0].max);
+        Assert.areEqual(100, result.barScales[0].min);
+        Assert.isTrue(
+            barRows - plainRows <= 2,
+            'A scope of any size costs the scale 2 query rows (largest, smallest), not every record: ' +
+            (barRows - plainRows)
+        );
+    }
+
+    @IsTest
+    static void tableWithoutDataBarColumnsReturnsNoScales() {
+        BoardQueryService.TableResult result = BoardQueryService.queryTable(
+            JSON.serialize(tableRequest(new List<Map<String, Object>>{ column('s', 'Subject', null) }))
+        );
+        Assert.isTrue(result.barScales.isEmpty());
+    }
+
+    @IsTest
+    static void dataBarOnANonNumericColumnIsAConfigError() {
+        Map<String, Object> subject = column('s', 'Subject', null);
+        subject.put('displayAs', 'dataBar');
+        Map<String, Object> payload = expectError(
+            tableRequest(new List<Map<String, Object>>{ subject }),
+            'CONFIG_ERROR'
+        );
+        Assert.areEqual('Subject', payload.get('fieldPath'));
     }
 
     @IsTest
@@ -319,6 +477,24 @@ private class BoardQueryServiceTableTest {
 
     private static Map<String, Object> column(String id, String fieldPath, String linkToRecord) {
         return new Map<String, Object>{ 'id' => id, 'fieldPath' => fieldPath, 'linkToRecord' => linkToRecord };
+    }
+
+    @IsTest
+    static void savedChildRelationshipFailsWithTheRowGroupingMigrationMessage() {
+        Map<String, Object> request = tableRequest(new List<Map<String, Object>>{ column('s', 'Subject', null) });
+        request.put(
+            'childRelationship',
+            new Map<String, Object>{ 'childObjectApiName' => 'CaseComment', 'foreignKeyField' => 'ParentId' }
+        );
+        Map<String, Object> payload = expectError(request, 'CONFIG_ERROR');
+        Assert.areEqual('childRelationship', payload.get('fieldPath'));
+        Assert.isTrue(
+            String.valueOf(payload.get('message'))
+                .contains(
+                    'Child rows were replaced by Row grouping: use the child object as source and group by the parent.'
+                ),
+            String.valueOf(payload)
+        );
     }
 
     private static void assertColumnError(String fieldPath, String category) {

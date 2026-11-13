@@ -1,0 +1,222 @@
+<template>
+    <template lwc:if={isData}>
+        <c-board-cpe-object-field-picker
+            class="c-metric-object"
+            mode="object"
+            label="Object"
+            field-level-help="The object whose records the Metric counts or adds up. Changing it flags the steps whose fields aren't on the new object."
+            value={objectPickerValue}
+            onchange={handleObject}
+        ></c-board-cpe-object-field-picker>
+        <c-board-setup-base-filters
+            class="c-metric-base-filters"
+            value={baseFilters}
+            object-api-name={objectApiName}
+            onchange={handleBaseFilters}
+        ></c-board-setup-base-filters>
+    </template>
+
+    <template lwc:if={isMeasures}>
+        <c-board-cpe-measure-list
+            class="c-metric-measure-list"
+            object-api-name={objectApiName}
+            measures={measures}
+            max-measures={maxMeasures}
+            default-notation={defaultNotation}
+            show-hidden
+            single-visible
+            date-min-max
+            onchange={handleMeasuresChange}
+            onformulacheck={handleFormulaCheck}
+        ></c-board-cpe-measure-list>
+    </template>
+
+    <template lwc:if={isDisplay}>
+        <c-board-picture-tiles
+            class="c-metric-display-type"
+            label="Show the value as"
+            field-level-help="A number, or a Gauge drawing the visible Measure on a scale with the Thresholds as its bands."
+            options={displayOptions}
+            value={display}
+            onchange={handleDisplay}
+        ></c-board-picture-tiles>
+        <template lwc:if={isGauge}>
+            <lightning-combobox
+                class="c-metric-gauge-min-source slds-m-top_x-small"
+                label="Minimum"
+                field-level-help="Where the scale starts: a static number (0 when blank) or a Hidden Measure."
+                options={edgeSourceOptions}
+                value={minSource}
+                onchange={handleMinSource}
+            ></lightning-combobox>
+            <template lwc:if={minStatic}>
+                <lightning-input
+                    class="c-metric-gauge-min slds-m-top_x-small"
+                    type="number"
+                    step="any"
+                    label="Minimum value"
+                    field-level-help="The start of the scale. Blank starts at 0."
+                    placeholder="0"
+                    value={minValue}
+                    onchange={handleMinValue}
+                ></lightning-input>
+            </template>
+            <lightning-combobox
+                class="c-metric-gauge-max-source slds-m-top_x-small"
+                label="Maximum"
+                field-level-help="Where the scale ends: a static number or a Hidden Measure, e.g. the quota."
+                options={edgeSourceOptions}
+                value={maxSource}
+                onchange={handleMaxSource}
+            ></lightning-combobox>
+            <template lwc:if={maxStatic}>
+                <lightning-input
+                    class="c-metric-gauge-max slds-m-top_x-small"
+                    type="number"
+                    step="any"
+                    label="Maximum value"
+                    field-level-help="The end of the scale; it must be above the minimum."
+                    value={maxValue}
+                    onchange={handleMaxValue}
+                ></lightning-input>
+            </template>
+            <lightning-combobox
+                class="c-metric-gauge-target slds-m-top_x-small"
+                label="Target marker"
+                field-level-help="A Hidden Measure drawn as a marker on the scale, e.g. last year's value."
+                options={targetOptions}
+                value={targetSource}
+                onchange={handleTargetSource}
+            ></lightning-combobox>
+            <lightning-input
+                class="c-metric-gauge-percent slds-m-top_x-small"
+                type="checkbox"
+                label="Threshold values are % of maximum"
+                field-level-help="Read each Threshold value as a percentage of the maximum, so the bands follow a changing maximum."
+                checked={bandsPercentOfMax}
+                onchange={handleBandsPercent}
+            ></lightning-input>
+        </template>
+        <lightning-input
+            class="c-metric-subtitle slds-m-top_small"
+            label="Subtitle"
+            field-level-help="A short line under the value, e.g. the period or the unit."
+            value={subtitle}
+            onchange={handleSubtitle}
+        ></lightning-input>
+    </template>
+
+    <template lwc:if={isThresholds}>
+        <p class="c-metric-threshold-caption slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
+            When the value matches a rule, show its status. Rules are checked in order; the first match colors the
+            value.
+        </p>
+        <template lwc:if={hasThresholds}>
+            <ol class="c-metric-threshold-list" aria-label="Threshold rules">
+                <template for:each={thresholdRows} for:item="row">
+                    <li
+                        key={row.key}
+                        class={row.rowClass}
+                        data-index={row.index}
+                        ondragover={handleThresholdDragOver}
+                        ondrop={handleThresholdDrop}
+                    >
+                        <span
+                            class="c-metric-threshold-handle c-drag-handle"
+                            draggable="true"
+                            title="Drag to reorder"
+                            data-index={row.index}
+                            ondragstart={handleThresholdDragStart}
+                            ondragend={handleThresholdDragEnd}
+                        >
+                            <lightning-icon
+                                icon-name="utility:drag_and_drop"
+                                size="x-small"
+                                alternative-text=""
+                            ></lightning-icon>
+                        </span>
+                        <lightning-combobox
+                            class="c-metric-threshold-operator"
+                            label={row.operatorLabel}
+                            field-level-help="How the value is compared with the rule's value."
+                            variant="label-hidden"
+                            options={thresholdOperatorOptions}
+                            value={row.operator}
+                            data-index={row.index}
+                            onchange={handleThresholdOperator}
+                        ></lightning-combobox>
+                        <lightning-input
+                            class="c-metric-threshold-value"
+                            type="number"
+                            step="any"
+                            label={row.valueLabel}
+                            field-level-help="The number the value is compared with."
+                            variant="label-hidden"
+                            value={row.value}
+                            data-index={row.index}
+                            onchange={handleThresholdValue}
+                        ></lightning-input>
+                        <lightning-combobox
+                            class="c-metric-threshold-variant"
+                            label={row.variantLabel}
+                            field-level-help="The colour the value shows when this rule matches first."
+                            variant="label-hidden"
+                            options={thresholdVariantOptions}
+                            value={row.variant}
+                            data-index={row.index}
+                            onchange={handleThresholdVariant}
+                        ></lightning-combobox>
+                        <div class="c-metric-threshold-actions">
+                            <lightning-button-icon
+                                class="c-metric-threshold-up"
+                                icon-name="utility:arrowup"
+                                size="small"
+                                variant="bare"
+                                alternative-text={row.moveUpLabel}
+                                disabled={row.isFirst}
+                                data-index={row.index}
+                                onclick={handleMoveThresholdUp}
+                            ></lightning-button-icon>
+                            <lightning-button-icon
+                                class="c-metric-threshold-down"
+                                icon-name="utility:arrowdown"
+                                size="small"
+                                variant="bare"
+                                alternative-text={row.moveDownLabel}
+                                disabled={row.isLast}
+                                data-index={row.index}
+                                onclick={handleMoveThresholdDown}
+                            ></lightning-button-icon>
+                            <lightning-button-icon
+                                class="c-metric-threshold-remove"
+                                icon-name="utility:delete"
+                                size="small"
+                                variant="bare"
+                                alternative-text={row.removeLabel}
+                                data-index={row.index}
+                                onclick={handleRemoveThreshold}
+                            ></lightning-button-icon>
+                        </div>
+                    </li>
+                </template>
+            </ol>
+        </template>
+        <lightning-button
+            class="c-metric-threshold-add slds-m-top_x-small"
+            label="Add rule"
+            icon-name="utility:add"
+            onclick={handleAddThreshold}
+        ></lightning-button>
+    </template>
+
+    <template lwc:if={isFilterBindings}>
+        <c-board-cpe-filter-bindings
+            class="c-metric-filter-bindings"
+            config={config}
+            builder-context={builderContext}
+            element-info={elementInfo}
+            onchange={handleBindingsChange}
+            onbindingstate={handleBindingState}
+        ></c-board-cpe-filter-bindings>
+    </template>
+</template>

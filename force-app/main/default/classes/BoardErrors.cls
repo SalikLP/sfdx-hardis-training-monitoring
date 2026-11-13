@@ -16,6 +16,10 @@ public with sharing class BoardErrors {
     private static final String GENERIC_MESSAGE = 'The request failed. Retry, or contact your admin.';
     private static final String NON_SELECTIVE_MESSAGE = 'This view spans too many records for a selective query. Narrow the Date Range or add filters to view results.';
 
+    /** Tests: the last unexpected (non-Board) failure turned into the generic message, to report its real cause. */
+    @TestVisible
+    private static Exception lastUnexpected;
+
     public static BoardException error(String category, String message, String filterId, String fieldPath) {
         return error(category, message, filterId, fieldPath, false);
     }
@@ -56,6 +60,7 @@ public with sharing class BoardErrors {
             payload.put('message', NON_SELECTIVE_MESSAGE);
             payload.put('retryable', false);
         } else {
+            lastUnexpected = failure;
             System.debug(
                 LoggingLevel.ERROR,
                 'Board request failed: ' +

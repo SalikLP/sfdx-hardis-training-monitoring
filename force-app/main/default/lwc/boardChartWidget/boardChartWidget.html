@@ -1,0 +1,162 @@
+<template>
+    <article class="slds-card c-board-card">
+        <div class="slds-card__header slds-grid slds-grid_vertical-align-center">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_small slds-truncate" title={effectiveTitle}
+                            >{effectiveTitle}</span
+                        >
+                    </h2>
+                </div>
+            </header>
+            <div class="slds-no-flex slds-grid slds-grid_vertical-align-center">
+                <template lwc:if={isRefreshing}>
+                    <div class="c-board-header-spinner slds-m-right_x-small">
+                        <lightning-spinner size="x-small" alternative-text="Refreshing data"></lightning-spinner>
+                    </div>
+                </template>
+                <template lwc:if={filterBindingSummary}>
+                    <lightning-helptext
+                        class="c-board-binding-help slds-m-right_xx-small"
+                        icon-name="utility:info_alt"
+                        content={filterBindingSummary}
+                        alternative-text="Filter binding details"
+                    ></lightning-helptext>
+                </template>
+                <template lwc:if={showToggle}>
+                    <lightning-button
+                        class="c-board-view-toggle slds-m-right_x-small"
+                        variant="base"
+                        label={toggleLabel}
+                        title={toggleLabel}
+                        icon-name={toggleIcon}
+                        onclick={handleToggleView}
+                    ></lightning-button>
+                </template>
+                <lightning-button-icon
+                    icon-name="utility:refresh"
+                    size="small"
+                    variant="bare"
+                    alternative-text="Refresh widget"
+                    title="Refresh widget"
+                    onclick={handleRefreshClick}
+                ></lightning-button-icon>
+            </div>
+        </div>
+        <div class="slds-card__body slds-card__body_inner c-board-chart-container">
+            <template lwc:if={subtitle}>
+                <p class="c-board-chart-subtitle slds-text-body_small">{subtitle}</p>
+            </template>
+            <template lwc:if={showCursorProgress}>
+                <div class="c-board-cursor-progress slds-m-bottom_x-small" role="status" aria-live="polite">
+                    <lightning-progress-bar value={cursorProgress.percent} size="small"></lightning-progress-bar>
+                    <p class="c-board-cursor-progress-label slds-text-body_small">{cursorProgress.label}</p>
+                </div>
+            </template>
+            <template lwc:if={showWidgetState}>
+                <c-board-widget-state
+                    state={viewState}
+                    waiting-for-board-id={waitingBoardId}
+                    widget-type="chart"
+                    orientation={effectiveOrientation}
+                    error={errorPayload}
+                    has-active-filters={hasActiveFilters}
+                    onretry={handleRetry}
+                ></c-board-widget-state>
+            </template>
+            <template lwc:if={showChartBody}>
+                <div
+                    class={bodyClass}
+                    data-scope-key={activeScopeKey}
+                    data-orientation={effectiveOrientation}
+                    aria-busy={ariaBusy}
+                >
+                    <div class={chartWrapperClass}>
+                        <template lwc:if={isPanelled}>
+                            <c-board-chart-panel-grid
+                                panels={panelGridPanels}
+                                panels-per-row={panelSettings.panelsPerRow}
+                                panel-height={panelSettings.panelHeight}
+                                independent-scales={panelSettings.independentScales}
+                                chart-library={chartLibrary}
+                                build-configs={buildPanelConfigs}
+                                draw-version={panelDrawVersion}
+                            ></c-board-chart-panel-grid>
+                        </template>
+                        <template lwc:else>
+                            <div
+                                class="c-board-chart-scroll"
+                                data-scroll-axis={scrollAxis}
+                                style={scrollStyle}
+                                onscroll={handleChartScroll}
+                            >
+                                <div class="c-board-chart-canvas" style={chartContainerStyle} lwc:dom="manual"></div>
+                                <div class="c-board-chart-spacer" style={spacerStyle}></div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class={tableWrapperClass}>
+                        <table class={tableClass} aria-label={tableCaption}>
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th scope="col">{categoryHeader}</th>
+                                    <template for:each={tableColumns} for:item="column">
+                                        <th key={column.key} scope="col" class="slds-text-align_right">
+                                            {column.label}
+                                        </th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={tableRows} for:item="row">
+                                    <tr key={row.key}>
+                                        <th scope="row">{row.label}</th>
+                                        <template for:each={row.cells} for:item="cell">
+                                            <td key={cell.key} class="slds-text-align_right">{cell.text}</td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="c-board-chart-status" aria-live="polite">
+                        <template lwc:if={hasCutPanels}>
+                            <p class="c-board-chart-cut-panels c-board-chart-partial slds-text-body_small">
+                                <lightning-icon
+                                    icon-name="utility:info"
+                                    size="x-small"
+                                    alternative-text="Information"
+                                ></lightning-icon>
+                                <span>{cutPanelsMessage}</span>
+                            </p>
+                        </template>
+                        <template lwc:if={hasPartialResults}>
+                            <p class="c-board-chart-partial slds-text-body_small">
+                                <lightning-icon
+                                    icon-name="utility:warning"
+                                    size="x-small"
+                                    alternative-text="Warning"
+                                ></lightning-icon>
+                                <span
+                                    >Partial results: this chart has more groups than can be loaded at once, so some
+                                    bars and totals are missing. Add filters to narrow the data.</span
+                                >
+                            </p>
+                        </template>
+                        <template for:each={crossObjectNoticeRows} for:item="notice">
+                            <p key={notice.key} class="c-board-cross-object-notice slds-text-body_small">
+                                <lightning-icon
+                                    icon-name="utility:warning"
+                                    size="x-small"
+                                    alternative-text="Warning"
+                                ></lightning-icon>
+                                <span>{notice.message}</span>
+                            </p>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </article>
+</template>

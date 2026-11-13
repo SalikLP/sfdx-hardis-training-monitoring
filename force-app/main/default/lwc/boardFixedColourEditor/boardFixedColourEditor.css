@@ -1,0 +1,7 @@
+.c-fixed-colour-swatch {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--slds-g-radius-border-1, 0.125rem);
+    border: 1px solid var(--slds-g-color-border-1, #c9c9c9);
+}

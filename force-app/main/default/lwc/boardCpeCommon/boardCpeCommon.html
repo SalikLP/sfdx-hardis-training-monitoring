@@ -30,7 +30,7 @@
                 value={titleValue}
                 onchange={handleTitleChange}
             ></lightning-input>
-            <template lwc:if={isDataWidget}>
+            <template lwc:if={showObject}>
                 <div class="slds-m-top_x-small">
                     <c-board-cpe-object-field-picker
                         class="c-cpe-object"
@@ -41,7 +41,19 @@
                     ></c-board-cpe-object-field-picker>
                 </div>
             </template>
-            <template lwc:if={isBar}>
+            <template lwc:if={isDataWidget}>
+                <lightning-input
+                    class="c-cpe-wait-for-filter slds-m-top_x-small"
+                    type="toggle"
+                    label="Wait for Filter widget"
+                    message-toggle-active="On"
+                    message-toggle-inactive="Off"
+                    checked={waitForFilterWidgetValue}
+                    field-level-help="Show the loading state and run no query until this Board's Filter widget loads. Turn off if this Board has no Filter widget."
+                    onchange={handleWaitForFilterWidgetChange}
+                ></lightning-input>
+            </template>
+            <template lwc:if={showOrientation}>
                 <lightning-radio-group
                     class="c-cpe-orientation slds-m-top_x-small"
                     name="orientation"
@@ -61,165 +73,69 @@
             </template>
         </c-board-cpe-section>
 
-        <slot></slot>
-
-        <template lwc:if={isDataWidget}>
-            <c-board-cpe-section
-                class="c-cpe-bindings"
-                name={sections.bindings.name}
-                label="Filter bindings"
-                summary={sections.bindings.summary}
-                open={sections.bindings.open}
-                has-error={sections.bindings.hasError}
-                ontoggle={handleSectionToggle}
-            >
-                <p class="c-cpe-discovery slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
-                    {discoveryMessage}
-                </p>
-                <template lwc:if={hasBindingRows}>
-                    <ul class="c-cpe-binding-list">
-                        <template for:each={bindingRows} for:item="row">
-                            <li
-                                key={row.key}
-                                class="c-cpe-binding-row slds-p-vertical_x-small"
-                                data-filter-id={row.filterId}
-                            >
-                                <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread">
-                                    <div class="slds-truncate">
-                                        <span class="c-cpe-binding-label">{row.label}</span>
-                                        <span class="slds-badge slds-m-left_xx-small">{row.typeLabel}</span>
-                                        <code class="c-cpe-binding-id slds-m-left_xx-small">{row.filterId}</code>
-                                    </div>
-                                    <template lwc:if={row.isManual}>
-                                        <lightning-button-icon
-                                            class="c-cpe-binding-remove"
-                                            icon-name="utility:delete"
-                                            size="small"
-                                            variant="bare"
-                                            alternative-text="Remove filter binding"
-                                            data-filter-id={row.filterId}
-                                            onclick={handleManualRemove}
-                                        ></lightning-button-icon>
-                                    </template>
-                                </div>
-                                <p class="slds-text-body_small">
-                                    Convention: <span class="c-cpe-binding-convention">{row.conventionText}</span>
-                                </p>
-                                <lightning-combobox
-                                    class="c-cpe-binding-mode slds-m-top_xx-small"
-                                    label="Binding"
-                                    variant="label-inline"
-                                    options={bindingModeOptions}
-                                    value={row.mode}
-                                    data-filter-id={row.filterId}
-                                    onchange={handleBindingModeChange}
-                                ></lightning-combobox>
-                                <template lwc:if={row.isPath}>
-                                    <lightning-input
-                                        class="c-cpe-binding-path slds-m-top_xx-small"
-                                        label="Binding path"
-                                        value={row.path}
-                                        placeholder="Account.Parent.Owner.Name"
-                                        field-level-help={bindingPathHelp}
-                                        data-filter-id={row.filterId}
-                                        onchange={handleBindingPathChange}
-                                    ></lightning-input>
-                                    <c-board-cpe-object-field-picker
-                                        class="c-cpe-binding-picker slds-m-top_xx-small"
-                                        mode="field"
-                                        label="Pick a field, parent path, or child relationship"
-                                        object-api-name={objectApiNameValue}
-                                        capability="filterable"
-                                        allow-child-relationships
-                                        data-filter-id={row.filterId}
-                                        onchange={handleBindingPick}
-                                    ></c-board-cpe-object-field-picker>
-                                </template>
-                                <template lwc:if={row.error}>
-                                    <p
-                                        class="c-cpe-binding-error slds-text-color_error slds-text-body_small"
-                                        role="alert"
-                                    >
-                                        {row.error}
-                                    </p>
-                                </template>
-                                <p class="slds-text-body_small slds-text-color_weak">
-                                    Applies as: <span class="c-cpe-binding-effective">{row.effectiveText}</span>
-                                </p>
-                            </li>
-                        </template>
-                    </ul>
-                </template>
-                <div class="slds-grid slds-grid_vertical-align-end slds-m-top_x-small">
-                    <lightning-input
-                        class="c-cpe-manual-id slds-col"
-                        label="Filter id (Filter widget outside this Flow)"
-                        value={manualDraft}
-                        placeholder="e.g. region or $recordContext"
-                        onchange={handleManualDraftChange}
-                    ></lightning-input>
-                    <lightning-button
-                        class="c-cpe-manual-add slds-m-left_x-small"
-                        label="Add binding"
-                        onclick={handleManualAdd}
-                    ></lightning-button>
-                </div>
-                <template lwc:if={manualError}>
-                    <p class="c-cpe-manual-error slds-text-color_error slds-text-body_small" role="alert">
-                        {manualError}
-                    </p>
-                </template>
-            </c-board-cpe-section>
-
-            <c-board-cpe-section
-                class="c-cpe-base-filters"
-                name={sections.baseFilters.name}
-                label="Base filters"
-                summary={sections.baseFilters.summary}
-                open={sections.baseFilters.open}
-                has-error={sections.baseFilters.hasError}
-                ontoggle={handleSectionToggle}
-            >
-                <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
-                    Static conditions combined with AND alongside the Board's Filter context.
-                </p>
-                <template lwc:if={hasBaseFilters}>
-                    <ol class="c-cpe-base-filter-rows">
-                        <template for:each={baseFilterRows} for:item="row">
-                            <li
-                                key={row.key}
-                                class="c-cpe-base-filter slds-grid slds-grid_vertical-align-center slds-p-vertical_xx-small"
-                                data-id={row.id}
-                            >
-                                <span class="c-cpe-base-filter-text slds-truncate" title={row.text}>{row.text}</span>
-                                <span
-                                    class="c-cpe-base-filter-operator-badge slds-badge slds-m-left_xx-small slds-shrink-none"
-                                    >{row.operatorLabel}</span
-                                >
-                                <template lwc:if={row.hasError}>
+        <template lwc:if={setupDialog}>
+            <div class="c-cpe-setup slds-m-vertical_x-small">
+                <h3 class="slds-text-title_caps slds-m-bottom_xx-small">Setup</h3>
+                <ul class="c-cpe-steps">
+                    <template for:each={setupSteps} for:item="step">
+                        <li
+                            key={step.name}
+                            class="c-cpe-step slds-grid slds-grid_vertical-align-center slds-p-vertical_xx-small"
+                            data-step={step.name}
+                        >
+                            <div class="slds-col slds-truncate">
+                                <span class="c-cpe-step-label slds-text-title_bold">{step.label}</span>
+                                <template lwc:if={step.hasError}>
                                     <lightning-icon
-                                        class="c-cpe-base-filter-error slds-m-left_xx-small slds-shrink-none"
+                                        class="c-cpe-step-error slds-m-left_xx-small"
                                         icon-name="utility:error"
                                         variant="error"
                                         size="x-small"
-                                        alternative-text={row.errorText}
-                                        title={row.errorText}
+                                        alternative-text="This step has errors"
+                                        title="This step has errors"
                                     ></lightning-icon>
                                 </template>
-                            </li>
-                        </template>
-                    </ol>
-                </template>
-                <template lwc:else>
-                    <p class="c-cpe-base-filter-empty slds-text-body_small slds-text-color_weak">No conditions.</p>
-                </template>
-                <lightning-button
-                    class="c-cpe-base-filters-edit slds-m-top_x-small"
-                    label="Edit base filters…"
-                    icon-name="utility:edit"
-                    onclick={handleEditBaseFilters}
-                ></lightning-button>
-            </c-board-cpe-section>
+                                <span
+                                    class="c-cpe-step-summary slds-m-left_x-small slds-text-body_small slds-text-color_weak"
+                                    title={step.summary}
+                                    >{step.summary}</span
+                                >
+                            </div>
+                            <lightning-button
+                                class="c-cpe-step-edit slds-m-left_x-small slds-shrink-none"
+                                variant="base"
+                                label="Edit…"
+                                title={step.editLabel}
+                                data-step={step.name}
+                                onclick={handleEditStep}
+                            ></lightning-button>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </template>
+
+        <template lwc:if={isDataWidget}>
+            <template lwc:if={showBindings}>
+                <c-board-cpe-section
+                    class="c-cpe-bindings"
+                    name={sections.bindings.name}
+                    label="Filter bindings"
+                    summary={sections.bindings.summary}
+                    open={sections.bindings.open}
+                    has-error={sections.bindings.hasError}
+                    ontoggle={handleSectionToggle}
+                >
+                    <c-board-cpe-filter-bindings
+                        class="c-cpe-filter-bindings"
+                        config={config}
+                        builder-context={builderContext}
+                        element-info={elementInfo}
+                        onchange={handleBindingsChange}
+                        onbindingstate={handleBindingState}
+                    ></c-board-cpe-filter-bindings>
+                </c-board-cpe-section>
+            </template>
         </template>
 
         <c-board-cpe-section

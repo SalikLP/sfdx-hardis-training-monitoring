@@ -1,0 +1,125 @@
+<template>
+    <lightning-modal-header label={label}></lightning-modal-header>
+    <lightning-modal-body>
+        <div class="c-setup slds-grid">
+            <nav class="c-setup-nav slds-nav-vertical slds-shrink-none" aria-label="Setup steps">
+                <div class="slds-nav-vertical__section">
+                    <ol>
+                        <template for:each={navItems} for:item="item">
+                            <li key={item.name} class={item.itemClass} data-step={item.name} data-state={item.state}>
+                                <button
+                                    type="button"
+                                    class="c-setup-step-select slds-nav-vertical__action slds-button_reset"
+                                    aria-current={item.ariaCurrent}
+                                    disabled={item.locked}
+                                    data-step={item.name}
+                                    onclick={handleStepSelect}
+                                >
+                                    <span class="c-setup-step-number slds-m-right_x-small">{item.number}.</span>
+                                    <span class="c-setup-step-label slds-col slds-truncate">{item.label}</span>
+                                    <template lwc:if={item.iconName}>
+                                        <lightning-icon
+                                            class="c-setup-step-state slds-m-left_x-small slds-shrink-none"
+                                            icon-name={item.iconName}
+                                            variant={item.variant}
+                                            size="x-small"
+                                            alternative-text={item.stateText}
+                                            title={item.stateText}
+                                        ></lightning-icon>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="slds-assistive-text">{item.stateText}</span>
+                                    </template>
+                                </button>
+                            </li>
+                        </template>
+                    </ol>
+                </div>
+            </nav>
+            <section class="c-setup-content slds-col slds-p-horizontal_medium" aria-live="polite">
+                <h2 class="c-setup-step-title slds-text-heading_medium slds-m-bottom_small">{currentLabel}</h2>
+                <template lwc:if={current}>
+                    <div class="c-setup-step-help slds-m-bottom_medium">
+                        <p class="c-setup-step-intro">{current.intro}</p>
+                        <p class="c-setup-step-example slds-m-top_xx-small slds-text-color_weak">
+                            <span class="slds-text-title_bold">Example:</span> {current.example}
+                        </p>
+                    </div>
+                </template>
+                <template lwc:if={hasCurrentErrors}>
+                    <ul class="c-setup-step-errors slds-m-bottom_small slds-text-color_error" role="alert">
+                        <template for:each={currentErrors} for:item="item">
+                            <li key={item.key}>{item.message}</li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:if={isChart}>
+                    <c-board-chart-setup-steps
+                        step={currentStep}
+                        config={draft}
+                        context={stepContext}
+                        onchange={handleDraftChange}
+                        onsteperrors={handleStepErrors}
+                    ></c-board-chart-setup-steps>
+                </template>
+                <template lwc:if={isMetric}>
+                    <c-board-metric-setup-steps
+                        step={currentStep}
+                        config={draft}
+                        context={stepContext}
+                        onchange={handleDraftChange}
+                        onsteperrors={handleStepErrors}
+                    ></c-board-metric-setup-steps>
+                </template>
+                <template lwc:if={isTable}>
+                    <c-board-table-setup-steps
+                        step={currentStep}
+                        config={draft}
+                        context={stepContext}
+                        onchange={handleDraftChange}
+                        onsteperrors={handleStepErrors}
+                    ></c-board-table-setup-steps>
+                </template>
+                <template lwc:if={isFilter}>
+                    <c-board-filter-setup-steps
+                        step={currentStep}
+                        config={draft}
+                        context={stepContext}
+                        onchange={handleDraftChange}
+                    ></c-board-filter-setup-steps>
+                </template>
+            </section>
+            <aside class={previewColumnClass} data-open={previewOpenText}>
+                <c-board-setup-preview
+                    widget-type={widgetType}
+                    config={draft}
+                    onpreviewtoggle={handlePreviewToggle}
+                ></c-board-setup-preview>
+            </aside>
+        </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button class="c-setup-cancel" label="Cancel" onclick={handleCancel}></lightning-button>
+        <template lwc:if={guided}>
+            <lightning-button
+                class="c-setup-back slds-m-left_x-small"
+                label="Back"
+                disabled={isBackDisabled}
+                onclick={handleBack}
+            ></lightning-button>
+            <lightning-button
+                class="c-setup-next slds-m-left_x-small"
+                label="Next"
+                disabled={isNextDisabled}
+                onclick={handleNext}
+            ></lightning-button>
+        </template>
+        <lightning-button
+            class="c-setup-save slds-m-left_x-small"
+            variant="brand"
+            label="Save"
+            disabled={isSaveDisabled}
+            onclick={handleSave}
+        ></lightning-button>
+    </lightning-modal-footer>
+</template>

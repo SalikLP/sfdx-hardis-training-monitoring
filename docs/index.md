@@ -41,7 +41,7 @@ Who is allowed to see what, and who is allowed to do what.
 
 <div class="sfdx-hardis-home-card__links" markdown>
 
-[Profiles (45)](profiles/index.md) [Permission Set Groups (22)](permissionsetgroups/index.md) [Permission Sets (8)](permissionsets/index.md)
+[Profiles (45)](profiles/index.md) [Permission Set Groups (22)](permissionsetgroups/index.md) [Permission Sets (9)](permissionsets/index.md)
 
 </div>
 
@@ -55,7 +55,7 @@ The custom code written on top of the standard platform.
 
 <div class="sfdx-hardis-home-card__links" markdown>
 
-[Apex (16)](apex/index.md) [Lightning Web Components (30)](lwc/index.md) [Aura Components (2)](aura/index.md)
+[Apex (106)](apex/index.md) [Lightning Web Components (70)](lwc/index.md) [Aura Components (2)](aura/index.md)
 
 </div>
 
@@ -116,4 +116,4 @@ _Documentation generated from branch monitoring_orgfarm_42750320ff_dev_ed_develo
 
 [![SFDX-Hardis is provided by Cloudity](https://raw.githubusercontent.com/hardisgroupcom/sfdx-hardis/refs/heads/main/docs/assets/images/cloudity-banner.png)](https://cloudity.com?ref=sfdxhardis)
 
-<!-- sfdx-hardis-home-page: a525b2502d60ff75cd11d9425a6641991dc046a292ec20d0a513e99b05006771 -->
+<!-- sfdx-hardis-home-page: 244b8ba2ad182d43781c0ed69e87201b3bd8cbe47fa7ddb6c90df6eee7d918ab -->

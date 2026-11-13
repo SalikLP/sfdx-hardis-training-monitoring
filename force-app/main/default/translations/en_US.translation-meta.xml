@@ -8,6 +8,30 @@
         <label><!-- Proto Board Lab --></label>
         <name>Proto_Board_Lab</name>
     </customApplications>
+    <customLabels>
+        <label><!-- Empty / Filled in filter: All button --></label>
+        <name>BoardEmptyFilledAll</name>
+    </customLabels>
+    <customLabels>
+        <label><!-- Empty / Filled in filter: Empty button --></label>
+        <name>BoardEmptyFilledEmpty</name>
+    </customLabels>
+    <customLabels>
+        <label><!-- Empty / Filled in filter: Filled in button --></label>
+        <name>BoardEmptyFilledFilled</name>
+    </customLabels>
+    <customLabels>
+        <label><!-- Filter widget: Team match mode pill for the running user --></label>
+        <name>BoardTeamMine</name>
+    </customLabels>
+    <customLabels>
+        <label><!-- Filter widget: picked user has no role (Include team) --></label>
+        <name>BoardTeamNoRoleNotice</name>
+    </customLabels>
+    <customLabels>
+        <label><!-- Filter widget: Team match mode pill for a picked user ({0} = name) --></label>
+        <name>BoardTeamOfUser</name>
+    </customLabels>
     <customTabs>
         <label><!-- Proto Board Host --></label>
         <name>Proto_Board_App_Page</name>

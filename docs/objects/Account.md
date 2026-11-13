@@ -35,6 +35,7 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 | AnnualRevenue |  |  | <!-- --> |
 | BillingAddress |  |  | <!-- --> |
 | CleanStatus |  |  | <!-- --> |
+| CurrencyIsoCode |  |  | <!-- --> |
 | CustomerPriority__c | Customer Priority | Picklist | <!-- --> |
 | DandbCompanyId |  | Lookup | <!-- --> |
 | Description |  |  | <!-- --> |
@@ -92,12 +93,54 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 
 | Apex Class | Type |
 | :----      | :--: | 
+| BoardAveragePerRecordQueryTest | Test |
+| BoardBucketFieldTest | Test |
+| BoardChartQueryBoardBucketTest | Test |
+| BoardChartQueryBucketPanelTest | Test |
+| BoardChartQueryBucketTest | Test |
+| BoardChartQueryGroupCapTest | Test |
+| BoardChartQueryPanelTest | Test |
+| BoardChartQueryPanelTotalsTest | Test |
+| BoardChartQueryReferenceLineTest | Test |
+| BoardChartQueryTest | Test |
+| BoardCrossObjectMeasuresTest | Test |
+| BoardCrossObjectProviderTest | Test |
+| BoardCurrencyConverter | Lightning Controller |
+| BoardCurrencyConverterTest | Test |
+| BoardCurrencyDisplayTest | Test |
+| BoardCurrencyRangeFilterTest | Test |
+| BoardCurrencyTableTest | Test |
+| BoardDataProviderRowsTest | Test |
+| BoardDataProvidersTest | Test |
+| BoardFormulaMeasureQueryTest | Test |
+| BoardMeasureConditionTest | Test |
+| BoardMeasureCurrencyTest | Test |
 | [BoardQueryService](../apex/BoardQueryService.md) | Lightning Controller |
+| BoardQueryServiceBaseFilterTest | Test |
+| BoardQueryServiceBucketFilterTest | Test |
 | [BoardQueryServiceChildRowsTest](../apex/BoardQueryServiceChildRowsTest.md) | Test |
+| BoardQueryServiceCurrencyTest | Test |
+| BoardQueryServiceEmptyFilledTest | Test |
+| BoardQueryServiceRowActionsTest | Test |
 | [BoardQueryServiceSearchTest](../apex/BoardQueryServiceSearchTest.md) | Test |
+| BoardQueryServiceTableAggregateTest | Test |
+| BoardQueryServiceTableBucketGroupTest | Test |
+| BoardQueryServiceTableBucketTest | Test |
+| BoardQueryServiceTableGroupBarsTest | Test |
+| BoardQueryServiceTableGroupingLevelsTest | Test |
+| BoardQueryServiceTableGroupingTest | Test |
+| BoardQueryServiceTableGroupSummariesTest | Test |
 | [BoardQueryServiceTableTest](../apex/BoardQueryServiceTableTest.md) | Test |
+| BoardQueryServiceTeamTest | Test |
 | [BoardQueryServiceTest](../apex/BoardQueryServiceTest.md) | Test |
+| BoardQuotaProviderTest | Test |
 | [BoardSchemaServiceTest](../apex/BoardSchemaServiceTest.md) | Test |
+| BoardTableAggregate | Lightning Controller |
+| BoardTableAggregateCursorTest | Test |
+| BoardTableAggregateEngineTest | Test |
+| BoardTableGrouping | Lightning Controller |
+| BoardTableQuery | Lightning Controller |
+| BoardTableRowLimitGroupedTest | Test |
 | [ProtoTableQueryService](../apex/ProtoTableQueryService.md) | Lightning Controller |
 
 
@@ -108,7 +151,7 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 | [boardConfigUtils](../lwc/boardConfigUtils.md) | Board Config Utils | ❌ |  |
 | [boardCpeCommon](../lwc/boardCpeCommon.md) | Shared Board Flow CPE shell: header, builderContext filter bindings, base filters, and Config JSON drawer | ❌ |  |
 | [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
-| [boardFilterCpe](../lwc/boardFilterCpe.md) | Board Filter CPE | ✅ |  |
+| [boardSetupSteps](../lwc/boardSetupSteps.md) | <!-- --> | ❌ |  |
 | [protoTableHarness](../lwc/protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 
 

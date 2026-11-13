@@ -17,6 +17,24 @@
         </div>
     </template>
 
+    <template lwc:elseif={isWaitHint}>
+        <div class="c-board-wait-hint slds-illustration slds-illustration_small slds-p-around_medium" role="status">
+            <div class="slds-m-bottom_x-small">
+                <lightning-icon
+                    icon-name="utility:filterList"
+                    size="small"
+                    alternative-text="Waiting for filters"
+                ></lightning-icon>
+            </div>
+            <div class="slds-text-longform">
+                <p class="slds-text-body_small">
+                    Waiting for the Board's filters (Board id {waitingForBoardId}). Is the Filter widget on this page,
+                    outside tabs? Admin: turn off <em>Wait for Filter widget</em> if this Board has none.
+                </p>
+            </div>
+        </div>
+    </template>
+
     <template lwc:elseif={isInitialLoading}>
         <div class="c-board-skeleton-wrapper slds-p-around_medium" aria-busy="true" role="status">
             <span class="slds-assistive-text">{loadingText}</span>

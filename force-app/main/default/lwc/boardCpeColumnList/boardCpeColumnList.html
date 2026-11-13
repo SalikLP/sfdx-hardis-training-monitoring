@@ -59,15 +59,22 @@
                             ></lightning-button-icon>
                         </div>
                     </div>
-                    <c-board-cpe-object-field-picker
-                        class="c-column-field"
-                        mode="field"
-                        label="Field"
-                        object-api-name={objectApiName}
-                        value={row.fieldPath}
-                        data-index={row.index}
-                        onchange={handleField}
-                    ></c-board-cpe-object-field-picker>
+                    <template lwc:if={row.isBucket}>
+                        <p class="c-column-bucket slds-text-body_small">
+                            Bucket field: <strong>{row.bucketLabel}</strong> (not sortable)
+                        </p>
+                    </template>
+                    <template lwc:else>
+                        <c-board-cpe-object-field-picker
+                            class="c-column-field"
+                            mode="field"
+                            label="Field"
+                            object-api-name={objectApiName}
+                            value={row.fieldPath}
+                            data-index={row.index}
+                            onchange={handleField}
+                        ></c-board-cpe-object-field-picker>
+                    </template>
                     <lightning-input
                         class="c-column-label slds-m-top_xx-small"
                         label="Label"
@@ -86,24 +93,37 @@
                         data-name="width"
                         onchange={handleText}
                     ></lightning-input>
-                    <lightning-combobox
-                        class="c-column-display slds-m-top_xx-small"
-                        label="Display as"
-                        options={displayAsOptions}
-                        value={row.displayAs}
-                        data-index={row.index}
-                        data-name="displayAs"
-                        onchange={handleChoice}
-                    ></lightning-combobox>
-                    <lightning-combobox
-                        class="c-column-link slds-m-top_xx-small"
-                        label="Link to record"
-                        options={linkOptions}
-                        value={row.linkToRecord}
-                        data-index={row.index}
-                        data-name="linkToRecord"
-                        onchange={handleChoice}
-                    ></lightning-combobox>
+                    <template lwc:if={row.isField}>
+                        <lightning-combobox
+                            class="c-column-display slds-m-top_xx-small"
+                            label="Display as"
+                            options={row.displayAsOptions}
+                            value={row.displayAs}
+                            data-index={row.index}
+                            data-name="displayAs"
+                            onchange={handleChoice}
+                        ></lightning-combobox>
+                        <template lwc:if={row.isDataBar}>
+                            <lightning-input
+                                class="c-column-bar-only slds-m-top_xx-small"
+                                type="checkbox"
+                                label="Bar only (hide the value)"
+                                checked={row.barOnly}
+                                data-index={row.index}
+                                data-name="barOnly"
+                                onchange={handleToggle}
+                            ></lightning-input>
+                        </template>
+                        <lightning-combobox
+                            class="c-column-link slds-m-top_xx-small"
+                            label="Link to record"
+                            options={linkOptions}
+                            value={row.linkToRecord}
+                            data-index={row.index}
+                            data-name="linkToRecord"
+                            onchange={handleChoice}
+                        ></lightning-combobox>
+                    </template>
                     <lightning-combobox
                         class="c-column-align slds-m-top_xx-small"
                         label="Align"
@@ -150,4 +170,13 @@
         object-api-name={objectApiName}
         onchange={handleAdd}
     ></c-board-cpe-object-field-picker>
+    <template lwc:if={hasBucketFields}>
+        <lightning-combobox
+            class="c-column-add-bucket slds-m-top_x-small"
+            label="Add a Bucket field column"
+            placeholder="Choose a Bucket field"
+            options={bucketOptions}
+            onchange={handleAddBucket}
+        ></lightning-combobox>
+    </template>
 </template>

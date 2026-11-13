@@ -24,6 +24,10 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
+                <field>CurrencyIsoCode</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
                 <field>Product2Id</field>
             </layoutItems>
             <layoutItems>

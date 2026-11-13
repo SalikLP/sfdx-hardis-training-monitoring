@@ -1,2 +1,457 @@
 File,ChangeType,FileHuman,WorkingDir,PrevName,severity,severityIcon
+classes/BoardAveragePerRecord.cls,A,ApexClass BoardAveragePerRecord,,,log,📰
+classes/BoardAveragePerRecord.cls-meta.xml,A,ApexClass BoardAveragePerRecord,,,log,📰
+classes/BoardAveragePerRecordQueryTest.cls,A,ApexClass BoardAveragePerRecordQueryTest,,,log,📰
+classes/BoardAveragePerRecordQueryTest.cls-meta.xml,A,ApexClass BoardAveragePerRecordQueryTest,,,log,📰
+classes/BoardAveragePerRecordTest.cls,A,ApexClass BoardAveragePerRecordTest,,,log,📰
+classes/BoardAveragePerRecordTest.cls-meta.xml,A,ApexClass BoardAveragePerRecordTest,,,log,📰
+classes/BoardBucketField.cls,A,ApexClass BoardBucketField,,,log,📰
+classes/BoardBucketField.cls-meta.xml,A,ApexClass BoardBucketField,,,log,📰
+classes/BoardBucketFieldTest.cls,A,ApexClass BoardBucketFieldTest,,,log,📰
+classes/BoardBucketFieldTest.cls-meta.xml,A,ApexClass BoardBucketFieldTest,,,log,📰
+classes/BoardChartEngine.cls,A,ApexClass BoardChartEngine,,,log,📰
+classes/BoardChartEngine.cls-meta.xml,A,ApexClass BoardChartEngine,,,log,📰
+classes/BoardChartEngineTest.cls,A,ApexClass BoardChartEngineTest,,,log,📰
+classes/BoardChartEngineTest.cls-meta.xml,A,ApexClass BoardChartEngineTest,,,log,📰
+classes/BoardChartPanelTotals.cls,A,ApexClass BoardChartPanelTotals,,,log,📰
+classes/BoardChartPanelTotals.cls-meta.xml,A,ApexClass BoardChartPanelTotals,,,log,📰
+classes/BoardChartPanels.cls,A,ApexClass BoardChartPanels,,,log,📰
+classes/BoardChartPanels.cls-meta.xml,A,ApexClass BoardChartPanels,,,log,📰
+classes/BoardChartPanelsTest.cls,A,ApexClass BoardChartPanelsTest,,,log,📰
+classes/BoardChartPanelsTest.cls-meta.xml,A,ApexClass BoardChartPanelsTest,,,log,📰
+classes/BoardChartQuery.cls,A,ApexClass BoardChartQuery,,,log,📰
+classes/BoardChartQuery.cls-meta.xml,A,ApexClass BoardChartQuery,,,log,📰
+classes/BoardChartQueryBoardBucketTest.cls,A,ApexClass BoardChartQueryBoardBucketTest,,,log,📰
+classes/BoardChartQueryBoardBucketTest.cls-meta.xml,A,ApexClass BoardChartQueryBoardBucketTest,,,log,📰
+classes/BoardChartQueryBucketPanelTest.cls,A,ApexClass BoardChartQueryBucketPanelTest,,,log,📰
+classes/BoardChartQueryBucketPanelTest.cls-meta.xml,A,ApexClass BoardChartQueryBucketPanelTest,,,log,📰
+classes/BoardChartQueryBucketTest.cls,A,ApexClass BoardChartQueryBucketTest,,,log,📰
+classes/BoardChartQueryBucketTest.cls-meta.xml,A,ApexClass BoardChartQueryBucketTest,,,log,📰
+classes/BoardChartQueryGroupCapTest.cls,A,ApexClass BoardChartQueryGroupCapTest,,,log,📰
+classes/BoardChartQueryGroupCapTest.cls-meta.xml,A,ApexClass BoardChartQueryGroupCapTest,,,log,📰
+classes/BoardChartQueryPanelTest.cls,A,ApexClass BoardChartQueryPanelTest,,,log,📰
+classes/BoardChartQueryPanelTest.cls-meta.xml,A,ApexClass BoardChartQueryPanelTest,,,log,📰
+classes/BoardChartQueryPanelTotalsTest.cls,A,ApexClass BoardChartQueryPanelTotalsTest,,,log,📰
+classes/BoardChartQueryPanelTotalsTest.cls-meta.xml,A,ApexClass BoardChartQueryPanelTotalsTest,,,log,📰
+classes/BoardChartQueryReferenceLineTest.cls,A,ApexClass BoardChartQueryReferenceLineTest,,,log,📰
+classes/BoardChartQueryReferenceLineTest.cls-meta.xml,A,ApexClass BoardChartQueryReferenceLineTest,,,log,📰
+classes/BoardChartQueryTest.cls,A,ApexClass BoardChartQueryTest,,,log,📰
+classes/BoardChartQueryTest.cls-meta.xml,A,ApexClass BoardChartQueryTest,,,log,📰
+classes/BoardCondition.cls,A,ApexClass BoardCondition,,,log,📰
+classes/BoardCondition.cls-meta.xml,A,ApexClass BoardCondition,,,log,📰
+classes/BoardConditionTest.cls,A,ApexClass BoardConditionTest,,,log,📰
+classes/BoardConditionTest.cls-meta.xml,A,ApexClass BoardConditionTest,,,log,📰
+classes/BoardConditionWholeNumberTest.cls,A,ApexClass BoardConditionWholeNumberTest,,,log,📰
+classes/BoardConditionWholeNumberTest.cls-meta.xml,A,ApexClass BoardConditionWholeNumberTest,,,log,📰
+classes/BoardConfigCurrencyTest.cls,A,ApexClass BoardConfigCurrencyTest,,,log,📰
+classes/BoardConfigCurrencyTest.cls-meta.xml,A,ApexClass BoardConfigCurrencyTest,,,log,📰
+classes/BoardCrossObjectMeasures.cls,A,ApexClass BoardCrossObjectMeasures,,,log,📰
+classes/BoardCrossObjectMeasures.cls-meta.xml,A,ApexClass BoardCrossObjectMeasures,,,log,📰
+classes/BoardCrossObjectMeasuresTest.cls,A,ApexClass BoardCrossObjectMeasuresTest,,,log,📰
+classes/BoardCrossObjectMeasuresTest.cls-meta.xml,A,ApexClass BoardCrossObjectMeasuresTest,,,log,📰
+classes/BoardCrossObjectProviderTest.cls,A,ApexClass BoardCrossObjectProviderTest,,,log,📰
+classes/BoardCrossObjectProviderTest.cls-meta.xml,A,ApexClass BoardCrossObjectProviderTest,,,log,📰
+classes/BoardCurrencyConverter.cls,A,ApexClass BoardCurrencyConverter,,,log,📰
+classes/BoardCurrencyConverter.cls-meta.xml,A,ApexClass BoardCurrencyConverter,,,log,📰
+classes/BoardCurrencyConverterTest.cls,A,ApexClass BoardCurrencyConverterTest,,,log,📰
+classes/BoardCurrencyConverterTest.cls-meta.xml,A,ApexClass BoardCurrencyConverterTest,,,log,📰
+classes/BoardCurrencyDisplayTest.cls,A,ApexClass BoardCurrencyDisplayTest,,,log,📰
+classes/BoardCurrencyDisplayTest.cls-meta.xml,A,ApexClass BoardCurrencyDisplayTest,,,log,📰
+classes/BoardCurrencyRangeFilterTest.cls,A,ApexClass BoardCurrencyRangeFilterTest,,,log,📰
+classes/BoardCurrencyRangeFilterTest.cls-meta.xml,A,ApexClass BoardCurrencyRangeFilterTest,,,log,📰
+classes/BoardCurrencyTableSummariesTest.cls,A,ApexClass BoardCurrencyTableSummariesTest,,,log,📰
+classes/BoardCurrencyTableSummariesTest.cls-meta.xml,A,ApexClass BoardCurrencyTableSummariesTest,,,log,📰
+classes/BoardCurrencyTableTest.cls,A,ApexClass BoardCurrencyTableTest,,,log,📰
+classes/BoardCurrencyTableTest.cls-meta.xml,A,ApexClass BoardCurrencyTableTest,,,log,📰
+classes/BoardDataProvider.cls,A,ApexClass BoardDataProvider,,,log,📰
+classes/BoardDataProvider.cls-meta.xml,A,ApexClass BoardDataProvider,,,log,📰
+classes/BoardDataProviderCurrencyTest.cls,A,ApexClass BoardDataProviderCurrencyTest,,,log,📰
+classes/BoardDataProviderCurrencyTest.cls-meta.xml,A,ApexClass BoardDataProviderCurrencyTest,,,log,📰
+classes/BoardDataProviderRequest.cls,A,ApexClass BoardDataProviderRequest,,,log,📰
+classes/BoardDataProviderRequest.cls-meta.xml,A,ApexClass BoardDataProviderRequest,,,log,📰
+classes/BoardDataProviderResult.cls,A,ApexClass BoardDataProviderResult,,,log,📰
+classes/BoardDataProviderResult.cls-meta.xml,A,ApexClass BoardDataProviderResult,,,log,📰
+classes/BoardDataProviderRows.cls,A,ApexClass BoardDataProviderRows,,,log,📰
+classes/BoardDataProviderRows.cls-meta.xml,A,ApexClass BoardDataProviderRows,,,log,📰
+classes/BoardDataProviderRowsTest.cls,A,ApexClass BoardDataProviderRowsTest,,,log,📰
+classes/BoardDataProviderRowsTest.cls-meta.xml,A,ApexClass BoardDataProviderRowsTest,,,log,📰
+classes/BoardDataProviders.cls,A,ApexClass BoardDataProviders,,,log,📰
+classes/BoardDataProviders.cls-meta.xml,A,ApexClass BoardDataProviders,,,log,📰
+classes/BoardDataProvidersTest.cls,A,ApexClass BoardDataProvidersTest,,,log,📰
+classes/BoardDataProvidersTest.cls-meta.xml,A,ApexClass BoardDataProvidersTest,,,log,📰
+classes/BoardDescribe.cls," ",ApexClass BoardDescribe,M,,log,📰
+classes/BoardErrors.cls," ",ApexClass BoardErrors,M,,log,📰
+classes/BoardForecastingQuota.cls,A,ApexClass BoardForecastingQuota,,,log,📰
+classes/BoardForecastingQuota.cls-meta.xml,A,ApexClass BoardForecastingQuota,,,log,📰
+classes/BoardForecastingQuotaTest.cls,A,ApexClass BoardForecastingQuotaTest,,,log,📰
+classes/BoardForecastingQuotaTest.cls-meta.xml,A,ApexClass BoardForecastingQuotaTest,,,log,📰
+classes/BoardFormula.cls,A,ApexClass BoardFormula,,,log,📰
+classes/BoardFormula.cls-meta.xml,A,ApexClass BoardFormula,,,log,📰
+classes/BoardFormulaContext.cls,A,ApexClass BoardFormulaContext,,,log,📰
+classes/BoardFormulaContext.cls-meta.xml,A,ApexClass BoardFormulaContext,,,log,📰
+classes/BoardFormulaCurrency.cls,A,ApexClass BoardFormulaCurrency,,,log,📰
+classes/BoardFormulaCurrency.cls-meta.xml,A,ApexClass BoardFormulaCurrency,,,log,📰
+classes/BoardFormulaCurrencyTest.cls,A,ApexClass BoardFormulaCurrencyTest,,,log,📰
+classes/BoardFormulaCurrencyTest.cls-meta.xml,A,ApexClass BoardFormulaCurrencyTest,,,log,📰
+classes/BoardFormulaMeasureQueryTest.cls,A,ApexClass BoardFormulaMeasureQueryTest,,,log,📰
+classes/BoardFormulaMeasureQueryTest.cls-meta.xml,A,ApexClass BoardFormulaMeasureQueryTest,,,log,📰
+classes/BoardFormulaMeasures.cls,A,ApexClass BoardFormulaMeasures,,,log,📰
+classes/BoardFormulaMeasures.cls-meta.xml,A,ApexClass BoardFormulaMeasures,,,log,📰
+classes/BoardFormulaMeasuresTest.cls,A,ApexClass BoardFormulaMeasuresTest,,,log,📰
+classes/BoardFormulaMeasuresTest.cls-meta.xml,A,ApexClass BoardFormulaMeasuresTest,,,log,📰
+classes/BoardFormulaTest.cls,A,ApexClass BoardFormulaTest,,,log,📰
+classes/BoardFormulaTest.cls-meta.xml,A,ApexClass BoardFormulaTest,,,log,📰
+classes/BoardMeasureConditionTest.cls,A,ApexClass BoardMeasureConditionTest,,,log,📰
+classes/BoardMeasureConditionTest.cls-meta.xml,A,ApexClass BoardMeasureConditionTest,,,log,📰
+classes/BoardMeasureCurrencyTest.cls,A,ApexClass BoardMeasureCurrencyTest,,,log,📰
+classes/BoardMeasureCurrencyTest.cls-meta.xml,A,ApexClass BoardMeasureCurrencyTest,,,log,📰
+classes/BoardMeasureGroups.cls,A,ApexClass BoardMeasureGroups,,,log,📰
+classes/BoardMeasureGroups.cls-meta.xml,A,ApexClass BoardMeasureGroups,,,log,📰
+classes/BoardMeasureGroupsTest.cls,A,ApexClass BoardMeasureGroupsTest,,,log,📰
+classes/BoardMeasureGroupsTest.cls-meta.xml,A,ApexClass BoardMeasureGroupsTest,,,log,📰
+classes/BoardMetricQuery.cls,A,ApexClass BoardMetricQuery,,,log,📰
+classes/BoardMetricQuery.cls-meta.xml,A,ApexClass BoardMetricQuery,,,log,📰
+classes/BoardQueryService.cls," ",ApexClass BoardQueryService,M,,log,📰
+classes/BoardQueryServiceBaseFilterTest.cls,A,ApexClass BoardQueryServiceBaseFilterTest,,,log,📰
+classes/BoardQueryServiceBaseFilterTest.cls-meta.xml,A,ApexClass BoardQueryServiceBaseFilterTest,,,log,📰
+classes/BoardQueryServiceBucketFilterTest.cls,A,ApexClass BoardQueryServiceBucketFilterTest,,,log,📰
+classes/BoardQueryServiceBucketFilterTest.cls-meta.xml,A,ApexClass BoardQueryServiceBucketFilterTest,,,log,📰
+classes/BoardQueryServiceCurrencyTest.cls,A,ApexClass BoardQueryServiceCurrencyTest,,,log,📰
+classes/BoardQueryServiceCurrencyTest.cls-meta.xml,A,ApexClass BoardQueryServiceCurrencyTest,,,log,📰
+classes/BoardQueryServiceEmptyFilledTest.cls,A,ApexClass BoardQueryServiceEmptyFilledTest,,,log,📰
+classes/BoardQueryServiceEmptyFilledTest.cls-meta.xml,A,ApexClass BoardQueryServiceEmptyFilledTest,,,log,📰
+classes/BoardQueryServiceMetricMeasuresTest.cls,A,ApexClass BoardQueryServiceMetricMeasuresTest,,,log,📰
+classes/BoardQueryServiceMetricMeasuresTest.cls-meta.xml,A,ApexClass BoardQueryServiceMetricMeasuresTest,,,log,📰
+classes/BoardQueryServiceRowActionsTest.cls,A,ApexClass BoardQueryServiceRowActionsTest,,,log,📰
+classes/BoardQueryServiceRowActionsTest.cls-meta.xml,A,ApexClass BoardQueryServiceRowActionsTest,,,log,📰
+classes/BoardQueryServiceSearchTest.cls," ",ApexClass BoardQueryServiceSearchTest,M,,log,📰
+classes/BoardQueryServiceTableAggregateTest.cls,A,ApexClass BoardQueryServiceTableAggregateTest,,,log,📰
+classes/BoardQueryServiceTableAggregateTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableAggregateTest,,,log,📰
+classes/BoardQueryServiceTableBucketGroupTest.cls,A,ApexClass BoardQueryServiceTableBucketGroupTest,,,log,📰
+classes/BoardQueryServiceTableBucketGroupTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableBucketGroupTest,,,log,📰
+classes/BoardQueryServiceTableBucketTest.cls,A,ApexClass BoardQueryServiceTableBucketTest,,,log,📰
+classes/BoardQueryServiceTableBucketTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableBucketTest,,,log,📰
+classes/BoardQueryServiceTableGroupBarsTest.cls,A,ApexClass BoardQueryServiceTableGroupBarsTest,,,log,📰
+classes/BoardQueryServiceTableGroupBarsTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableGroupBarsTest,,,log,📰
+classes/BoardQueryServiceTableGroupSummariesTest.cls,A,ApexClass BoardQueryServiceTableGroupSummariesTest,,,log,📰
+classes/BoardQueryServiceTableGroupSummariesTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableGroupSummariesTest,,,log,📰
+classes/BoardQueryServiceTableGroupingLevelsTest.cls,A,ApexClass BoardQueryServiceTableGroupingLevelsTest,,,log,📰
+classes/BoardQueryServiceTableGroupingLevelsTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableGroupingLevelsTest,,,log,📰
+classes/BoardQueryServiceTableGroupingTest.cls,A,ApexClass BoardQueryServiceTableGroupingTest,,,log,📰
+classes/BoardQueryServiceTableGroupingTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableGroupingTest,,,log,📰
+classes/BoardQueryServiceTableTest.cls," ",ApexClass BoardQueryServiceTableTest,M,,log,📰
+classes/BoardQueryServiceTableTotalsTest.cls,A,ApexClass BoardQueryServiceTableTotalsTest,,,log,📰
+classes/BoardQueryServiceTableTotalsTest.cls-meta.xml,A,ApexClass BoardQueryServiceTableTotalsTest,,,log,📰
+classes/BoardQueryServiceTeamTest.cls,A,ApexClass BoardQueryServiceTeamTest,,,log,📰
+classes/BoardQueryServiceTeamTest.cls-meta.xml,A,ApexClass BoardQueryServiceTeamTest,,,log,📰
+classes/BoardQueryServiceTest.cls," ",ApexClass BoardQueryServiceTest,M,,log,📰
+classes/BoardQuotaProvider.cls,A,ApexClass BoardQuotaProvider,,,log,📰
+classes/BoardQuotaProvider.cls-meta.xml,A,ApexClass BoardQuotaProvider,,,log,📰
+classes/BoardQuotaProviderTest.cls,A,ApexClass BoardQuotaProviderTest,,,log,📰
+classes/BoardQuotaProviderTest.cls-meta.xml,A,ApexClass BoardQuotaProviderTest,,,log,📰
+classes/BoardSchemaService.cls," ",ApexClass BoardSchemaService,M,,log,📰
+classes/BoardTableAggregate.cls,A,ApexClass BoardTableAggregate,,,log,📰
+classes/BoardTableAggregate.cls-meta.xml,A,ApexClass BoardTableAggregate,,,log,📰
+classes/BoardTableAggregateCursor.cls,A,ApexClass BoardTableAggregateCursor,,,log,📰
+classes/BoardTableAggregateCursor.cls-meta.xml,A,ApexClass BoardTableAggregateCursor,,,log,📰
+classes/BoardTableAggregateCursorTest.cls,A,ApexClass BoardTableAggregateCursorTest,,,log,📰
+classes/BoardTableAggregateCursorTest.cls-meta.xml,A,ApexClass BoardTableAggregateCursorTest,,,log,📰
+classes/BoardTableAggregateEngine.cls,A,ApexClass BoardTableAggregateEngine,,,log,📰
+classes/BoardTableAggregateEngine.cls-meta.xml,A,ApexClass BoardTableAggregateEngine,,,log,📰
+classes/BoardTableAggregateEngineTest.cls,A,ApexClass BoardTableAggregateEngineTest,,,log,📰
+classes/BoardTableAggregateEngineTest.cls-meta.xml,A,ApexClass BoardTableAggregateEngineTest,,,log,📰
+classes/BoardTableBucketColumns.cls,A,ApexClass BoardTableBucketColumns,,,log,📰
+classes/BoardTableBucketColumns.cls-meta.xml,A,ApexClass BoardTableBucketColumns,,,log,📰
+classes/BoardTableBucketGroup.cls,A,ApexClass BoardTableBucketGroup,,,log,📰
+classes/BoardTableBucketGroup.cls-meta.xml,A,ApexClass BoardTableBucketGroup,,,log,📰
+classes/BoardTableCurrency.cls,A,ApexClass BoardTableCurrency,,,log,📰
+classes/BoardTableCurrency.cls-meta.xml,A,ApexClass BoardTableCurrency,,,log,📰
+classes/BoardTableEngine.cls,A,ApexClass BoardTableEngine,,,log,📰
+classes/BoardTableEngine.cls-meta.xml,A,ApexClass BoardTableEngine,,,log,📰
+classes/BoardTableEngineTest.cls,A,ApexClass BoardTableEngineTest,,,log,📰
+classes/BoardTableEngineTest.cls-meta.xml,A,ApexClass BoardTableEngineTest,,,log,📰
+classes/BoardTableGroupBarScales.cls,A,ApexClass BoardTableGroupBarScales,,,log,📰
+classes/BoardTableGroupBarScales.cls-meta.xml,A,ApexClass BoardTableGroupBarScales,,,log,📰
+classes/BoardTableGroupSummaries.cls,A,ApexClass BoardTableGroupSummaries,,,log,📰
+classes/BoardTableGroupSummaries.cls-meta.xml,A,ApexClass BoardTableGroupSummaries,,,log,📰
+classes/BoardTableGrouping.cls,A,ApexClass BoardTableGrouping,,,log,📰
+classes/BoardTableGrouping.cls-meta.xml,A,ApexClass BoardTableGrouping,,,log,📰
+classes/BoardTableQuery.cls,A,ApexClass BoardTableQuery,,,log,📰
+classes/BoardTableQuery.cls-meta.xml,A,ApexClass BoardTableQuery,,,log,📰
+classes/BoardTableRowLimit.cls,A,ApexClass BoardTableRowLimit,,,log,📰
+classes/BoardTableRowLimit.cls-meta.xml,A,ApexClass BoardTableRowLimit,,,log,📰
+classes/BoardTableRowLimitGroupedTest.cls,A,ApexClass BoardTableRowLimitGroupedTest,,,log,📰
+classes/BoardTableRowLimitGroupedTest.cls-meta.xml,A,ApexClass BoardTableRowLimitGroupedTest,,,log,📰
+classes/BoardTeamResolver.cls,A,ApexClass BoardTeamResolver,,,log,📰
+classes/BoardTeamResolver.cls-meta.xml,A,ApexClass BoardTeamResolver,,,log,📰
+classes/BoardTeamResolverTest.cls,A,ApexClass BoardTeamResolverTest,,,log,📰
+classes/BoardTeamResolverTest.cls-meta.xml,A,ApexClass BoardTeamResolverTest,,,log,📰
 cleanDataServices/DataCloudGeoLocation.cleanDataService-meta.xml," ",CleanDataService DataCloudGeoLocation,M,,log,📰
+customPermissions/Board_ViewAllQuotas.customPermission-meta.xml,A,CustomPermission Board_ViewAllQuotas,,,log,📰
+labels/CustomLabels.labels-meta.xml,A,CustomLabel CustomLabels,,,log,📰
+layouts/Account-Account %28Marketing%29 Layout.layout-meta.xml," ",Layout Account-Account %28Marketing%29 Layout,M,,log,📰
+layouts/Account-Account %28Sales%29 Layout.layout-meta.xml," ",Layout Account-Account %28Sales%29 Layout,M,,log,📰
+layouts/Account-Account %28Support%29 Layout.layout-meta.xml," ",Layout Account-Account %28Support%29 Layout,M,,log,📰
+layouts/Account-Account Layout.layout-meta.xml," ",Layout Account-Account Layout,M,,log,📰
+layouts/Asset-Asset Layout.layout-meta.xml," ",Layout Asset-Asset Layout,M,,log,📰
+layouts/AssetRelationship-Asset Relationship Layout.layout-meta.xml," ",Layout AssetRelationship-Asset Relationship Layout,M,,log,📰
+layouts/AssociatedLocation-Associated Location Layout.layout-meta.xml," ",Layout AssociatedLocation-Associated Location Layout,M,,log,📰
+layouts/Campaign-Campaign Layout.layout-meta.xml," ",Layout Campaign-Campaign Layout,M,,log,📰
+layouts/CampaignMember-Campaign Member Page Layout.layout-meta.xml," ",Layout CampaignMember-Campaign Member Page Layout,M,,log,📰
+layouts/CartDeliveryGroup-Cart Delivery Group Layout.layout-meta.xml," ",Layout CartDeliveryGroup-Cart Delivery Group Layout,M,,log,📰
+layouts/CartItem-Cart Item Layout.layout-meta.xml," ",Layout CartItem-Cart Item Layout,M,,log,📰
+layouts/CartTax-Cart Tax Layout.layout-meta.xml," ",Layout CartTax-Cart Tax Layout,M,,log,📰
+layouts/Case-Case %28Marketing%29 Layout.layout-meta.xml," ",Layout Case-Case %28Marketing%29 Layout,M,,log,📰
+layouts/Case-Case %28Sales%29 Layout.layout-meta.xml," ",Layout Case-Case %28Sales%29 Layout,M,,log,📰
+layouts/Case-Case %28Support%29 Layout.layout-meta.xml," ",Layout Case-Case %28Support%29 Layout,M,,log,📰
+layouts/Case-Case Layout.layout-meta.xml," ",Layout Case-Case Layout,M,,log,📰
+layouts/CaseClose-Close Case Layout.layout-meta.xml," ",Layout CaseClose-Close Case Layout,M,,log,📰
+layouts/ConsumptionRate-Consumption Rate Layout.layout-meta.xml," ",Layout ConsumptionRate-Consumption Rate Layout,M,,log,📰
+layouts/Contact-Contact %28Marketing%29 Layout.layout-meta.xml," ",Layout Contact-Contact %28Marketing%29 Layout,M,,log,📰
+layouts/Contact-Contact %28Sales%29 Layout.layout-meta.xml," ",Layout Contact-Contact %28Sales%29 Layout,M,,log,📰
+layouts/Contact-Contact %28Support%29 Layout.layout-meta.xml," ",Layout Contact-Contact %28Support%29 Layout,M,,log,📰
+layouts/Contact-Contact Layout.layout-meta.xml," ",Layout Contact-Contact Layout,M,,log,📰
+layouts/ContentVersion-Content Version Layout.layout-meta.xml," ",Layout ContentVersion-Content Version Layout,M,,log,📰
+layouts/Contract-Contract Layout.layout-meta.xml," ",Layout Contract-Contract Layout,M,,log,📰
+layouts/CreditMemo-Credit Memo Layout.layout-meta.xml," ",Layout CreditMemo-Credit Memo Layout,M,,log,📰
+layouts/CreditMemoInvApplication-Credit Memo Invoice Application Layout.layout-meta.xml," ",Layout CreditMemoInvApplication-Credit Memo Invoice Application Layout,M,,log,📰
+layouts/CreditMemoLine-Credit Memo Line Layout.layout-meta.xml," ",Layout CreditMemoLine-Credit Memo Line Layout,M,,log,📰
+layouts/Crew_Capacity__c-Crew Capacity Layout.layout-meta.xml," ",Layout Crew_Capacity__c-Crew Capacity Layout,M,,log,📰
+layouts/DandBCompany-D%26B Company Layout.layout-meta.xml," ",Layout DandBCompany-D%26B Company Layout,M,,log,📰
+layouts/Event-Event Layout.layout-meta.xml," ",Layout Event-Event Layout,M,,log,📰
+layouts/FeedItem-Feed Item Layout.layout-meta.xml," ",Layout FeedItem-Feed Item Layout,M,,log,📰
+layouts/FinanceBalanceSnapshot-Finance Balance Snapshot Layout.layout-meta.xml," ",Layout FinanceBalanceSnapshot-Finance Balance Snapshot Layout,M,,log,📰
+layouts/FinanceTransaction-Finance Transaction Layout.layout-meta.xml," ",Layout FinanceTransaction-Finance Transaction Layout,M,,log,📰
+layouts/FulfillmentOrder-Fulfillment Order Layout.layout-meta.xml," ",Layout FulfillmentOrder-Fulfillment Order Layout,M,,log,📰
+layouts/Handover_Item__c-Handover Item Layout.layout-meta.xml," ",Layout Handover_Item__c-Handover Item Layout,M,,log,📰
+layouts/Installation__c-Installation Layout.layout-meta.xml," ",Layout Installation__c-Installation Layout,M,,log,📰
+layouts/Invoice-Invoice Layout.layout-meta.xml," ",Layout Invoice-Invoice Layout,M,,log,📰
+layouts/InvoiceLine-Invoice Line Layout.layout-meta.xml," ",Layout InvoiceLine-Invoice Line Layout,M,,log,📰
+layouts/Lead-Lead %28Marketing%29 Layout.layout-meta.xml," ",Layout Lead-Lead %28Marketing%29 Layout,M,,log,📰
+layouts/Lead-Lead %28Sales%29 Layout.layout-meta.xml," ",Layout Lead-Lead %28Sales%29 Layout,M,,log,📰
+layouts/Lead-Lead %28Support%29 Layout.layout-meta.xml," ",Layout Lead-Lead %28Support%29 Layout,M,,log,📰
+layouts/Lead-Lead Layout.layout-meta.xml," ",Layout Lead-Lead Layout,M,,log,📰
+layouts/LegalEntity-Legal Entity Layout.layout-meta.xml," ",Layout LegalEntity-Legal Entity Layout,M,,log,📰
+layouts/Opportunity-Opportunity %28Marketing%29 Layout.layout-meta.xml," ",Layout Opportunity-Opportunity %28Marketing%29 Layout,M,,log,📰
+layouts/Opportunity-Opportunity %28Sales%29 Layout.layout-meta.xml," ",Layout Opportunity-Opportunity %28Sales%29 Layout,M,,log,📰
+layouts/Opportunity-Opportunity %28Support%29 Layout.layout-meta.xml," ",Layout Opportunity-Opportunity %28Support%29 Layout,M,,log,📰
+layouts/Opportunity-Opportunity Layout.layout-meta.xml," ",Layout Opportunity-Opportunity Layout,M,,log,📰
+layouts/Order-Order Layout.layout-meta.xml," ",Layout Order-Order Layout,M,,log,📰
+layouts/Panel_Batch__c-Panel Batch Layout.layout-meta.xml," ",Layout Panel_Batch__c-Panel Batch Layout,M,,log,📰
+layouts/Payment-Payment Layout.layout-meta.xml," ",Layout Payment-Payment Layout,M,,log,📰
+layouts/PaymentAuthAdjustment-Payment Authorization Adjustment Layout.layout-meta.xml," ",Layout PaymentAuthAdjustment-Payment Authorization Adjustment Layout,M,,log,📰
+layouts/PaymentAuthorization-Payment Authorization Layout.layout-meta.xml," ",Layout PaymentAuthorization-Payment Authorization Layout,M,,log,📰
+layouts/PaymentGroup-Payment Group Layout.layout-meta.xml," ",Layout PaymentGroup-Payment Group Layout,M,,log,📰
+layouts/PaymentLineInvoice-Payment Line Invoice Layout.layout-meta.xml," ",Layout PaymentLineInvoice-Payment Line Invoice Layout,M,,log,📰
+layouts/PricebookEntry-Price Book Entry Layout.layout-meta.xml," ",Layout PricebookEntry-Price Book Entry Layout,M,,log,📰
+layouts/Product2-Product Layout.layout-meta.xml," ",Layout Product2-Product Layout,M,,log,📰
+layouts/Refund-Refund Layout.layout-meta.xml," ",Layout Refund-Refund Layout,M,,log,📰
+layouts/RefundLinePayment-Refund Line Payment Layout.layout-meta.xml," ",Layout RefundLinePayment-Refund Line Payment Layout,M,,log,📰
+layouts/ResourcePreference-Resource Preference Layout.layout-meta.xml," ",Layout ResourcePreference-Resource Preference Layout,M,,log,📰
+layouts/ReturnOrder-Return Order Layout.layout-meta.xml," ",Layout ReturnOrder-Return Order Layout,M,,log,📰
+layouts/ServiceContract-Service Contract Layout.layout-meta.xml," ",Layout ServiceContract-Service Contract Layout,M,,log,📰
+layouts/Shift-Shift Layout.layout-meta.xml," ",Layout Shift-Shift Layout,M,,log,📰
+layouts/SkillRequirement-Skill Requirement Layout.layout-meta.xml," ",Layout SkillRequirement-Skill Requirement Layout,M,,log,📰
+layouts/Solution-Solution Layout.layout-meta.xml," ",Layout Solution-Solution Layout,M,,log,📰
+layouts/Task-Task Layout.layout-meta.xml," ",Layout Task-Task Layout,M,,log,📰
+layouts/WebCart-Cart Layout.layout-meta.xml," ",Layout WebCart-Cart Layout,M,,log,📰
+layouts/WebStore-Store Layout.layout-meta.xml," ",Layout WebStore-Store Layout,M,,log,📰
+layouts/WorkOrder-Work Order Layout.layout-meta.xml," ",Layout WorkOrder-Work Order Layout,M,,log,📰
+layouts/WorkType-Work Type Layout.layout-meta.xml," ",Layout WorkType-Work Type Layout,M,,log,📰
+layouts/WorkTypeGroup-Work Type Group Layout.layout-meta.xml," ",Layout WorkTypeGroup-Work Type Group Layout,M,,log,📰
+lwc/boardBaseFilterDialog/boardBaseFilterDialog.css," ",LightningComponentBundle boardBaseFilterDialog/boardBaseFilterDialog.css,M,,log,📰
+lwc/boardBaseFilterDialog/boardBaseFilterDialog.html," ",LightningComponentBundle boardBaseFilterDialog/boardBaseFilterDialog.html,M,,log,📰
+lwc/boardBaseFilterDialog/boardBaseFilterDialog.js," ",LightningComponentBundle boardBaseFilterDialog/boardBaseFilterDialog.js,M,,log,📰
+lwc/boardBucketFieldEditor/boardBucketFieldEditor.html,A,LightningComponentBundle boardBucketFieldEditor/boardBucketFieldEditor.html,,,log,📰
+lwc/boardBucketFieldEditor/boardBucketFieldEditor.js,A,LightningComponentBundle boardBucketFieldEditor/boardBucketFieldEditor.js,,,log,📰
+lwc/boardBucketFieldEditor/boardBucketFieldEditor.js-meta.xml,A,LightningComponentBundle boardBucketFieldEditor/boardBucketFieldEditor.js-meta.xml,,,log,📰
+lwc/boardBucketFields/boardBucketFields.js,A,LightningComponentBundle boardBucketFields/boardBucketFields.js,,,log,📰
+lwc/boardBucketFields/boardBucketFields.js-meta.xml,A,LightningComponentBundle boardBucketFields/boardBucketFields.js-meta.xml,,,log,📰
+lwc/boardChartColours/boardChartColours.js,A,LightningComponentBundle boardChartColours/boardChartColours.js,,,log,📰
+lwc/boardChartColours/boardChartColours.js-meta.xml,A,LightningComponentBundle boardChartColours/boardChartColours.js-meta.xml,,,log,📰
+lwc/boardChartCpe/boardChartCpe.html,A,LightningComponentBundle boardChartCpe/boardChartCpe.html,,,log,📰
+lwc/boardChartCpe/boardChartCpe.js,A,LightningComponentBundle boardChartCpe/boardChartCpe.js,,,log,📰
+lwc/boardChartCpe/boardChartCpe.js-meta.xml,A,LightningComponentBundle boardChartCpe/boardChartCpe.js-meta.xml,,,log,📰
+lwc/boardChartPanelGrid/boardChartPanelGrid.css,A,LightningComponentBundle boardChartPanelGrid/boardChartPanelGrid.css,,,log,📰
+lwc/boardChartPanelGrid/boardChartPanelGrid.html,A,LightningComponentBundle boardChartPanelGrid/boardChartPanelGrid.html,,,log,📰
+lwc/boardChartPanelGrid/boardChartPanelGrid.js,A,LightningComponentBundle boardChartPanelGrid/boardChartPanelGrid.js,,,log,📰
+lwc/boardChartPanelGrid/boardChartPanelGrid.js-meta.xml,A,LightningComponentBundle boardChartPanelGrid/boardChartPanelGrid.js-meta.xml,,,log,📰
+lwc/boardChartPanelGrid/panelLayout.js,A,LightningComponentBundle boardChartPanelGrid/panelLayout.js,,,log,📰
+lwc/boardChartPanelSettings/boardChartPanelSettings.html,A,LightningComponentBundle boardChartPanelSettings/boardChartPanelSettings.html,,,log,📰
+lwc/boardChartPanelSettings/boardChartPanelSettings.js,A,LightningComponentBundle boardChartPanelSettings/boardChartPanelSettings.js,,,log,📰
+lwc/boardChartPanelSettings/boardChartPanelSettings.js-meta.xml,A,LightningComponentBundle boardChartPanelSettings/boardChartPanelSettings.js-meta.xml,,,log,📰
+lwc/boardChartPanels/boardChartPanels.js,A,LightningComponentBundle boardChartPanels/boardChartPanels.js,,,log,📰
+lwc/boardChartPanels/boardChartPanels.js-meta.xml,A,LightningComponentBundle boardChartPanels/boardChartPanels.js-meta.xml,,,log,📰
+lwc/boardChartReferenceLines/boardChartReferenceLines.js,A,LightningComponentBundle boardChartReferenceLines/boardChartReferenceLines.js,,,log,📰
+lwc/boardChartReferenceLines/boardChartReferenceLines.js-meta.xml,A,LightningComponentBundle boardChartReferenceLines/boardChartReferenceLines.js-meta.xml,,,log,📰
+lwc/boardChartSetupSteps/boardChartSetupSteps.html,A,LightningComponentBundle boardChartSetupSteps/boardChartSetupSteps.html,,,log,📰
+lwc/boardChartSetupSteps/boardChartSetupSteps.js,A,LightningComponentBundle boardChartSetupSteps/boardChartSetupSteps.js,,,log,📰
+lwc/boardChartSetupSteps/boardChartSetupSteps.js-meta.xml,A,LightningComponentBundle boardChartSetupSteps/boardChartSetupSteps.js-meta.xml,,,log,📰
+lwc/boardChartUtils/boardChartUtils.js," ",LightningComponentBundle boardChartUtils/boardChartUtils.js,M,,log,📰
+lwc/boardChartWidget/boardChartWidget.css,A,LightningComponentBundle boardChartWidget/boardChartWidget.css,,,log,📰
+lwc/boardChartWidget/boardChartWidget.html,A,LightningComponentBundle boardChartWidget/boardChartWidget.html,,,log,📰
+lwc/boardChartWidget/boardChartWidget.js,A,LightningComponentBundle boardChartWidget/boardChartWidget.js,,,log,📰
+lwc/boardChartWidget/boardChartWidget.js-meta.xml,A,LightningComponentBundle boardChartWidget/boardChartWidget.js-meta.xml,,,log,📰
+lwc/boardChartWidget/chartModel.js,A,LightningComponentBundle boardChartWidget/chartModel.js,,,log,📰
+lwc/boardConditionEditor/boardConditionEditor.css,A,LightningComponentBundle boardConditionEditor/boardConditionEditor.css,,,log,📰
+lwc/boardConditionEditor/boardConditionEditor.html,A,LightningComponentBundle boardConditionEditor/boardConditionEditor.html,,,log,📰
+lwc/boardConditionEditor/boardConditionEditor.js,A,LightningComponentBundle boardConditionEditor/boardConditionEditor.js,,,log,📰
+lwc/boardConditionEditor/boardConditionEditor.js-meta.xml,A,LightningComponentBundle boardConditionEditor/boardConditionEditor.js-meta.xml,,,log,📰
+lwc/boardConditionRow/boardConditionRow.html,A,LightningComponentBundle boardConditionRow/boardConditionRow.html,,,log,📰
+lwc/boardConditionRow/boardConditionRow.js,A,LightningComponentBundle boardConditionRow/boardConditionRow.js,,,log,📰
+lwc/boardConditionRow/boardConditionRow.js-meta.xml,A,LightningComponentBundle boardConditionRow/boardConditionRow.js-meta.xml,,,log,📰
+lwc/boardConfigCurrency/boardConfigCurrency.html,A,LightningComponentBundle boardConfigCurrency/boardConfigCurrency.html,,,log,📰
+lwc/boardConfigCurrency/boardConfigCurrency.js,A,LightningComponentBundle boardConfigCurrency/boardConfigCurrency.js,,,log,📰
+lwc/boardConfigCurrency/boardConfigCurrency.js-meta.xml,A,LightningComponentBundle boardConfigCurrency/boardConfigCurrency.js-meta.xml,,,log,📰
+lwc/boardConfigUtils/boardConfigUtils.js," ",LightningComponentBundle boardConfigUtils/boardConfigUtils.js,M,,log,📰
+lwc/boardContextStore/boardContextStore.js," ",LightningComponentBundle boardContextStore/boardContextStore.js,M,,log,📰
+lwc/boardContextStore/filterPersistence.js," ",LightningComponentBundle boardContextStore/filterPersistence.js,M,,log,📰
+lwc/boardCpeBindings/boardCpeBindings.js,A,LightningComponentBundle boardCpeBindings/boardCpeBindings.js,,,log,📰
+lwc/boardCpeBindings/boardCpeBindings.js-meta.xml,A,LightningComponentBundle boardCpeBindings/boardCpeBindings.js-meta.xml,,,log,📰
+lwc/boardCpeColumnList/boardCpeColumnList.html," ",LightningComponentBundle boardCpeColumnList/boardCpeColumnList.html,M,,log,📰
+lwc/boardCpeColumnList/boardCpeColumnList.js," ",LightningComponentBundle boardCpeColumnList/boardCpeColumnList.js,M,,log,📰
+lwc/boardCpeCommon/boardCpeCommon.html," ",LightningComponentBundle boardCpeCommon/boardCpeCommon.html,M,,log,📰
+lwc/boardCpeCommon/boardCpeCommon.js," ",LightningComponentBundle boardCpeCommon/boardCpeCommon.js,M,,log,📰
+lwc/boardCpeCommon/cpeConfig.js,D,LightningComponentBundle boardCpeCommon/cpeConfig.js,D,,log,📰
+lwc/boardCpeCrossObjectMeasure/boardCpeCrossObjectMeasure.html,A,LightningComponentBundle boardCpeCrossObjectMeasure/boardCpeCrossObjectMeasure.html,,,log,📰
+lwc/boardCpeCrossObjectMeasure/boardCpeCrossObjectMeasure.js,A,LightningComponentBundle boardCpeCrossObjectMeasure/boardCpeCrossObjectMeasure.js,,,log,📰
+lwc/boardCpeCrossObjectMeasure/boardCpeCrossObjectMeasure.js-meta.xml,A,LightningComponentBundle boardCpeCrossObjectMeasure/boardCpeCrossObjectMeasure.js-meta.xml,,,log,📰
+lwc/boardCpeFilterBindings/boardCpeFilterBindings.html,A,LightningComponentBundle boardCpeFilterBindings/boardCpeFilterBindings.html,,,log,📰
+lwc/boardCpeFilterBindings/boardCpeFilterBindings.js,A,LightningComponentBundle boardCpeFilterBindings/boardCpeFilterBindings.js,,,log,📰
+lwc/boardCpeFilterBindings/boardCpeFilterBindings.js-meta.xml,A,LightningComponentBundle boardCpeFilterBindings/boardCpeFilterBindings.js-meta.xml,,,log,📰
+lwc/boardCpeFormatEditor/boardCpeFormatEditor.html," ",LightningComponentBundle boardCpeFormatEditor/boardCpeFormatEditor.html,M,,log,📰
+lwc/boardCpeFormatEditor/boardCpeFormatEditor.js," ",LightningComponentBundle boardCpeFormatEditor/boardCpeFormatEditor.js,M,,log,📰
+lwc/boardCpeMasterDetail/boardCpeMasterDetail.css," ",LightningComponentBundle boardCpeMasterDetail/boardCpeMasterDetail.css,M,,log,📰
+lwc/boardCpeMasterDetail/boardCpeMasterDetail.js," ",LightningComponentBundle boardCpeMasterDetail/boardCpeMasterDetail.js,M,,log,📰
+lwc/boardCpeMeasureList/boardCpeMeasureList.css,A,LightningComponentBundle boardCpeMeasureList/boardCpeMeasureList.css,,,log,📰
+lwc/boardCpeMeasureList/boardCpeMeasureList.html,A,LightningComponentBundle boardCpeMeasureList/boardCpeMeasureList.html,,,log,📰
+lwc/boardCpeMeasureList/boardCpeMeasureList.js,A,LightningComponentBundle boardCpeMeasureList/boardCpeMeasureList.js,,,log,📰
+lwc/boardCpeMeasureList/boardCpeMeasureList.js-meta.xml,A,LightningComponentBundle boardCpeMeasureList/boardCpeMeasureList.js-meta.xml,,,log,📰
+lwc/boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.html," ",LightningComponentBundle boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.html,M,,log,📰
+lwc/boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.js," ",LightningComponentBundle boardCpeObjectFieldPicker/boardCpeObjectFieldPicker.js,M,,log,📰
+lwc/boardCpeRowActionList/boardCpeRowActionList.css,A,LightningComponentBundle boardCpeRowActionList/boardCpeRowActionList.css,,,log,📰
+lwc/boardCpeRowActionList/boardCpeRowActionList.html,A,LightningComponentBundle boardCpeRowActionList/boardCpeRowActionList.html,,,log,📰
+lwc/boardCpeRowActionList/boardCpeRowActionList.js,A,LightningComponentBundle boardCpeRowActionList/boardCpeRowActionList.js,,,log,📰
+lwc/boardCpeRowActionList/boardCpeRowActionList.js-meta.xml,A,LightningComponentBundle boardCpeRowActionList/boardCpeRowActionList.js-meta.xml,,,log,📰
+lwc/boardCpeTotalRow/boardCpeTotalRow.html,A,LightningComponentBundle boardCpeTotalRow/boardCpeTotalRow.html,,,log,📰
+lwc/boardCpeTotalRow/boardCpeTotalRow.js,A,LightningComponentBundle boardCpeTotalRow/boardCpeTotalRow.js,,,log,📰
+lwc/boardCpeTotalRow/boardCpeTotalRow.js-meta.xml,A,LightningComponentBundle boardCpeTotalRow/boardCpeTotalRow.js-meta.xml,,,log,📰
+lwc/boardCpeUtils/boardCpeUtils.js," ",LightningComponentBundle boardCpeUtils/boardCpeUtils.js,M,,log,📰
+lwc/boardCrossObjectMeasure/boardCrossObjectMeasure.js,A,LightningComponentBundle boardCrossObjectMeasure/boardCrossObjectMeasure.js,,,log,📰
+lwc/boardCrossObjectMeasure/boardCrossObjectMeasure.js-meta.xml,A,LightningComponentBundle boardCrossObjectMeasure/boardCrossObjectMeasure.js-meta.xml,,,log,📰
+lwc/boardCurrencyPicker/boardCurrencyPicker.html,A,LightningComponentBundle boardCurrencyPicker/boardCurrencyPicker.html,,,log,📰
+lwc/boardCurrencyPicker/boardCurrencyPicker.js,A,LightningComponentBundle boardCurrencyPicker/boardCurrencyPicker.js,,,log,📰
+lwc/boardCurrencyPicker/boardCurrencyPicker.js-meta.xml,A,LightningComponentBundle boardCurrencyPicker/boardCurrencyPicker.js-meta.xml,,,log,📰
+lwc/boardCursorProgress/boardCursorProgress.js,A,LightningComponentBundle boardCursorProgress/boardCursorProgress.js,,,log,📰
+lwc/boardCursorProgress/boardCursorProgress.js-meta.xml,A,LightningComponentBundle boardCursorProgress/boardCursorProgress.js-meta.xml,,,log,📰
+lwc/boardDisplayCurrency/boardDisplayCurrency.js,A,LightningComponentBundle boardDisplayCurrency/boardDisplayCurrency.js,,,log,📰
+lwc/boardDisplayCurrency/boardDisplayCurrency.js-meta.xml,A,LightningComponentBundle boardDisplayCurrency/boardDisplayCurrency.js-meta.xml,,,log,📰
+lwc/boardFilterCpe/boardFilterCpe.css,D,LightningComponentBundle boardFilterCpe/boardFilterCpe.css,D,,log,📰
+lwc/boardFilterCpe/boardFilterCpe.html," ",LightningComponentBundle boardFilterCpe/boardFilterCpe.html,M,,log,📰
+lwc/boardFilterCpe/boardFilterCpe.js," ",LightningComponentBundle boardFilterCpe/boardFilterCpe.js,M,,log,📰
+lwc/boardFilterDialog/boardFilterDialog.html," ",LightningComponentBundle boardFilterDialog/boardFilterDialog.html,M,,log,📰
+lwc/boardFilterDialog/boardFilterDialog.js," ",LightningComponentBundle boardFilterDialog/boardFilterDialog.js,M,,log,📰
+lwc/boardFilterSetupSteps/boardFilterSetupSteps.html,A,LightningComponentBundle boardFilterSetupSteps/boardFilterSetupSteps.html,,,log,📰
+lwc/boardFilterSetupSteps/boardFilterSetupSteps.js,A,LightningComponentBundle boardFilterSetupSteps/boardFilterSetupSteps.js,,,log,📰
+lwc/boardFilterSetupSteps/boardFilterSetupSteps.js-meta.xml,A,LightningComponentBundle boardFilterSetupSteps/boardFilterSetupSteps.js-meta.xml,,,log,📰
+lwc/boardFilterWidget/boardFilterWidget.css," ",LightningComponentBundle boardFilterWidget/boardFilterWidget.css,M,,log,📰
+lwc/boardFilterWidget/boardFilterWidget.html," ",LightningComponentBundle boardFilterWidget/boardFilterWidget.html,M,,log,📰
+lwc/boardFilterWidget/boardFilterWidget.js," ",LightningComponentBundle boardFilterWidget/boardFilterWidget.js,M,,log,📰
+lwc/boardFixedColourEditor/boardFixedColourEditor.css,A,LightningComponentBundle boardFixedColourEditor/boardFixedColourEditor.css,,,log,📰
+lwc/boardFixedColourEditor/boardFixedColourEditor.html,A,LightningComponentBundle boardFixedColourEditor/boardFixedColourEditor.html,,,log,📰
+lwc/boardFixedColourEditor/boardFixedColourEditor.js,A,LightningComponentBundle boardFixedColourEditor/boardFixedColourEditor.js,,,log,📰
+lwc/boardFixedColourEditor/boardFixedColourEditor.js-meta.xml,A,LightningComponentBundle boardFixedColourEditor/boardFixedColourEditor.js-meta.xml,,,log,📰
+lwc/boardMetricCpe/boardMetricCpe.css,D,LightningComponentBundle boardMetricCpe/boardMetricCpe.css,D,,log,📰
+lwc/boardMetricCpe/boardMetricCpe.html," ",LightningComponentBundle boardMetricCpe/boardMetricCpe.html,M,,log,📰
+lwc/boardMetricCpe/boardMetricCpe.js," ",LightningComponentBundle boardMetricCpe/boardMetricCpe.js,M,,log,📰
+lwc/boardMetricGauge/boardMetricGauge.js,A,LightningComponentBundle boardMetricGauge/boardMetricGauge.js,,,log,📰
+lwc/boardMetricGauge/boardMetricGauge.js-meta.xml,A,LightningComponentBundle boardMetricGauge/boardMetricGauge.js-meta.xml,,,log,📰
+lwc/boardMetricGaugeView/boardMetricGaugeView.css,A,LightningComponentBundle boardMetricGaugeView/boardMetricGaugeView.css,,,log,📰
+lwc/boardMetricGaugeView/boardMetricGaugeView.html,A,LightningComponentBundle boardMetricGaugeView/boardMetricGaugeView.html,,,log,📰
+lwc/boardMetricGaugeView/boardMetricGaugeView.js,A,LightningComponentBundle boardMetricGaugeView/boardMetricGaugeView.js,,,log,📰
+lwc/boardMetricGaugeView/boardMetricGaugeView.js-meta.xml,A,LightningComponentBundle boardMetricGaugeView/boardMetricGaugeView.js-meta.xml,,,log,📰
+lwc/boardMetricSetupSteps/boardMetricSetupSteps.css,A,LightningComponentBundle boardMetricSetupSteps/boardMetricSetupSteps.css,,,log,📰
+lwc/boardMetricSetupSteps/boardMetricSetupSteps.html,A,LightningComponentBundle boardMetricSetupSteps/boardMetricSetupSteps.html,,,log,📰
+lwc/boardMetricSetupSteps/boardMetricSetupSteps.js,A,LightningComponentBundle boardMetricSetupSteps/boardMetricSetupSteps.js,,,log,📰
+lwc/boardMetricSetupSteps/boardMetricSetupSteps.js-meta.xml,A,LightningComponentBundle boardMetricSetupSteps/boardMetricSetupSteps.js-meta.xml,,,log,📰
+lwc/boardMetricWidget/boardMetricWidget.css," ",LightningComponentBundle boardMetricWidget/boardMetricWidget.css,M,,log,📰
+lwc/boardMetricWidget/boardMetricWidget.html," ",LightningComponentBundle boardMetricWidget/boardMetricWidget.html,M,,log,📰
+lwc/boardMetricWidget/boardMetricWidget.js," ",LightningComponentBundle boardMetricWidget/boardMetricWidget.js,M,,log,📰
+lwc/boardPictureTiles/boardPictureTiles.css,A,LightningComponentBundle boardPictureTiles/boardPictureTiles.css,,,log,📰
+lwc/boardPictureTiles/boardPictureTiles.html,A,LightningComponentBundle boardPictureTiles/boardPictureTiles.html,,,log,📰
+lwc/boardPictureTiles/boardPictureTiles.js,A,LightningComponentBundle boardPictureTiles/boardPictureTiles.js,,,log,📰
+lwc/boardPictureTiles/boardPictureTiles.js-meta.xml,A,LightningComponentBundle boardPictureTiles/boardPictureTiles.js-meta.xml,,,log,📰
+lwc/boardPictureTiles/illustrations.js,A,LightningComponentBundle boardPictureTiles/illustrations.js,,,log,📰
+lwc/boardSegmentedButtons/boardSegmentedButtons.css,A,LightningComponentBundle boardSegmentedButtons/boardSegmentedButtons.css,,,log,📰
+lwc/boardSegmentedButtons/boardSegmentedButtons.html,A,LightningComponentBundle boardSegmentedButtons/boardSegmentedButtons.html,,,log,📰
+lwc/boardSegmentedButtons/boardSegmentedButtons.js,A,LightningComponentBundle boardSegmentedButtons/boardSegmentedButtons.js,,,log,📰
+lwc/boardSegmentedButtons/boardSegmentedButtons.js-meta.xml,A,LightningComponentBundle boardSegmentedButtons/boardSegmentedButtons.js-meta.xml,,,log,📰
+lwc/boardSetupBaseFilters/boardSetupBaseFilters.html,A,LightningComponentBundle boardSetupBaseFilters/boardSetupBaseFilters.html,,,log,📰
+lwc/boardSetupBaseFilters/boardSetupBaseFilters.js,A,LightningComponentBundle boardSetupBaseFilters/boardSetupBaseFilters.js,,,log,📰
+lwc/boardSetupBaseFilters/boardSetupBaseFilters.js-meta.xml,A,LightningComponentBundle boardSetupBaseFilters/boardSetupBaseFilters.js-meta.xml,,,log,📰
+lwc/boardSetupDialog/boardSetupDialog.css,A,LightningComponentBundle boardSetupDialog/boardSetupDialog.css,,,log,📰
+lwc/boardSetupDialog/boardSetupDialog.html,A,LightningComponentBundle boardSetupDialog/boardSetupDialog.html,,,log,📰
+lwc/boardSetupDialog/boardSetupDialog.js,A,LightningComponentBundle boardSetupDialog/boardSetupDialog.js,,,log,📰
+lwc/boardSetupDialog/boardSetupDialog.js-meta.xml,A,LightningComponentBundle boardSetupDialog/boardSetupDialog.js-meta.xml,,,log,📰
+lwc/boardSetupFilterDefinitions/boardSetupFilterDefinitions.css,A,LightningComponentBundle boardSetupFilterDefinitions/boardSetupFilterDefinitions.css,,,log,📰
+lwc/boardSetupFilterDefinitions/boardSetupFilterDefinitions.html,A,LightningComponentBundle boardSetupFilterDefinitions/boardSetupFilterDefinitions.html,,,log,📰
+lwc/boardSetupFilterDefinitions/boardSetupFilterDefinitions.js,A,LightningComponentBundle boardSetupFilterDefinitions/boardSetupFilterDefinitions.js,,,log,📰
+lwc/boardSetupFilterDefinitions/boardSetupFilterDefinitions.js-meta.xml,A,LightningComponentBundle boardSetupFilterDefinitions/boardSetupFilterDefinitions.js-meta.xml,,,log,📰
+lwc/boardSetupGuide/boardSetupGuide.js,A,LightningComponentBundle boardSetupGuide/boardSetupGuide.js,,,log,📰
+lwc/boardSetupGuide/boardSetupGuide.js-meta.xml,A,LightningComponentBundle boardSetupGuide/boardSetupGuide.js-meta.xml,,,log,📰
+lwc/boardSetupPreview/boardSetupPreview.css,A,LightningComponentBundle boardSetupPreview/boardSetupPreview.css,,,log,📰
+lwc/boardSetupPreview/boardSetupPreview.html,A,LightningComponentBundle boardSetupPreview/boardSetupPreview.html,,,log,📰
+lwc/boardSetupPreview/boardSetupPreview.js,A,LightningComponentBundle boardSetupPreview/boardSetupPreview.js,,,log,📰
+lwc/boardSetupPreview/boardSetupPreview.js-meta.xml,A,LightningComponentBundle boardSetupPreview/boardSetupPreview.js-meta.xml,,,log,📰
+lwc/boardSetupSteps/boardSetupSteps.js,A,LightningComponentBundle boardSetupSteps/boardSetupSteps.js,,,log,📰
+lwc/boardSetupSteps/boardSetupSteps.js-meta.xml,A,LightningComponentBundle boardSetupSteps/boardSetupSteps.js-meta.xml,,,log,📰
+lwc/boardTableCpe/boardTableCpe.html," ",LightningComponentBundle boardTableCpe/boardTableCpe.html,M,,log,📰
+lwc/boardTableCpe/boardTableCpe.js," ",LightningComponentBundle boardTableCpe/boardTableCpe.js,M,,log,📰
+lwc/boardTableFlowModal/boardTableFlowModal.html,A,LightningComponentBundle boardTableFlowModal/boardTableFlowModal.html,,,log,📰
+lwc/boardTableFlowModal/boardTableFlowModal.js,A,LightningComponentBundle boardTableFlowModal/boardTableFlowModal.js,,,log,📰
+lwc/boardTableFlowModal/boardTableFlowModal.js-meta.xml,A,LightningComponentBundle boardTableFlowModal/boardTableFlowModal.js-meta.xml,,,log,📰
+lwc/boardTableSetupSteps/boardTableSetupSteps.html,A,LightningComponentBundle boardTableSetupSteps/boardTableSetupSteps.html,,,log,📰
+lwc/boardTableSetupSteps/boardTableSetupSteps.js,A,LightningComponentBundle boardTableSetupSteps/boardTableSetupSteps.js,,,log,📰
+lwc/boardTableSetupSteps/boardTableSetupSteps.js-meta.xml,A,LightningComponentBundle boardTableSetupSteps/boardTableSetupSteps.js-meta.xml,,,log,📰
+lwc/boardTableWidget/aggregateCursor.js,A,LightningComponentBundle boardTableWidget/aggregateCursor.js,,,log,📰
+lwc/boardTableWidget/aggregateTable.js,A,LightningComponentBundle boardTableWidget/aggregateTable.js,,,log,📰
+lwc/boardTableWidget/boardTableWidget.css," ",LightningComponentBundle boardTableWidget/boardTableWidget.css,M,,log,📰
+lwc/boardTableWidget/boardTableWidget.html," ",LightningComponentBundle boardTableWidget/boardTableWidget.html,M,,log,📰
+lwc/boardTableWidget/boardTableWidget.js," ",LightningComponentBundle boardTableWidget/boardTableWidget.js,M,,log,📰
+lwc/boardTableWidget/groupRowActions.js,A,LightningComponentBundle boardTableWidget/groupRowActions.js,,,log,📰
+lwc/boardTableWidget/groupSummaries.js,A,LightningComponentBundle boardTableWidget/groupSummaries.js,,,log,📰
+lwc/boardTableWidget/rowActions.js,A,LightningComponentBundle boardTableWidget/rowActions.js,,,log,📰
+lwc/boardTableWidget/rowGrouping.js,A,LightningComponentBundle boardTableWidget/rowGrouping.js,,,log,📰
+lwc/boardTableWidget/tableCells.js," ",LightningComponentBundle boardTableWidget/tableCells.js,M,,log,📰
+lwc/boardTableWidget/totalRow.js,A,LightningComponentBundle boardTableWidget/totalRow.js,,,log,📰
+lwc/boardVisibilityWatcher/boardVisibilityWatcher.js,A,LightningComponentBundle boardVisibilityWatcher/boardVisibilityWatcher.js,,,log,📰
+lwc/boardVisibilityWatcher/boardVisibilityWatcher.js-meta.xml,A,LightningComponentBundle boardVisibilityWatcher/boardVisibilityWatcher.js-meta.xml,,,log,📰
+lwc/boardWidgetState/boardWidgetState.html," ",LightningComponentBundle boardWidgetState/boardWidgetState.html,M,,log,📰
+lwc/boardWidgetState/boardWidgetState.js," ",LightningComponentBundle boardWidgetState/boardWidgetState.js,M,,log,📰
+lwc/protoSetupPreviewDialog/protoSetupPreviewDialog.css,A,LightningComponentBundle protoSetupPreviewDialog/protoSetupPreviewDialog.css,,,log,📰
+lwc/protoSetupPreviewDialog/protoSetupPreviewDialog.html,A,LightningComponentBundle protoSetupPreviewDialog/protoSetupPreviewDialog.html,,,log,📰
+lwc/protoSetupPreviewDialog/protoSetupPreviewDialog.js,A,LightningComponentBundle protoSetupPreviewDialog/protoSetupPreviewDialog.js,,,log,📰
+lwc/protoSetupPreviewDialog/protoSetupPreviewDialog.js-meta.xml,A,LightningComponentBundle protoSetupPreviewDialog/protoSetupPreviewDialog.js-meta.xml,,,log,📰
+objects/Account/fields/CurrencyIsoCode.field-meta.xml,A,CustomFieldTranslation CurrencyIsoCode.field-meta.xml,,,log,📰
+objects/Case/fields/CurrencyIsoCode.field-meta.xml,A,CustomFieldTranslation CurrencyIsoCode.field-meta.xml,,,log,📰
+objects/Contact/fields/CurrencyIsoCode.field-meta.xml,A,CustomFieldTranslation CurrencyIsoCode.field-meta.xml,,,log,📰
+objects/Lead/fields/CurrencyIsoCode.field-meta.xml,A,CustomFieldTranslation CurrencyIsoCode.field-meta.xml,,,log,📰
+objects/Opportunity/fields/CurrencyIsoCode.field-meta.xml,A,CustomFieldTranslation CurrencyIsoCode.field-meta.xml,,,log,📰
+permissionsets/Board_Quota_Viewer.permissionset-meta.xml,A,PermissionSet Board_Quota_Viewer,,,log,📰
+profiles/Admin.profile-meta.xml," ",Profile Admin,M,,log,📰
+profiles/ContractManager.profile-meta.xml," ",Profile ContractManager,M,,log,📰
+profiles/External Einstein Agent User.profile-meta.xml," ",Profile External Einstein Agent User,M,,log,📰
+profiles/MarketingProfile.profile-meta.xml," ",Profile MarketingProfile,M,,log,📰
+profiles/SolutionManager.profile-meta.xml," ",Profile SolutionManager,M,,log,📰
+profiles/Standard.profile-meta.xml," ",Profile Standard,M,,log,📰
+reports/unfiled$public/flow_orchestration_log_ootb_report_two_four_eight.report-meta.xml," ",ReportFolder unfiled$public/flow_orchestration_log_ootb_report_two_four_eight.report-meta.xml,M,,log,📰
+reports/unfiled$public/flow_orchestration_run_ootb_report_two_four_eight.report-meta.xml," ",ReportFolder unfiled$public/flow_orchestration_run_ootb_report_two_four_eight.report-meta.xml,M,,log,📰
+reports/unfiled$public/flow_orchestration_stage_run_ootb_report_two_four_eight.report-meta.xml," ",ReportFolder unfiled$public/flow_orchestration_stage_run_ootb_report_two_four_eight.report-meta.xml,M,,log,📰
+reports/unfiled$public/flow_orchestration_step_run_ootb_report_two_four_eight.report-meta.xml," ",ReportFolder unfiled$public/flow_orchestration_step_run_ootb_report_two_four_eight.report-meta.xml,M,,log,📰
+reports/unfiled$public/flow_orchestration_work_item_ootb_report_two_four_eight.report-meta.xml," ",ReportFolder unfiled$public/flow_orchestration_work_item_ootb_report_two_four_eight.report-meta.xml,M,,log,📰
+reports/unfiled$public/flow_screen_prebuilt_report.report-meta.xml," ",ReportFolder unfiled$public/flow_screen_prebuilt_report.report-meta.xml,M,,log,📰
+settings/Currency.settings-meta.xml," ",Settings Currency,M,,log,📰
+settings/Forecasting.settings-meta.xml," ",Settings Forecasting,M,,log,📰
+translations/en_US.translation-meta.xml," ",Translations en_US,M,,log,📰
+manifest/package-all-org-items.xml," ",manifest/package-all-org-items.xml,M,,log,📰
+manifest/package-backup-items.xml," ",manifest/package-backup-items.xml,M,,log,📰

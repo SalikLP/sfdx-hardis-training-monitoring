@@ -7,6 +7,21 @@
 
 ## JS Documentation
 
+### WAIT_HINT_DELAY_MS
+
+How long a Widget waits for the Board's Filter widget before the hint card replaces its loading state.
+
+**Kind**: global constant  
+**Default**: <code>5000</code>  
+
+#### waitingForBoardId
+
+Board id the Widget is waiting on (Wait for Filter widget, no Filter widget registered yet), or empty. While
+set during the loading state, the hint card replaces the skeleton after ~5 s; clearing it removes the card.
+
+**Kind**: instance property (getter) of <code>BoardWidgetState</code>  
+**Decorators**: <code>@api</code>  
+
 #### loadingText
 
 Screen-reader announcement for the visual-only skeleton.

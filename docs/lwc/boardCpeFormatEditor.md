@@ -15,8 +15,9 @@ Explicit values equal to the default (`formatStyle: 'number'`, the Widget's own 
 
 ### BoardCpeFormatEditor
 
-ValueFormatConfig editor (`formatStyle`, `notation`, fraction digits, `currencyCode`, `prefix`, `suffix`) shared by
-the Metric, Bar Chart, and Table column CPEs. Collapsed, it shows one summary line (`Number format: Default (compact)`)
+ValueFormatConfig editor (`formatStyle`, `notation`, fraction digits, `prefix`, `suffix`) shared by the Metric,
+Chart, and Table column CPEs. There is no currency code: currency amounts are shown in the Board's Display currency
+(a `currencyCode` saved by an older version is kept; Widgets format with the ISO code Apex returns instead). Collapsed, it shows one summary line (`Number format: Default (compact)`)
 with a "Customize" link that reveals the controls; it starts expanded when any setting differs from the default
 (an explicit default such as the Widget's own notation does not count).
 Fires a non-bubbling `change` event with `detail.value`: the edited format, or null once every setting is back to its

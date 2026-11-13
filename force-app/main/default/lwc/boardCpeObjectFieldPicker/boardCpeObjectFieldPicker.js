@@ -17,7 +17,8 @@ const CAPABILITY_TESTS = {
     sortable: (field) => field.isSortable,
     numeric: (field) => field.isNumeric,
     date: (field) => [...DATE_FIELD_TYPES, 'TIME'].includes(field.dataType),
-    picklist: (field) => PICKLIST_FIELD_TYPES.includes(field.dataType)
+    picklist: (field) => PICKLIST_FIELD_TYPES.includes(field.dataType),
+    lookup: (field) => field.dataType === 'REFERENCE'
 };
 
 function matches(term, ...texts) {
@@ -41,6 +42,8 @@ function traversalTarget(field) {
  */
 export default class BoardCpeObjectFieldPicker extends LightningElement {
     @api label;
+    /** Help text shown next to the label. */
+    @api fieldLevelHelp;
     @api placeholder;
     @api value;
     /**

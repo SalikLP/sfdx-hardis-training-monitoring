@@ -1,11 +1,11 @@
 @import 'c/boardCpeDragStyles';
 
 /*
- * Fill the large modal body: the viewport minus the modal's outer padding, header, and footer. Each pane scrolls on
- * its own so the list and the selected item's editor stay visible together.
+ * Fill the Setup dialog's step: the viewport minus the modal's outer padding, header, footer, and the step's title and
+ * intro. Each pane scrolls on its own so the list and the selected item's editor stay visible together.
  */
 .c-master-detail {
-    height: calc(100vh - 18rem);
+    height: calc(100vh - 24rem);
     min-height: 20rem;
 }
 

@@ -1,9 +1,0 @@
-.c-filter-row {
-    border-bottom: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
-}
-
-/* The label takes the remaining row width and truncates; the type badge and error icon keep their size. */
-.c-filter-title {
-    flex: 1 1 auto;
-    min-width: 0;
-}

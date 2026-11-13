@@ -1,10 +1,10 @@
 import { LightningElement, api } from 'lwc';
 import { FlowAttributeChangeEvent } from 'lightning/flowSupport';
 import { registerRefreshHandler, unregisterRefreshHandler } from 'lightning/refresh';
-import LOCALE from '@salesforce/i18n/locale';
 import getObjectFields from '@salesforce/apex/BoardSchemaService.getObjectFields';
 import queryMetric from '@salesforce/apex/BoardQueryService.queryMetric';
 import fetchAggregateChunk from '@salesforce/apex/BoardQueryService.fetchAggregateChunk';
+import evaluateMetric from '@salesforce/apex/BoardFormulaMeasures.evaluateMetric';
 import {
     parseAndMergeConfig,
     normalizeBoardError,
@@ -13,9 +13,24 @@ import {
     buildFilterBindingSummary,
     buildQuerySignature,
     formatValue,
-    formatTemporal
+    formatTemporal,
+    metricMeasures,
+    perRecordSettings
 } from 'c/boardConfigUtils';
-import { subscribeFilterContext, publishFilterContext, acceptExternalFilterContext } from 'c/boardContextStore';
+import { runCursorLoad } from 'c/boardCursorProgress';
+import { isGaugeDisplay, resolveGauge, gaugeConfigAmounts, gaugeConfigInDisplayCurrency } from 'c/boardMetricGauge';
+import { createHiddenDeferral } from 'c/boardVisibilityWatcher';
+import {
+    subscribeFilterContext,
+    publishFilterContext,
+    acceptExternalFilterContext,
+    getDisplayCurrency,
+    getConfigCurrency,
+    getBoardBucketFields
+} from 'c/boardContextStore';
+import { displayCurrencyFormat, configAmounts, displayAmount } from 'c/boardDisplayCurrency';
+import { waitsForFilterWidget, waitingForBoardId } from 'c/boardConfigUtils';
+import { crossObjectNotices, crossObjectRequestFields } from 'c/boardCrossObjectMeasure';
 
 const ZERO_WHEN_EMPTY = new Set(['COUNT', 'COUNT_DISTINCT', 'SUM']);
 /** Schema.DisplayType names whose aggregate may arrive as a numeric string (high-precision Decimal). */
@@ -29,9 +44,45 @@ const THRESHOLD_ICONS = {
 const NO_VALUE = '—';
 let widgetInstanceCount = 0;
 
+/**
+ * A Measure as the Metric query sends it: `{ aggregateFunction, valueFieldApiName, perField?, inner?, hidden?,
+ * condition?, formula? }` (`perField` / `inner`: Average per record).
+ */
+function requestMeasure(measure) {
+    const source = measure && typeof measure === 'object' ? measure : {};
+    const aggregateFunction = source.aggregateFunction
+        ? String(source.aggregateFunction).trim().toUpperCase()
+        : 'COUNT';
+    const request = {
+        aggregateFunction,
+        valueFieldApiName: aggregateFunction === 'COUNT' ? null : source.valueFieldApiName || null,
+        ...perRecordSettings({ ...source, aggregateFunction })
+    };
+    if (source.hidden === true) {
+        request.hidden = true;
+    }
+    if (aggregateFunction === 'FORMULA') {
+        request.formula = typeof source.formula === 'string' ? source.formula : null;
+        if (source.isCurrency === true) {
+            request.isCurrency = true;
+        }
+    }
+    const condition = source.condition;
+    if (
+        condition &&
+        typeof condition === 'object' &&
+        Array.isArray(condition.conditions) &&
+        condition.conditions.length
+    ) {
+        request.condition = condition;
+    }
+    return { ...request, ...crossObjectRequestFields(source) };
+}
+
 export default class BoardMetricWidget extends LightningElement {
     _boardId = 'default';
     _boardIdExplicitlySet = false;
+    _livePreview = false;
     _title = '';
     _objectApiName = '';
     _recordId = '';
@@ -46,8 +97,12 @@ export default class BoardMetricWidget extends LightningElement {
     metricResult = null;
     queryError = null;
     isQuerying = false;
+    /** Cursor-tier progress `{ percent, label, ... }` while a large scope loads; null otherwise. */
+    _cursorProgress = null;
     bindingApplied = [];
     bindingIgnored = [];
+    /** The last result's `crossObjectNotices` (one per Cross-object measure). */
+    crossObjectNoticeData = [];
     /** `ignoredFilterIds` of the last completed query; re-applied after every binding resolve. */
     _serverIgnoredIds = [];
 
@@ -58,6 +113,18 @@ export default class BoardMetricWidget extends LightningElement {
     _unsubscribe = null;
     _refreshHandlerId = null;
     _isConnected = false;
+
+    /** Setup dialog live preview: never waits for the Filter widget, whatever the config says. */
+    @api
+    get livePreview() {
+        return this._livePreview;
+    }
+    set livePreview(value) {
+        this._livePreview = Boolean(value);
+        if (this._isConnected) {
+            this.setupSubscription();
+        }
+    }
 
     @api
     get boardId() {
@@ -135,6 +202,7 @@ export default class BoardMetricWidget extends LightningElement {
 
     connectedCallback() {
         this._isConnected = true;
+        this._hiddenDeferral = createHiddenDeferral(this.template.host, () => this.handleShownStale());
         this.setupSubscription();
         if (this._pendingExternalContext) {
             const pending = this._pendingExternalContext;
@@ -153,6 +221,7 @@ export default class BoardMetricWidget extends LightningElement {
         this._latestRequestId += 1;
         this._lastQuerySignature = null;
         this.isQuerying = false;
+        this._hiddenDeferral?.dispose();
         this.teardownSubscription();
         if (this._refreshHandlerId) {
             try {
@@ -167,11 +236,16 @@ export default class BoardMetricWidget extends LightningElement {
     setupSubscription() {
         this.teardownSubscription();
         const effectiveBoardId = this.effectiveBoardId;
-        this._unsubscribe = subscribeFilterContext(effectiveBoardId, this._recordId, (ctx) => {
-            this.filterContext = ctx;
-            this.syncContextOutput(ctx);
-            this.requestQuery();
-        });
+        this._unsubscribe = subscribeFilterContext(
+            effectiveBoardId,
+            this._recordId,
+            (ctx) => {
+                this.filterContext = ctx;
+                this.syncContextOutput(ctx);
+                this.requestQuery();
+            },
+            { waitForFilterWidget: waitsForFilterWidget(this.resolvedConfig.config, this._livePreview) }
+        );
         this.requestQuery();
     }
 
@@ -263,7 +337,9 @@ export default class BoardMetricWidget extends LightningElement {
             fields,
             filterContext: ctx,
             filterBindings: config.filterBindings,
-            widgetId: this._widgetId
+            widgetId: this._widgetId,
+            bucketFields: config.bucketFields,
+            boardBucketFields: getBoardBucketFields(this.effectiveBoardId)
         });
         this.applyBindingResolution(resolution);
         if (resolution.error) {
@@ -278,21 +354,26 @@ export default class BoardMetricWidget extends LightningElement {
         const aggregateFunction = this.aggregateFunction;
         const request = {
             objectApiName,
-            aggregateFunction,
-            valueFieldApiName: aggregateFunction === 'COUNT' ? null : config.valueFieldApiName || null,
+            measures: this.measures.map(requestMeasure),
             filters: resolution.filters,
             baseFilters: Array.isArray(config.baseFilters) ? config.baseFilters : [],
+            displayCurrency: getDisplayCurrency(this.effectiveBoardId),
+            configCurrency: getConfigCurrency(this.effectiveBoardId),
+            thresholdAmounts: configAmounts(config.thresholds),
+            ...(isGaugeDisplay(config) ? { gaugeAmounts: gaugeConfigAmounts(config) } : {}),
+            dataProvider: config.dataProvider || null,
             refreshToken: ctx.refreshToken || 0,
             widgetRefreshToken: this.widgetRefreshToken
         };
         const signature = buildQuerySignature(request);
-        if (signature === this._lastQuerySignature) {
+        if (signature === this._lastQuerySignature || this._hiddenDeferral?.deferIfHidden()) {
             return;
         }
         this._lastQuerySignature = signature;
         const reqId = ++this._latestRequestId;
         this._serverIgnoredIds = [];
         this.applyBindingResolution(resolution);
+        this._cursorProgress = null;
         this.isQuerying = true;
         try {
             const result = await queryMetric({ requestJson: JSON.stringify(request) });
@@ -300,14 +381,21 @@ export default class BoardMetricWidget extends LightningElement {
                 return;
             }
             this._serverIgnoredIds = result?.ignoredFilterIds || [];
+            this.crossObjectNoticeData = result?.crossObjectNotices || [];
             this.applyBindingResolution(resolution);
             if (result?.mode === 'CURSOR') {
                 await this.aggregateCursorChunks(reqId, request, result);
+            } else if (aggregateFunction === 'FORMULA' && result?.isComplete === false) {
+                await this.finishFormulaInputs(reqId, request, result);
             } else {
                 this.metricResult = {
                     aggregateFunction,
                     value: result?.value ?? null,
                     valueType: result?.valueType || null,
+                    currencyIsoCode: result?.currencyIsoCode || null,
+                    thresholdAmounts: result?.thresholdAmounts || null,
+                    gaugeAmounts: result?.gaugeAmounts || null,
+                    measureValues: (result?.measures || []).map((measure) => measure?.value ?? null),
                     isComplete: true
                 };
             }
@@ -326,41 +414,91 @@ export default class BoardMetricWidget extends LightningElement {
         }
     }
 
-    /** Tier 2: merges `Database.Cursor` chunks progressively; stops as soon as a newer request starts. */
+    /** Tier 2: merges `Database.Cursor` chunks; shows progress only and renders the final number once. */
     async aggregateCursorChunks(reqId, request, result) {
-        const totals = { sum: 0, count: 0, min: null, max: null };
-        let chunk = result.chunk;
-        for (;;) {
-            (chunk?.buckets || []).forEach((bucket) => {
-                totals.sum += Number(bucket.sum || 0);
-                totals.count += Number(bucket.count || 0);
-                if (bucket.min !== null && bucket.min !== undefined) {
-                    totals.min = totals.min === null ? bucket.min : Math.min(totals.min, bucket.min);
-                }
-                if (bucket.max !== null && bucket.max !== undefined) {
-                    totals.max = totals.max === null ? bucket.max : Math.max(totals.max, bucket.max);
-                }
-            });
-            const isComplete = !chunk || chunk.isComplete;
+        const value = await this.loadCursorValue(reqId, request, this.visibleMeasure, result.chunk);
+        if (value !== undefined) {
             this.metricResult = {
-                aggregateFunction: request.aggregateFunction,
-                value: this.cursorValue(request.aggregateFunction, totals),
+                aggregateFunction: requestMeasure(this.visibleMeasure).aggregateFunction,
+                value,
                 valueType: result.valueType || null,
-                isComplete,
-                processedRows: chunk ? chunk.nextOffset : 0,
-                totalRows: chunk ? chunk.totalRows : result.totalRows
+                currencyIsoCode: result.currencyIsoCode || null,
+                thresholdAmounts: result.thresholdAmounts || null,
+                gaugeAmounts: result.gaugeAmounts || null,
+                isComplete: true
             };
-            if (isComplete) {
-                return;
-            }
-            // eslint-disable-next-line no-await-in-loop -- cursor chunks are sequential: each call needs the previous offset
-            chunk = await fetchAggregateChunk({
-                requestJson: JSON.stringify({ ...request, cursor: chunk.cursor, offset: chunk.nextOffset })
-            });
-            if (reqId !== this._latestRequestId) {
-                return;
+        }
+    }
+
+    /**
+     * A visible Formula measure whose inputs are still on the cursor tier: finishes each such input, then has the
+     * server evaluate the formula from the completed input values (in the Display currency, with each input's ISO
+     * code so a currency Formula measure reads its constants in the Config currency).
+     */
+    async finishFormulaInputs(reqId, request, result) {
+        const results = Array.isArray(result.measures) ? result.measures : [];
+        const values = results.map((entry) => entry?.value ?? null);
+        for (let index = 0; index < results.length; index++) {
+            const entry = results[index];
+            // A cursor input's value is in its chunks, even when the first chunk is already the last one.
+            if (entry?.mode === 'CURSOR') {
+                // eslint-disable-next-line no-await-in-loop -- one cursor at a time keeps the progress bar honest
+                const value = await this.loadCursorValue(reqId, request, this.measures[index], entry.chunk);
+                if (value === undefined) {
+                    return;
+                }
+                values[index] = value;
             }
         }
+        const currencyIsoCodes = results.map((entry) => entry?.currencyIsoCode || null);
+        const value = await evaluateMetric({ requestJson: JSON.stringify({ ...request, values, currencyIsoCodes }) });
+        if (reqId === this._latestRequestId) {
+            this.metricResult = {
+                aggregateFunction: 'FORMULA',
+                value: value ?? null,
+                valueType: result.valueType || null,
+                currencyIsoCode: result.currencyIsoCode || null,
+                thresholdAmounts: result.thresholdAmounts || null,
+                gaugeAmounts: result.gaugeAmounts || null,
+                isComplete: true
+            };
+        }
+    }
+
+    /** Merges the cursor chunks of one Measure; its final value, or undefined when the run was superseded. */
+    async loadCursorValue(reqId, request, measure, firstChunk) {
+        const totals = { sum: 0, count: 0, min: null, max: null };
+        const completed = await runCursorLoad({
+            first: firstChunk,
+            isCurrent: () => reqId === this._latestRequestId,
+            merge: (chunk) => {
+                (chunk?.buckets || []).forEach((bucket) => {
+                    totals.sum += Number(bucket.sum || 0);
+                    totals.count += Number(bucket.count || 0);
+                    if (bucket.min !== null && bucket.min !== undefined) {
+                        totals.min = totals.min === null ? bucket.min : Math.min(totals.min, bucket.min);
+                    }
+                    if (bucket.max !== null && bucket.max !== undefined) {
+                        totals.max = totals.max === null ? bucket.max : Math.max(totals.max, bucket.max);
+                    }
+                });
+            },
+            onProgress: (progress) => {
+                this._cursorProgress = progress;
+            },
+            fetchNext: (chunk) =>
+                fetchAggregateChunk({
+                    requestJson: JSON.stringify({
+                        ...request,
+                        measures: undefined,
+                        ...requestMeasure(measure),
+                        hidden: undefined,
+                        cursor: chunk.cursor,
+                        offset: chunk.nextOffset
+                    })
+                })
+        });
+        return completed ? this.cursorValue(requestMeasure(measure).aggregateFunction, totals) : undefined;
     }
 
     cursorValue(aggregateFunction, totals) {
@@ -368,6 +506,7 @@ export default class BoardMetricWidget extends LightningElement {
             case 'SUM':
                 return totals.sum;
             case 'AVG':
+            case 'AVG_PER': // Each chunk's count is records, its sum their values.
                 return totals.count ? totals.sum / totals.count : null;
             case 'MIN':
                 return totals.min;
@@ -409,13 +548,28 @@ export default class BoardMetricWidget extends LightningElement {
         return this.resolvedConfig.config?.objectApiName || '';
     }
 
+    /** Board id for the Wait for Filter widget hint card while this Widget waits, else empty. */
+    get waitingBoardId() {
+        return waitingForBoardId(this.resolvedConfig.config, this._livePreview, this.filterContext);
+    }
+
     get effectiveBoardId() {
         return this.resolvedConfig.config?.boardId || this._boardId || 'default';
     }
 
+    /** The Measures list (a single-aggregate config is its one visible Measure). */
+    get measures() {
+        return metricMeasures(this.resolvedConfig.config);
+    }
+
+    /** The one Measure the Metric shows; the others are hidden (fetched, not shown). */
+    get visibleMeasure() {
+        const measures = this.measures;
+        return measures.find((measure) => measure && measure.hidden !== true) || measures[0] || {};
+    }
+
     get aggregateFunction() {
-        const fn = this.resolvedConfig.config?.aggregateFunction;
-        return fn ? String(fn).trim().toUpperCase() : 'COUNT';
+        return requestMeasure(this.visibleMeasure).aggregateFunction;
     }
 
     get activeScopeKey() {
@@ -439,7 +593,14 @@ export default class BoardMetricWidget extends LightningElement {
         return 'READY';
     }
 
+    get showMetricBody() {
+        return this.viewState === 'READY';
+    }
+
     get showWidgetState() {
+        if (this.showCursorProgress && this.viewState === 'INITIAL_LOADING') {
+            return false;
+        }
         return this.viewState !== 'READY';
     }
 
@@ -459,6 +620,18 @@ export default class BoardMetricWidget extends LightningElement {
 
     get filterBindingSummary() {
         return buildFilterBindingSummary(this.bindingApplied, this.bindingIgnored);
+    }
+
+    /** Cross-object measures that are blank (no access) or ignore some of the Board's filters. */
+    get crossObjectNoticeRows() {
+        const filterLabels = new Map(
+            [...this.bindingApplied, ...this.bindingIgnored].map((entry) => [entry.filterId, entry.label])
+        );
+        const measureLabels = this.measures.map(
+            (measure, index) =>
+                (measure && typeof measure.label === 'string' && measure.label) || `Measure ${index + 1}`
+        );
+        return crossObjectNotices(this.crossObjectNoticeData, measureLabels, filterLabels);
     }
 
     get isRefreshing() {
@@ -503,7 +676,7 @@ export default class BoardMetricWidget extends LightningElement {
     }
 
     get formatConfig() {
-        return this.resolvedConfig.config?.format || {};
+        return displayCurrencyFormat(this.visibleMeasure.format, this.metricResult?.currencyIsoCode);
     }
 
     get displayValue() {
@@ -520,6 +693,29 @@ export default class BoardMetricWidget extends LightningElement {
             notation: 'compact',
             valueType: this.metricResult.valueType
         });
+    }
+
+    /** The Gauge of a `display: 'gauge'` Metric: `{ model }` or `{ error }`; null for the number display. */
+    get gaugeResult() {
+        const config = this.resolvedConfig.config;
+        if (!isGaugeDisplay(config) || !this.metricResult) {
+            return null;
+        }
+        return resolveGauge({
+            config: { ...gaugeConfigInDisplayCurrency(config, this.metricResult), measures: this.measures },
+            value: this.numericValue,
+            measureValues: this.metricResult.measureValues,
+            format: (number) =>
+                formatValue(number, this.formatConfig, { notation: 'compact', valueType: this.metricResult.valueType })
+        });
+    }
+
+    get gaugeModel() {
+        return this.gaugeResult?.model || null;
+    }
+
+    get gaugeError() {
+        return this.gaugeResult?.error || null;
     }
 
     get exactValue() {
@@ -540,24 +736,24 @@ export default class BoardMetricWidget extends LightningElement {
         return this.resolvedConfig.config?.subtitle || '';
     }
 
-    get progressText() {
-        const result = this.metricResult;
-        if (!result || result.isComplete) {
-            return '';
-        }
-        const format = (n) => new Intl.NumberFormat(LOCALE).format(n || 0);
-        return `Calculating… ${format(result.processedRows)} of ${format(result.totalRows)} records`;
+    /** Progress bar state; only while the cursor tier of the latest run is loading. */
+    get cursorProgress() {
+        return this.isQuerying ? this._cursorProgress : null;
     }
 
-    /** First matching ordered threshold rule's variant (`success` | `warning` | `error`), or null. */
+    get showCursorProgress() {
+        return Boolean(this.cursorProgress);
+    }
+
+    /** First matching ordered threshold rule's variant (amounts converted Config → Display currency), or null. */
     get thresholdVariant() {
         const value = this.numericValue;
         const rules = this.resolvedConfig.config?.thresholds;
         if (value === null || !Array.isArray(rules)) {
             return null;
         }
-        const match = rules.find((rule) => {
-            const limit = Number(rule?.value);
+        const match = rules.find((rule, index) => {
+            const limit = displayAmount(rule, index, this.metricResult.thresholdAmounts);
             if (!THRESHOLD_ICONS[rule?.variant] || !Number.isFinite(limit)) {
                 return false;
             }
@@ -605,6 +801,13 @@ export default class BoardMetricWidget extends LightningElement {
     // -----------------------------------------------------------------------------------------------------
     // Actions
     // -----------------------------------------------------------------------------------------------------
+
+    /** Shown again after a Filter change while hidden: loading state instead of stale data, then one query. */
+    handleShownStale() {
+        this.metricResult = null;
+        this.queryError = null;
+        this.requestQuery();
+    }
 
     handleRefresh() {
         this.widgetRefreshToken += 1;

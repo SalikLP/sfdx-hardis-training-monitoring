@@ -1,3 +1,8 @@
+/* Block host so the hidden-Widget visibility watcher measures the Widget box, not an inline box. */
+:host {
+    display: block;
+}
+
 .c-board-card {
     background-color: var(--slds-g-color-surface-container-1, #ffffff);
     color: var(--slds-g-color-on-surface-2, #2e2e2e);
@@ -6,6 +11,11 @@
 
 .c-board-table-container {
     container-type: inline-size;
+}
+
+.c-board-cursor-progress-label {
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+    margin-bottom: var(--slds-g-spacing-2, 0.5rem);
 }
 
 .c-board-header-spinner {
@@ -58,44 +68,42 @@
     background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
 }
 
-/* Child relationship: count badge + chevron in the first cell, inline `<tr colspan>` sub-table. */
-.c-board-table-expander {
-    float: left;
-    display: inline-flex;
-    align-items: center;
+/* Sticky Total row at the bottom of the scroll container. */
+.c-board-table > tfoot > .c-board-table-total-row > td {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+    border-top: var(--slds-g-sizing-border-2, 2px) solid var(--slds-g-color-border-1, #e5e5e5);
+    font-weight: var(--slds-g-font-weight-7, 700);
+    vertical-align: top;
+}
+
+.c-board-table > tfoot > .c-board-table-total-row > td.c-board-table-col_first {
+    left: 0;
+    z-index: 3;
+}
+
+/* With Row grouping the group column (not the first data column) is the sticky one. */
+.c-board-table > tfoot > .c-board-table-total-row > td.c-board-table-col_group {
+    left: 0;
+    z-index: 3;
+}
+
+.c-board-table > tfoot > .c-board-table-total-row > .c-board-table-col_group ~ td.c-board-table-col_first {
+    left: auto;
+    z-index: 2;
+}
+
+.c-board-table-summary-label {
+    font-weight: var(--slds-g-font-weight-4, 400);
     margin-right: var(--slds-g-spacing-2, 0.5rem);
 }
 
-/* 24px minimum target (WCAG 2.2 target size) without inflating dense row height. */
-.c-board-table-expand {
-    min-width: var(--slds-g-sizing-7, 1.5rem);
-    min-height: var(--slds-g-sizing-7, 1.5rem);
-    justify-content: center;
-    color: var(--slds-g-color-accent-2, #0b5cab);
-}
-
-.c-board-table-expand_disabled {
-    display: inline-flex;
-    color: var(--slds-g-color-on-surface-1, #5c5c5c);
-    opacity: 0.4;
-}
-
-.c-board-table-child-match {
-    color: var(--slds-g-color-on-surface-1, #5c5c5c);
-}
-
-.c-board-table-child-cell {
-    padding-left: var(--slds-g-spacing-6, 2rem);
-    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
-}
-
-.c-board-table-child-spinner {
-    position: relative;
-    height: var(--slds-g-sizing-9, 2rem);
-}
-
-.c-board-child-table {
-    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+.c-board-table-total-note {
+    font-weight: var(--slds-g-font-weight-4, 400);
+    white-space: normal;
 }
 
 .c-board-table-col_left {
@@ -147,10 +155,106 @@
     }
 }
 
-/* Free-text search matches inside parent and child cells */
+/* Data bars: axis runs from the most negative value through the zero line to the largest positive value */
+.c-data-bar-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-data-bar {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 3rem;
+    height: 0.75rem;
+}
+
+.c-data-bar_summary {
+    display: block;
+    margin-bottom: var(--slds-g-spacing-1, 0.25rem);
+}
+
+.c-data-bar-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+.c-data-bar-fill_positive {
+    background-color: var(--slds-g-color-accent-1, #0176d3);
+}
+
+.c-data-bar-fill_negative {
+    background-color: var(--slds-g-color-error-1, #b60554);
+}
+
+.c-data-bar-zero {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 1px;
+    background-color: var(--slds-g-color-border-1, #e5e5e5);
+}
+
+.c-data-bar-value {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+/* Free-text search matches inside cells */
 .c-board-table-mark {
     background: var(--slds-g-color-warning-container-1, #f9e3b6);
     color: var(--slds-g-color-on-warning-1, #8c4b02);
     font-weight: var(--slds-g-font-weight-7, 700);
     padding: 0;
+}
+
+/* Row grouping: the group column leads the table, so it (not the first data column) is the sticky one. */
+.c-board-table > thead > tr > .c-board-table-col_group,
+.c-board-table > tbody > tr > .c-board-table-col_group {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    width: var(--slds-g-sizing-9, 2rem);
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+}
+
+.c-board-table > thead > tr > th.c-board-table-col_group {
+    z-index: 3;
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+}
+
+.c-board-table > thead > tr > .c-board-table-col_group ~ .c-board-table-col_first,
+.c-board-table > tbody > tr > .c-board-table-col_group ~ .c-board-table-col_first {
+    position: static;
+}
+
+.c-board-table-group-row > .c-board-table-group-cell {
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+    font-weight: var(--slds-g-font-weight-7, 700);
+}
+
+/* Group summaries and Subtotals: the group/label cell stays the sticky one, summary cells scroll. */
+.c-board-table > tbody > .c-board-table-group-row > td.c-board-table-col_first,
+.c-board-table > tbody > .c-board-table-subtotal-row > td.c-board-table-col_first {
+    position: static;
+}
+
+.c-board-table-group-row > td,
+.c-board-table-subtotal-row > td {
+    background-color: var(--slds-g-color-surface-container-2, #f3f3f3);
+}
+
+.c-board-table-subtotal-row > .c-board-table-subtotal-cell {
+    font-weight: var(--slds-g-font-weight-7, 700);
+}
+
+/* Second-level Group rows sit indented under their first-level Group row. */
+.c-board-table-group-row_level-2 > .c-board-table-group-cell {
+    padding-left: var(--slds-g-spacing-6, 1.5rem);
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
+}
+
+.c-board-table-group-row_level-2 > td {
+    background-color: var(--slds-g-color-surface-container-1, #ffffff);
 }

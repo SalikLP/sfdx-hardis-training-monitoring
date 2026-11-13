@@ -1,27 +1,20 @@
 import { LightningElement, api } from 'lwc';
-import BoardBaseFilterDialog from 'c/boardBaseFilterDialog';
-import { IGNORE_BINDING, RECORD_CONTEXT_FILTER_ID, normalizeBoardError } from 'c/boardConfigUtils';
+import BoardSetupDialog from 'c/boardSetupDialog';
+import { normalizeBoardError } from 'c/boardConfigUtils';
+import { chartTypeHasSetting } from 'c/boardChartUtils';
 import {
-    BINDING_PATH_HELP,
     DIALOG_SAVE,
-    FILTER_TYPE_LABELS,
     ORIENTATION_OPTIONS,
     WIDGET_TYPES,
     applyPatch,
-    baseFilterErrorsByIndex,
-    baseFilterSummary,
     configErrors,
-    countLabel,
     deepCopy,
     formatConfig,
     hasText,
     initialSectionOpen,
     isDataWidget,
-    isIgnoreBinding,
     isPlainObject,
-    isValidBindingPath,
     loadObjectFields,
-    openConfigDialog,
     orderConfig,
     joinSummary,
     readCpeState,
@@ -31,20 +24,11 @@ import {
     topLevelKeysFor,
     validateConfigText
 } from 'c/boardCpeUtils';
-import { discoverFilterWidgets, previewConventionBindings } from './cpeConfig';
+import { filterBindingsSummary, stepsFor } from 'c/boardSetupSteps';
+import { bindingRows, bindingsOf, discoverFilterWidgets } from 'c/boardCpeBindings';
 
 const CHANGED_EVENT = 'configuration_editor_input_value_changed';
 const DELETED_EVENT = 'configuration_editor_input_value_deleted';
-const MODE_CONVENTION = 'CONVENTION';
-const MODE_PATH = 'PATH';
-const MODE_IGNORE = 'IGNORE';
-
-const BINDING_MODE_OPTIONS = [
-    { label: 'By convention', value: MODE_CONVENTION },
-    { label: 'Field path', value: MODE_PATH },
-    { label: 'Ignore', value: MODE_IGNORE }
-];
-const RESOLVED_CONVENTION = ['BOUND', 'RUNTIME', 'SOSL'];
 
 /** The shell's own Config sections (see `sectionStates` in `c/boardCpeUtils`). */
 const SECTIONS = [
@@ -60,7 +44,6 @@ const SECTIONS = [
         summary: (cpe) => cpe.bindingsSummary,
         hasError: (cpe) => cpe.hasBindingDraftErrors
     },
-    { name: 'baseFilters', errorKeys: ['baseFilters'], summary: (cpe) => cpe.baseFiltersSummary },
     // Advanced: Config JSON; always collapsed on load.
     { name: 'advanced', summary: (cpe) => cpe.advancedSummary, hasError: (cpe) => cpe.hasDraftErrors }
 ];
@@ -68,15 +51,20 @@ const SECTIONS = [
 /**
  * Shared Flow Custom Property Editor shell composed by every Board CPE.
  *
- * Renders the Board Config section (Board id/title, plus the Object Picker for data Widgets and orientation for Bar),
- * a default slot for widget-specific Config sections, the Filter bindings (`builderContext` Filter widget discovery +
- * `filterBindings` overrides) and Base filters Config sections (data Widgets), and the "Advanced: Config JSON"
- * portability section. Each is a `c-board-cpe-section`: Board starts open for a new Widget, everything else starts
- * collapsed, and a section with a validation error is forced open.
+ * Renders the Board Config section (Board id/title, plus the Object Picker for data Widgets and orientation for the
+ * Chart widget), the Filter bindings section (`builderContext` Filter widget discovery + `filterBindings` overrides,
+ * data Widgets), and the "Advanced: Config JSON" portability section. Each is a `c-board-cpe-section`: Board starts
+ * open for a new Widget, everything else starts collapsed, and a section with a validation error is forced open.
+ *
+ * With `setup-dialog` (ADR 0002), the panel is an overview: Board (Board id, title, *Wait for Filter widget*), one
+ * summary line per Setup dialog step with "Edit…" opening the dialog (`c/boardSetupDialog`) at that step, and
+ * Advanced: Config JSON. Object, orientation, Filter bindings and Base filters are then edited only in the dialog's
+ * steps; a Save there applies the whole draft as one config change. Every Widget's Config editor uses this mode; Base
+ * filters exist only as the Data step of the Setup dialog.
  *
  * Every edit dispatches `configuration_editor_input_value_changed` (or `..._deleted` for cleared values) for the
- * serialized `configJson`, and also for the discrete top-level property when `boardId`, `title`, `objectApiName`,
- * or `orientation` changes. A non-bubbling `configchange` event (`detail.config`) reports the current config.
+ * serialized `configJson`, and also for the discrete top-level property when `boardId`, `title`, or `objectApiName`
+ * changes. A non-bubbling `configchange` event (`detail.config`) reports the current config.
  */
 export default class BoardCpeCommon extends LightningElement {
     config = { version: 1, widgetType: 'metric' };
@@ -87,10 +75,8 @@ export default class BoardCpeCommon extends LightningElement {
     previewLoading = false;
     previewError = null;
 
-    manualFilterIds = [];
-    manualDraft = '';
-    manualError = null;
-    pendingPathIds = [];
+    /** Rows and errors reported by the Filter bindings editor (`bindingstate`), while it is shown. */
+    bindingState = null;
 
     /** Open state of the shell's Config sections: set once on load (a new Widget opens Board), then by the Admin. */
     sectionOpen = null;
@@ -98,9 +84,7 @@ export default class BoardCpeCommon extends LightningElement {
     draftErrors = [];
     drawerMessage = null;
 
-    bindingModeOptions = BINDING_MODE_OPTIONS;
     orientationOptions = ORIENTATION_OPTIONS;
-    bindingPathHelp = BINDING_PATH_HELP;
 
     _widgetType = 'metric';
     _inputVariables = [];
@@ -109,7 +93,7 @@ export default class BoardCpeCommon extends LightningElement {
     _previewObject = null;
     _connected = false;
 
-    /** `filter` | `metric` | `bar` | `table` */
+    /** `filter` | `metric` | `chart` | `table` */
     @api
     get widgetType() {
         return this._widgetType;
@@ -118,6 +102,15 @@ export default class BoardCpeCommon extends LightningElement {
         this._widgetType = WIDGET_TYPES.includes(value) ? value : 'metric';
         this.syncFromInputs();
     }
+
+    /**
+     * Slim panel for a Widget edited in its Setup dialog: Object, orientation and Filter bindings move into the
+     * dialog's steps, and the panel lists one summary line per step with "Edit…".
+     */
+    @api setupDialog = false;
+
+    /** What the step summaries can't read from the config (e.g. the Group by field type), from the Widget's CPE. */
+    @api stepContext = {};
 
     /** Flow Builder `inputVariables` (`[{ name, value, valueDataType }]`) passed through by the CPE. */
     @api
@@ -136,6 +129,8 @@ export default class BoardCpeCommon extends LightningElement {
     }
     set builderContext(value) {
         this._builderContext = value || {};
+        // The discovered Filter widgets' Board-level Bucket fields may have changed.
+        this.notifyConfig();
     }
 
     /** Flow Builder `elementInfo` (`{ apiName, type }`) identifying the screen component being edited. */
@@ -145,6 +140,7 @@ export default class BoardCpeCommon extends LightningElement {
     }
     set elementInfo(value) {
         this._elementInfo = value || {};
+        this.notifyConfig();
     }
 
     /** Current config (version 1 envelope) as a plain object. */
@@ -155,7 +151,7 @@ export default class BoardCpeCommon extends LightningElement {
 
     /**
      * Shallow-merges `patch` into the config (null/undefined removes a key), then emits `configJson` and, for
-     * `boardId`/`title`/`objectApiName`/`orientation` keys, the top-level property.
+     * `boardId`/`title`/`objectApiName` keys, the top-level property.
      */
     @api
     updateConfig(patch) {
@@ -189,16 +185,14 @@ export default class BoardCpeCommon extends LightningElement {
         } else if (this.storedJsonError) {
             errors.push({ key: 'configJson', errorString: this.storedJsonError });
         }
-        errors.push(...configErrors(this._widgetType, this.config, this.references));
-        if (this.isDataWidget) {
-            this.pendingPathIds
-                .filter((filterId) => !this.hasPathBinding(filterId))
-                .forEach((filterId) =>
-                    errors.push({
-                        key: 'filterBindings',
-                        errorString: `Filter binding "${filterId}": enter a field path.`
-                    })
-                );
+        errors.push(
+            ...configErrors(this._widgetType, this.config, this.references, {
+                boardBucketFields: this.boardBucketFields
+            })
+        );
+        const bindingsEditor = this.bindingsEditor;
+        if (bindingsEditor) {
+            errors.push(...bindingsEditor.validate());
         }
         return errors;
     }
@@ -259,10 +253,26 @@ export default class BoardCpeCommon extends LightningElement {
         );
     }
 
+    /**
+     * `configchange` detail: the config, plus the Board-level Bucket fields (`boardBucketFields`) of the discovered
+     * Filter widgets on this Board, which a data Widget can use by id.
+     */
     notifyConfig() {
         if (this._connected) {
-            this.dispatchEvent(new CustomEvent('configchange', { detail: { config: deepCopy(this.config) } }));
+            this.dispatchEvent(
+                new CustomEvent('configchange', {
+                    detail: { config: deepCopy(this.config), boardBucketFields: deepCopy(this.boardBucketFields) }
+                })
+            );
         }
+    }
+
+    /** Bucket fields of the Filter widgets discovered on this Board (`builderContext`). */
+    get boardBucketFields() {
+        if (!this.isDataWidget) {
+            return [];
+        }
+        return this.discovery.widgets.flatMap((widget) => widget.bucketFields);
     }
 
     refreshPreviewFields() {
@@ -303,10 +313,8 @@ export default class BoardCpeCommon extends LightningElement {
 
     /** Filter bindings switched to "Field path" without a path, or binding rows with an invalid path. */
     get hasBindingDraftErrors() {
-        return (
-            this.pendingPathIds.some((filterId) => !this.hasPathBinding(filterId)) ||
-            this.bindingRows.some((row) => row.error)
-        );
+        const state = this.bindingState;
+        return Boolean(state) && (state.errors.length > 0 || state.rows.some((row) => row.error));
     }
 
     /** `default · Account`; the object part only for data Widgets. */
@@ -321,19 +329,7 @@ export default class BoardCpeCommon extends LightningElement {
 
     /** `3 bound · 1 opted out`, or `None` without any Filter to bind. */
     get bindingsSummary() {
-        const rows = this.bindingRows;
-        if (!rows.length) {
-            return 'None';
-        }
-        const bound = rows.filter((row) => row.status === 'bound').length;
-        const optedOut = rows.filter((row) => row.status === 'ignored').length;
-        return joinSummary([`${bound} bound`, `${optedOut} opted out`]);
-    }
-
-    /** `None` or the number of conditions. */
-    get baseFiltersSummary() {
-        const count = this.baseFilters.length;
-        return count ? countLabel(count, 'condition') : 'None';
+        return filterBindingsSummary(this.bindingRows);
     }
 
     get advancedSummary() {
@@ -353,8 +349,23 @@ export default class BoardCpeCommon extends LightningElement {
         return isDataWidget(this._widgetType);
     }
 
-    get isBar() {
-        return this._widgetType === 'bar';
+    get isChart() {
+        return this._widgetType === 'chart';
+    }
+
+    /** The Object Picker: in the panel for data Widgets, unless their Setup dialog's Data step edits it. */
+    get showObject() {
+        return this.isDataWidget && !this.setupDialog;
+    }
+
+    /** The Filter bindings section: in the panel for data Widgets, unless their Setup dialog has the step. */
+    get showBindings() {
+        return this.isDataWidget && !this.setupDialog;
+    }
+
+    /** Orientation is a bar setting: hidden (but kept) while the Chart widget draws another chart type. */
+    get showOrientation() {
+        return !this.setupDialog && this.isChart && chartTypeHasSetting(this.config.chartType, 'orientation');
     }
 
     get boardIdValue() {
@@ -396,8 +407,31 @@ export default class BoardCpeCommon extends LightningElement {
         this.setTopLevel('objectApiName', event.detail.value);
     }
 
+    /** Wait for Filter widget: on unless the config says `false`. */
+    get waitForFilterWidgetValue() {
+        return this.config.waitForFilterWidget !== false;
+    }
+
+    /** Off writes `waitForFilterWidget: false`; on removes the key (missing = on). */
+    handleWaitForFilterWidgetChange(event) {
+        const next = { ...this.config };
+        if (event.detail.checked) {
+            delete next.waitForFilterWidget;
+        } else {
+            next.waitForFilterWidget = false;
+        }
+        this.commit(next);
+    }
+
     handleOrientationChange(event) {
-        this.setTopLevel('orientation', event.detail.value);
+        // Orientation is a bar setting in the Widget config, not a top-level property.
+        const next = { ...this.config };
+        if (hasText(event.detail.value)) {
+            next.orientation = event.detail.value;
+        } else {
+            delete next.orientation;
+        }
+        this.commit(next);
     }
 
     setTopLevel(key, value) {
@@ -417,255 +451,105 @@ export default class BoardCpeCommon extends LightningElement {
 
     // ---- Filter bindings -----------------------------------------------------------------------------------------
 
-    get bindings() {
-        return isPlainObject(this.config.filterBindings) ? this.config.filterBindings : {};
+    get bindingsEditor() {
+        return this.template.querySelector('c-board-cpe-filter-bindings');
     }
 
     get discovery() {
         return discoverFilterWidgets(this._builderContext, this._elementInfo, this.config.boardId);
     }
 
-    get discoveryMessage() {
-        const { widgets, sameScreen } = this.discovery;
-        const boardId = this.config.boardId || 'default';
-        if (!widgets.length) {
-            return `No Filter widget with Board id "${boardId}" was found on this screen. Add a filterId manually to bind a Filter widget that lives outside this Flow.`;
-        }
-        const names = widgets.map((widget) => widget.name).join(', ');
-        const where = sameScreen ? 'on this screen' : 'in this Flow';
-        return `Filter widget ${names} found ${where} (Board id "${boardId}"). Filters bind by convention on ${
-            this.objectApiNameValue || 'the selected object'
-        } unless overridden.`;
-    }
-
+    /**
+     * The Filter binding rows: as the bindings editor reports them while it is shown (it knows the rows switched to
+     * "Field path" and the hand-added ids), else from the config (the slim panel of the Setup dialog).
+     */
     get bindingRows() {
-        const { widgets } = this.discovery;
-        const definitions = [];
-        const seen = new Set();
-        widgets.forEach((widget) =>
-            widget.filters.forEach((def) => {
-                if (!seen.has(def.filterId)) {
-                    seen.add(def.filterId);
-                    definitions.push(def);
-                }
-            })
-        );
-        const includeRecordContext = widgets.some((widget) => widget.scopesRecordContext);
-        const preview =
-            this.objectApiNameValue && !this.previewLoading && !this.previewError
-                ? previewConventionBindings({
-                      objectApiName: this.objectApiNameValue,
-                      fields: this.previewFields,
-                      filters: definitions,
-                      includeRecordContext
-                  })
-                : null;
-
-        const rows = definitions.map((def) =>
-            this.bindingRow(def.filterId, def.label, FILTER_TYPE_LABELS[def.type], false, preview)
-        );
-        if (includeRecordContext) {
-            seen.add(RECORD_CONTEXT_FILTER_ID);
-            rows.push(this.bindingRow(RECORD_CONTEXT_FILTER_ID, 'Record context', 'Record', false, preview));
+        if (this.bindingState) {
+            return this.bindingState.rows;
         }
-        [...Object.keys(this.bindings), ...this.manualFilterIds].forEach((filterId) => {
-            if (!seen.has(filterId)) {
-                seen.add(filterId);
-                rows.push(this.bindingRow(filterId, filterId, 'Manual', true, null));
-            }
+        return bindingRows({
+            discovery: this.discovery,
+            bindings: bindingsOf(this.config),
+            objectApiName: this.objectApiNameValue,
+            previewFields: this.previewFields,
+            previewLoading: this.previewLoading,
+            previewError: this.previewError,
+            bucketFields: this.config.bucketFields
         });
-        return rows;
     }
 
-    get hasBindingRows() {
-        return this.bindingRows.length > 0;
-    }
-
-    bindingRow(filterId, label, typeLabel, isManual, preview) {
-        const hasBinding = Object.prototype.hasOwnProperty.call(this.bindings, filterId);
-        const binding = this.bindings[filterId];
-        let mode = MODE_CONVENTION;
-        if (this.pendingPathIds.includes(filterId)) {
-            mode = MODE_PATH;
-        } else if (hasBinding) {
-            mode = isIgnoreBinding(binding) ? MODE_IGNORE : MODE_PATH;
-        }
-        const path = this.hasPathBinding(filterId) ? String(binding) : '';
-        const previewItem = preview ? preview.get(filterId) : null;
-        const conventionText = isManual ? 'Resolved by convention at runtime' : this.conventionText(previewItem);
-        let effectiveText = conventionText;
-        let status =
-            isManual || (previewItem && RESOLVED_CONVENTION.includes(previewItem.status)) ? 'bound' : 'unbound';
-        if (mode === MODE_IGNORE || (mode === MODE_PATH && hasBinding && !path)) {
-            effectiveText = 'Ignored by this widget';
-            status = 'ignored';
-        } else if (path) {
-            effectiveText = path;
-            status = 'bound';
-        }
-        return {
-            key: filterId,
-            filterId,
-            label,
-            typeLabel,
-            isManual,
-            mode,
-            isPath: mode === MODE_PATH,
-            path,
-            conventionText,
-            effectiveText,
-            status,
-            error: path && !isValidBindingPath(path) ? `Invalid binding. ${BINDING_PATH_HELP}` : null
-        };
-    }
-
-    conventionText(item) {
-        if (!this.objectApiNameValue) {
-            return 'Select an object to preview';
-        }
-        if (this.previewLoading) {
-            return 'Loading fields…';
-        }
-        if (this.previewError) {
-            return this.previewError;
-        }
-        switch (item ? item.status : null) {
-            case 'BOUND':
-                return item.fieldPath;
-            case 'RUNTIME':
-                return 'Record Id (matched at runtime)';
-            case 'SOSL':
-                return 'SOSL search (all searchable fields)';
-            default:
-                return 'Unbound (skipped)';
-        }
-    }
-
-    handleBindingModeChange(event) {
-        const filterId = event.target.dataset.filterId;
-        const mode = event.detail.value;
-        this.pendingPathIds = this.pendingPathIds.filter((id) => id !== filterId);
-        if (mode === MODE_IGNORE) {
-            this.setBinding(filterId, IGNORE_BINDING);
-            return;
-        }
-        if (mode === MODE_PATH) {
-            // An existing IGNORE stays in effect until a path is entered; validate() blocks an empty path.
-            this.pendingPathIds = [...this.pendingPathIds, filterId];
-            return;
-        }
-        this.setBinding(filterId, undefined);
-    }
-
-    /** True when `filterId` has a non-IGNORE path binding. */
-    hasPathBinding(filterId) {
-        return (
-            Object.prototype.hasOwnProperty.call(this.bindings, filterId) && !isIgnoreBinding(this.bindings[filterId])
-        );
-    }
-
-    handleBindingPathChange(event) {
-        const value = event.detail.value;
-        this.setBinding(event.target.dataset.filterId, hasText(value) ? value.trim() : undefined);
-    }
-
-    handleBindingPick(event) {
-        const value = event.detail.value;
-        this.setBinding(event.target.dataset.filterId, hasText(value) ? value : undefined);
-    }
-
-    setBinding(filterId, value) {
-        const bindings = { ...this.bindings };
-        if (value === undefined) {
-            if (!(filterId in bindings)) {
-                return;
-            }
-            delete bindings[filterId];
-        } else {
-            bindings[filterId] = value;
-        }
+    handleBindingsChange(event) {
         const next = { ...this.config };
-        if (Object.keys(bindings).length) {
-            next.filterBindings = bindings;
+        if (event.detail.filterBindings) {
+            next.filterBindings = event.detail.filterBindings;
         } else {
             delete next.filterBindings;
         }
         this.commit(next);
     }
 
-    handleManualDraftChange(event) {
-        this.manualDraft = event.detail.value || '';
-        this.manualError = null;
+    handleBindingState(event) {
+        this.bindingState = event.detail;
     }
 
-    handleManualAdd() {
-        const filterId = this.manualDraft.trim();
-        if (!filterId) {
-            this.manualError = 'Enter a filterId.';
-            return;
-        }
-        if (this.bindingRows.some((row) => row.filterId === filterId)) {
-            this.manualError = `"${filterId}" is already listed.`;
-            return;
-        }
-        this.manualFilterIds = [...this.manualFilterIds, filterId];
-        this.pendingPathIds = [...this.pendingPathIds, filterId];
-        this.manualDraft = '';
-        this.manualError = null;
+    // ---- Setup dialog --------------------------------------------------------------------------------------------
+
+    /** What the step summaries and validators read besides the config. */
+    get stepSummaryContext() {
+        return {
+            ...(this.stepContext || {}),
+            references: this.references,
+            boardBucketFields: this.boardBucketFields,
+            bindingRows: this.bindingRows
+        };
     }
 
-    handleManualRemove(event) {
-        const filterId = event.target.dataset.filterId;
-        this.manualFilterIds = this.manualFilterIds.filter((id) => id !== filterId);
-        this.pendingPathIds = this.pendingPathIds.filter((id) => id !== filterId);
-        this.setBinding(filterId, undefined);
-    }
-
-    // ---- Base filters --------------------------------------------------------------------------------------------
-
-    get baseFilters() {
-        return Array.isArray(this.config.baseFilters) ? this.config.baseFilters : [];
-    }
-
-    get hasBaseFilters() {
-        return this.baseFilters.length > 0;
-    }
-
-    /** Read-only list: `Status · Closed, Duplicate`, operator badge, and error indicator of each saved condition. */
-    get baseFilterRows() {
-        const errors = baseFilterErrorsByIndex(this.baseFilters);
-        return this.baseFilters.map((condition, index) => {
-            const { label, operatorLabel, valueText } = baseFilterSummary(condition, index);
-            const id = isPlainObject(condition) ? condition.id : null;
-            return {
-                key: `condition-${index}`,
-                id,
-                text: joinSummary([label, valueText]),
-                operatorLabel,
-                hasError: errors[index].length > 0,
-                errorText: `${label} has errors. Edit base filters to fix them.`
-            };
-        });
+    /** One line per Setup dialog step: label, summary of the config, error flag. */
+    get setupSteps() {
+        const context = this.stepSummaryContext;
+        return stepsFor(this._widgetType).map((step) => ({
+            name: step.name,
+            label: step.label,
+            summary: step.summary(this.config, context),
+            hasError: step.validate(this.config, context).length > 0,
+            editLabel: `Edit ${step.label}`
+        }));
     }
 
     /**
-     * Opens the Base filters Config dialog on a draft of the conditions. Save applies the draft as one config change;
-     * Cancel, Escape, and the header X change nothing. Focus then returns to "Edit base filters…".
+     * Opens the Setup dialog at the step whose "Edit…" was clicked, on a copy of the config. Save applies the
+     * returned draft as one config change (plus the top-level properties it changed); Cancel changes nothing.
+     * Focus then returns to the "Edit…" button.
      */
-    async handleEditBaseFilters() {
-        const result = await openConfigDialog(BoardBaseFilterDialog, {
-            label: 'Edit base filters',
-            description: 'Add, reorder, remove, and edit the static conditions that scope this Widget.',
-            value: this.baseFilters,
-            objectApiName: this.objectApiNameValue || null
+    async handleEditStep(event) {
+        const startStep = event.target.dataset.step;
+        const result = await BoardSetupDialog.open({
+            size: 'full',
+            label: this.titleValue ? `Set up ${this.titleValue}` : 'Set up the Widget',
+            description: 'Each step edits one part of the Widget. Save applies all steps at once.',
+            widgetType: this._widgetType,
+            config: deepCopy(this.config),
+            context: {
+                ...this.stepSummaryContext,
+                builderContext: this._builderContext,
+                elementInfo: this._elementInfo
+            },
+            startStep
         });
-        if (result.action === DIALOG_SAVE) {
-            const draft = Array.isArray(result.draft) ? result.draft : [];
-            this.updateConfig({ baseFilters: draft.length ? draft : null });
-            // Let the read-only list re-render before restoring focus, so focus is not lost to <body>.
+        if (result && result.action === DIALOG_SAVE && isPlainObject(result.config)) {
+            const next = { ...result.config, version: this.config.version, widgetType: this.config.widgetType };
+            const changedKeys = topLevelKeysFor(this._widgetType).filter(
+                (key) => (next[key] || null) !== (this.config[key] || null)
+            );
+            if (changedKeys.length) {
+                const references = { ...this.references };
+                changedKeys.forEach((key) => delete references[key]);
+                this.references = references;
+            }
+            this.commit(next, changedKeys);
             await Promise.resolve();
         }
-        const button = this.template.querySelector('lightning-button.c-cpe-base-filters-edit');
+        const button = this.template.querySelector(`lightning-button.c-cpe-step-edit[data-step="${startStep}"]`);
         if (button) {
             button.focus();
         }
@@ -736,8 +620,9 @@ export default class BoardCpeCommon extends LightningElement {
         }
         this.jsonDraft = null;
         this.draftErrors = [];
-        this.pendingPathIds = [];
-        this.manualFilterIds = [];
+        if (this.bindingsEditor) {
+            this.bindingsEditor.reset();
+        }
         this.references = references;
         this.commit(
             config,

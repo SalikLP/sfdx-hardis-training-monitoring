@@ -1,0 +1,80 @@
+<template>
+    <div class="c-fixed-colour-editor">
+        <p class="slds-text-body_small slds-text-color_weak">
+            Pin a colour to a value so it always looks the same. Values without one take palette colours in order,
+            skipping the colours pinned here.
+        </p>
+        <template lwc:if={hasEntries}>
+            <ul class="c-fixed-colours slds-m-top_x-small">
+                <template for:each={rows} for:item="row">
+                    <li key={row.key} class="c-fixed-colour-row slds-p-vertical_x-small">
+                        <div class="slds-grid slds-grid_vertical-align-end">
+                            <lightning-input
+                                class="c-fixed-colour-value slds-col slds-grow"
+                                label="Stored value"
+                                placeholder="Picklist API value or record Id"
+                                value={row.value}
+                                data-index={row.index}
+                                onchange={handleValue}
+                            ></lightning-input>
+                            <span
+                                class="c-fixed-colour-swatch slds-m-left_x-small slds-m-bottom_x-small slds-shrink-none"
+                                style={row.swatchStyle}
+                            ></span>
+                            <lightning-button-icon
+                                class="c-fixed-colour-remove slds-m-left_x-small slds-shrink-none"
+                                icon-name="utility:delete"
+                                variant="bare"
+                                alternative-text="Remove fixed colour"
+                                title="Remove fixed colour"
+                                data-index={row.index}
+                                onclick={handleRemove}
+                            ></lightning-button-icon>
+                        </div>
+                        <lightning-combobox
+                            class="c-fixed-colour-name slds-m-top_xx-small"
+                            label="Colour"
+                            options={colourOptions}
+                            value={row.choice}
+                            data-index={row.index}
+                            onchange={handleColourChoice}
+                        ></lightning-combobox>
+                        <template lwc:if={row.isCustom}>
+                            <lightning-input
+                                class="c-fixed-colour-hex slds-m-top_xx-small"
+                                label="Custom hex colour"
+                                placeholder="#0176d3"
+                                value={row.colour}
+                                data-index={row.index}
+                                onchange={handleHex}
+                            ></lightning-input>
+                            <template lwc:if={row.warning}>
+                                <p class="c-fixed-colour-warning slds-text-body_small slds-text-color_error">
+                                    {row.warning}
+                                </p>
+                            </template>
+                        </template>
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template lwc:else>
+            <p class="c-fixed-colour-empty slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                No fixed colours.
+            </p>
+        </template>
+        <template lwc:if={hasErrors}>
+            <ul class="c-fixed-colour-errors slds-text-color_error slds-text-body_small slds-m-top_x-small">
+                <template for:each={errors} for:item="message">
+                    <li key={message}>{message}</li>
+                </template>
+            </ul>
+        </template>
+        <lightning-button
+            class="c-fixed-colour-add slds-m-top_x-small"
+            label="Add fixed colour"
+            icon-name="utility:add"
+            onclick={handleAdd}
+        ></lightning-button>
+    </div>
+</template>

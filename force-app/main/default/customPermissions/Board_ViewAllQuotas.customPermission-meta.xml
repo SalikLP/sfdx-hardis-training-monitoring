@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Lets the Quota provider (BoardQuotaProvider) read every quota the Board&apos;s filters allow, in system mode. Without it the Quota provider shows only the quotas Salesforce already shows the viewer.</description>
+    <isLicensed>false</isLicensed>
+    <label>Board: View All Quotas</label>
+</CustomPermission>

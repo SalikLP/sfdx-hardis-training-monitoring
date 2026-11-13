@@ -17,18 +17,24 @@ public with sharing class BoardQueryService {
     /** Max matching rows for a single-call SOQL aggregate (`SUM`, `AVG`, `COUNT_DISTINCT`). */
     @TestVisible
     private static Integer CURSOR_AGGREGATE_THRESHOLD = 49900;
-    /** Rows fetched per `Database.Cursor` chunk call. */
+    /**
+     * Rows aggregated per `Database.Cursor` chunk call. Fetched rows count against the per-transaction query-row
+     * limit, so each chunk is also capped by the remaining query-row budget (see `fetchChunk`).
+     */
     @TestVisible
     private static Integer CURSOR_CHUNK_SIZE = 40000;
+    /** Max rows per `Database.Cursor.fetch` call (platform cap: 2,000). */
+    @TestVisible
+    private static Integer CURSOR_FETCH_SIZE = 2000;
     /** Max matching rows for multi-call `Database.Cursor` chunked aggregation. */
     @TestVisible
     private static Integer CURSOR_MAX_ROWS = 200000;
     /**
-     * Max group/stack combinations returned by one Bar Chart `GROUP BY` query (largest values first). A capped
-     * result re-runs through the `Database.Cursor` tier when it can (see `runBar`).
+     * Max group/series combinations returned by one Chart `GROUP BY` query. A capped result re-runs through the
+     * `Database.Cursor` tier when it can (see `scanChart`).
      */
     @TestVisible
-    private static Integer BAR_GROUP_LIMIT = 2000;
+    private static Integer CHART_GROUP_LIMIT = 2000;
 
     private static final Integer MAX_PARENT_HOPS = 5;
     private static final Integer MAX_SEMI_JOINS = 2;
@@ -43,6 +49,16 @@ public with sharing class BoardQueryService {
     private static final String MODE_CURSOR = 'CURSOR';
     private static final String IGNORE_BINDING = 'IGNORE';
     private static final String TOKEN_ME = 'ME';
+    /** `USER` filter match mode that matches each picked user's Team (`BoardTeamResolver`). */
+    private static final String MATCH_MODE_TEAM = 'usersAndTeam';
+    /** Filter type of a number range (`BETWEEN` / `GTE` / `LTE` on a numeric field; currency: Display currency). */
+    private static final String NUMBER_RANGE = 'NUMBER_RANGE';
+    /** Filter type over a Bucket field's labels (`BoardBucketField.selection`). */
+    private static final String BUCKET_FILTER = 'BUCKET';
+    /** Where a Chart widget's Bucket field goes (`BucketChart`). */
+    private static final String BUCKET_AS_CATEGORY = 'CATEGORY';
+    private static final String BUCKET_AS_SERIES = 'SERIES';
+    private static final String BUCKET_AS_PANEL = 'PANEL';
 
     private static final Set<String> AGGREGATE_FUNCTIONS = new Set<String>{
         'COUNT',
@@ -50,7 +66,8 @@ public with sharing class BoardQueryService {
         'SUM',
         'AVG',
         'MIN',
-        'MAX'
+        'MAX',
+        BoardAveragePerRecord.AGGREGATE_FUNCTION
     };
     private static final Set<String> DATE_GRANULARITIES = new Set<String>{
         'DAY',
@@ -85,14 +102,6 @@ public with sharing class BoardQueryService {
         Schema.DisplayType.REFERENCE,
         Schema.DisplayType.ID
     };
-    private static final Map<String, String> COMPARISON_SYMBOLS = new Map<String, String>{
-        'EQ' => '=',
-        'NEQ' => '!=',
-        'GT' => '>',
-        'GTE' => '>=',
-        'LT' => '<',
-        'LTE' => '<='
-    };
 
     private static final Pattern SEMI_JOIN_PATTERN = Pattern.compile('^([A-Za-z0-9_]+)\\(([A-Za-z0-9_]+)\\)\\.(.+)$');
     /** `TEXT` `SOSL` child union target: `Child(ForeignKey)`. */
@@ -117,15 +126,9 @@ public with sharing class BoardQueryService {
     /** A `QueryScope` bind reference (`:b0`, `:b12`) inside a compiled predicate. */
     private static final Pattern BIND_TOKEN_PATTERN = Pattern.compile(':(b\\d+)(?!\\d)');
     private static final Pattern ISO_DATE_PATTERN = Pattern.compile('^\\d{4}-\\d{2}-\\d{2}$');
-    private static final Pattern RELATIVE_DATE_PATTERN = Pattern.compile(
-        '^(YESTERDAY|TODAY|TOMORROW|(LAST|THIS|NEXT)_(WEEK|MONTH|QUARTER|YEAR|FISCAL_QUARTER|FISCAL_YEAR)' +
-            '|(LAST|NEXT)_90_DAYS|(LAST|NEXT)_N_(DAYS|WEEKS|MONTHS|QUARTERS|YEARS|FISCAL_QUARTERS|FISCAL_YEARS):\\d{1,4}' +
-            '|N_(DAYS|WEEKS|MONTHS|QUARTERS|YEARS|FISCAL_QUARTERS|FISCAL_YEARS)_AGO:\\d{1,4})$'
-    );
 
     // Transaction-scoped describe caches (keys are lower-cased API names).
     private static final Map<String, Map<String, Schema.SObjectField>> RELATIONSHIP_INDEX_CACHE = new Map<String, Map<String, Schema.SObjectField>>();
-    private static Organization fiscalSettings;
 
     /**
      * Computes a Metric Widget aggregate.
@@ -137,41 +140,21 @@ public with sharing class BoardQueryService {
      * - `SUM`/`AVG` up to `CURSOR_MAX_ROWS` rows open a `Database.Cursor` and return the first chunk
      *   (`mode: 'CURSOR'`, `isComplete: false`); the caller continues with `fetchAggregateChunk`.
      * - Larger scopes (or `COUNT_DISTINCT` above the threshold, or non-selective queries) fail with `LIMIT_EXCEEDED`.
+     * - Currency values are read in the corporate currency on every path (cursor rows and the MIN/MAX row are
+     *   converted from each record's currency), then SUM/AVG/MIN/MAX of a currency field are returned in the
+     *   request's `displayCurrency` with `currencyIsoCode` set (`BoardCurrencyConverter`).
+     * - A `measures` list (Metric widget Measures list, see `BoardMetricQuery`) aggregates every Measure this way and
+     *   returns the visible Measure's result plus one result per Measure in `measures`.
      */
     @AuraEnabled(cacheable=true)
     public static MetricResult queryMetric(String requestJson) {
         try {
             Map<String, Object> request = parseRequest(requestJson);
+            if (BoardDataProviders.isNamed(request)) {
+                return BoardCurrencyConverter.forRequest().toDisplay(BoardDataProviders.queryMetric(request), request);
+            }
             QueryScope scope = new QueryScope(request);
-            return runMetric(scope, request);
-        } catch (Exception error) {
-            throw BoardErrors.toAuraException(error);
-        }
-    }
-
-    /**
-     * Computes Bar Chart buckets grouped by `groupByField` and an optional `stackByField`.
-     *
-     * Request: `{ objectApiName, groupByField, dateGranularity, stackByField, includeNullBucket, aggregateFunction,
-     * valueFieldApiName, filters[], baseFilters[], refreshToken }`.
-     * - Reference group fields also group by the target's name field (`AccountId` → `Account.Name`) for labels.
-     * - Date/DateTime group fields bucket by `dateGranularity` (default `DAY`) via SOQL date functions in the user's
-     *   time zone.
-     * - `COUNT` always runs one `GROUP BY` query; `SUM`, `AVG`, `MIN`, `MAX`, `COUNT_DISTINCT` do so when the matching
-     *   row count is `<= CURSOR_AGGREGATE_THRESHOLD`. `SUM`/`AVG`/`MIN`/`MAX` up to `CURSOR_MAX_ROWS` rows switch to
-     *   `Database.Cursor` chunks (`mode: 'CURSOR'`) whose grouped partial buckets the caller merges via
-     *   `fetchAggregateChunk`; larger scopes fail with `LIMIT_EXCEEDED`.
-     * - A `GROUP BY` result capped at `BAR_GROUP_LIMIT` combinations re-runs through the cursor tier (`COUNT` buckets
-     *   then carry `sum == count ==` matching rows) when the scope spans `<= CURSOR_MAX_ROWS` rows; otherwise (and
-     *   always for `COUNT_DISTINCT`) the capped buckets are returned with `hasMoreGroups: true`.
-     * Sorting, `maxBars`, and series/bar overflow are applied by the caller over the returned buckets.
-     */
-    @AuraEnabled(cacheable=true)
-    public static BarResult queryBar(String requestJson) {
-        try {
-            Map<String, Object> request = parseRequest(requestJson);
-            QueryScope scope = new QueryScope(request);
-            return runBar(scope, request);
+            return BoardMetricQuery.run(scope, request);
         } catch (Exception error) {
             throw BoardErrors.toAuraException(error);
         }
@@ -180,9 +163,8 @@ public with sharing class BoardQueryService {
     /**
      * Fetches and aggregates the next `CURSOR_CHUNK_SIZE` rows of a cursor opened by a previous query call.
      *
-     * Request: the original query request plus `{ cursor, offset }`. Each call returns only that chunk's partial
-     * `{ sum, count, min, max }` buckets (one per group/stack combination for Bar requests, which carry a
-     * `groupByField`; `COUNT` buckets add 1 per row); the caller merges chunks until `isComplete`.
+     * Request: the original Metric request plus `{ cursor, offset }`. Each call returns only that chunk's partial
+     * `{ sum, count, min, max }` bucket; the caller merges chunks until `isComplete`.
      */
     @AuraEnabled(cacheable=true)
     public static AggregateChunk fetchAggregateChunk(String requestJson) {
@@ -191,19 +173,25 @@ public with sharing class BoardQueryService {
             Schema.DescribeSObjectResult objectDescribe = BoardDescribe.requireReadableObject(
                 getString(request, 'objectApiName')
             );
-            // Grouped COUNT cursors (Bar fallback) count rows; every other aggregate reads its value field.
-            String valuePath = parseAggregateFunction(request) == 'COUNT'
-                ? null
-                : resolveValueField(objectDescribe, getString(request, 'valueFieldApiName')).path;
-            BarGrouping grouping = String.isBlank(getString(request, 'groupByField'))
-                ? null
-                : new BarGrouping(objectDescribe, request);
+            if (BoardDataProviders.isNamed(request)) {
+                return providerMetricChunk(request);
+            }
+            if (parseAggregateFunction(request) == BoardAveragePerRecord.AGGREGATE_FUNCTION) {
+                return perRecordMetricChunk(objectDescribe, request);
+            }
+            ResolvedField valueField = resolveValueField(objectDescribe, getString(request, 'valueFieldApiName'));
             Integer offset = getInteger(request, 'offset');
-            return fetchChunk(
+            AggregateChunk chunk = fetchChunk(
                 deserializeCursor(getString(request, 'cursor')),
                 offset == null ? 0 : offset,
-                valuePath,
-                grouping
+                valueField.path,
+                currencyIsoPath(valueField)
+            );
+            // Converted to the Display currency like the first chunk.
+            BoardCurrencyConverter converter = BoardCurrencyConverter.forRequest();
+            return converter.toDisplay(
+                chunk,
+                converter.isoCodeFor(parseAggregateFunction(request), valueField.type.name(), request)
             );
         } catch (Exception error) {
             throw BoardErrors.toAuraException(error);
@@ -214,7 +202,8 @@ public with sharing class BoardQueryService {
     // Metric execution
     // ---------------------------------------------------------------------------------------------------------
 
-    private static MetricResult runMetric(QueryScope scope, Map<String, Object> request) {
+    /** One Metric aggregate (`aggregateFunction`, `valueFieldApiName` of `request`) over a compiled scope. */
+    public static MetricResult runMetric(QueryScope scope, Map<String, Object> request) {
         String aggregateFunction = parseAggregateFunction(request);
         MetricResult result = new MetricResult(aggregateFunction, scope);
         if (aggregateFunction == 'COUNT') {
@@ -223,20 +212,25 @@ public with sharing class BoardQueryService {
             result.totalRows = totalRows;
             return result;
         }
+        if (aggregateFunction == BoardAveragePerRecord.AGGREGATE_FUNCTION) {
+            return runPerRecordMetric(scope, request, result);
+        }
 
         ResolvedField valueField = resolveValueField(scope.objectDescribe, getString(request, 'valueFieldApiName'));
         requireAggregatable(aggregateFunction, valueField);
         result.valueType = valueField.type.name();
 
+        String isoPath = currencyIsoPath(valueField);
         if (aggregateFunction == 'MIN' || aggregateFunction == 'MAX') {
+            // ORDER BY a currency field sorts by corporate value; the winning row's own amount is then converted.
             String direction = aggregateFunction == 'MIN' ? ' ASC' : ' DESC';
             String soql = scope.buildSoql(
-                valueField.path,
+                valueField.path + (isoPath == null ? '' : ', ' + isoPath),
                 new List<String>{ valueField.path + ' != null' },
                 'ORDER BY ' + valueField.path + direction + ' LIMIT 1'
             );
             List<SObject> rows = scope.query(soql);
-            result.value = rows.isEmpty() ? null : readValue(rows[0], valueField.path);
+            result.value = rows.isEmpty() ? null : readCorporateValue(rows[0], valueField.path, isoPath);
             return result;
         }
 
@@ -252,7 +246,8 @@ public with sharing class BoardQueryService {
             throw limitExceeded(totalRows);
         }
 
-        result.useCursor(openAggregateCursor(scope, scope.buildSoql(valueField.path, null, ''), valueField.path, null));
+        String cursorSoql = scope.buildSoql(valueField.path + (isoPath == null ? '' : ', ' + isoPath), null, '');
+        result.useCursor(openAggregateCursor(scope, cursorSoql, valueField.path, isoPath));
         return result;
     }
 
@@ -269,56 +264,216 @@ public with sharing class BoardQueryService {
         return aggregateFunction;
     }
 
-    /** Opens a User Mode `Database.Cursor` over `soql` and aggregates its first chunk. */
-    private static AggregateChunk openAggregateCursor(
-        QueryScope scope,
-        String soql,
-        String valuePath,
-        BarGrouping grouping
-    ) {
-        Database.Cursor cursor = Database.getCursorWithBinds(soql, scope.binds, AccessLevel.USER_MODE);
-        return fetchChunk(cursor, 0, valuePath, grouping);
+    // ---------------------------------------------------------------------------------------------------------
+    // Average per record (`BoardAveragePerRecord`)
+    // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Metric Average per record: one `GROUP BY` per-record field query whose rows (one value per record) are averaged
+     * in Apex; a scope beyond `CURSOR_AGGREGATE_THRESHOLD` rows, or more records than one query returns
+     * (`CHART_GROUP_LIMIT`), opens a cursor ordered by the per-record field (chunks: `perRecordMetricChunk`).
+     */
+    private static MetricResult runPerRecordMetric(QueryScope scope, Map<String, Object> request, MetricResult result) {
+        ChartMeasures measures = new ChartMeasures(scope.objectDescribe, new List<Object>{ request });
+        result.valueType = measures.valueTypes[0];
+        Integer totalRows = scope.countRows();
+        result.totalRows = totalRows;
+        if (totalRows <= CURSOR_AGGREGATE_THRESHOLD) {
+            BoardChartEngine.Accumulator averages = new BoardChartEngine.Accumulator(1);
+            if (!queryPerRecordGroup(scope, null, measures, new List<String>(), averages)) {
+                result.value = averages.rows.isEmpty()
+                    ? null
+                    : averages.rows[0].value(0, BoardAveragePerRecord.AGGREGATE_FUNCTION);
+                return result;
+            }
+        }
+        if (totalRows > CURSOR_MAX_ROWS) {
+            throw limitExceeded(totalRows);
+        }
+        Database.Cursor cursor = Database.getCursorWithBinds(
+            scope.buildSoql(measures.cursorSelect(null), null, measures.cursorOrder()),
+            scope.binds,
+            AccessLevel.USER_MODE
+        );
+        result.useCursor(readPerRecordChunk(cursor, 0, measures));
+        return result;
     }
 
     /**
-     * Aggregates one cursor chunk into partial buckets: one ungrouped bucket, or one per Bar group/stack pair. A null
-     * `valuePath` counts rows (each row adds 1). Only cursor access maps to the retryable expired-cursor error.
+     * Next cursor chunk of a Data provider Metric widget's standard leg (`fetchAggregateChunk`), in the Display
+     * currency. That cursor reads the whole scope (`scanPartials`), so the chunk is read like the Chart cursor tier:
+     * the request's Measure (its fields at the top level, as the Metric widget continues it) with its Measure condition
+     * evaluated per record.
      */
-    private static AggregateChunk fetchChunk(
-        Database.Cursor cursor,
-        Integer offset,
-        String valuePath,
-        BarGrouping grouping
-    ) {
-        Integer start = Math.max(0, offset);
-        Integer totalRows;
-        Integer fetchSize;
-        List<SObject> rows = new List<SObject>();
-        try {
-            totalRows = cursor.getNumRecords();
-            fetchSize = Math.max(0, Math.min(CURSOR_CHUNK_SIZE, totalRows - start));
-            if (fetchSize > 0) {
-                rows = cursor.fetch(start, fetchSize);
+    private static AggregateChunk providerMetricChunk(Map<String, Object> request) {
+        Map<String, Object> measure = new Map<String, Object>();
+        for (
+            String key : new List<String>{ 'aggregateFunction', 'valueFieldApiName', 'perField', 'inner', 'condition' }
+        ) {
+            if (request.get(key) != null) {
+                measure.put(key, request.get(key));
             }
-        } catch (Exception cursorError) {
-            throw aggregationCursorExpired();
         }
-        Map<String, AggregateBucket> buckets = new Map<String, AggregateBucket>();
-        if (grouping == null) {
-            buckets.put('', new AggregateBucket());
+        // The Measure condition is compiled into a scope of its own, to evaluate it per record (as `scanChart`).
+        QueryScope scope = new QueryScope(
+            new Map<String, Object>{ 'objectApiName' => getString(request, 'objectApiName') }
+        );
+        ChartMeasures measures = new ChartMeasures(scope.objectDescribe, new List<Object>{ measure });
+        measures.compileConditions(scope);
+        BoardChartQuery.ChartResult result = new BoardChartQuery.ChartResult();
+        result.accumulator = new BoardChartEngine.Accumulator(1);
+        Integer offset = getInteger(request, 'offset');
+        Integer start = offset == null ? 0 : Math.max(0, offset);
+        scanChartChunk(deserializeCursor(getString(request, 'cursor')), start, null, measures, result);
+        BoardChartEngine.Partial total = new BoardChartEngine.Partial();
+        for (BoardChartEngine.GroupedRow row : result.accumulator.rows) {
+            total.combine(row.partials[0]);
         }
-        for (SObject row : Security.stripInaccessible(AccessType.READABLE, rows).getRecords()) {
-            AggregateBucket bucket = grouping == null ? buckets.get('') : grouping.bucketFor(row, buckets);
-            bucket.add(valuePath == null ? 1 : readValue(row, valuePath));
+        BoardChartEngine.Partial bucket = new BoardChartEngine.Partial();
+        bucket.sum = total.sum;
+        bucket.count = total.count;
+        bucket.min = total.min;
+        bucket.max = total.max;
+        AggregateChunk chunk = new AggregateChunk();
+        chunk.cursor = result.cursor;
+        chunk.offset = start;
+        chunk.nextOffset = result.nextOffset;
+        chunk.totalRows = result.totalRows;
+        chunk.isComplete = result.isComplete;
+        chunk.buckets = new List<BoardChartEngine.Partial>{ bucket };
+        BoardCurrencyConverter converter = BoardCurrencyConverter.forRequest();
+        return converter.toDisplay(chunk, converter.isoCodeFor(measures.functions[0], measures.valueTypes[0], request));
+    }
+
+    /** Next Metric Average per record cursor chunk (`fetchAggregateChunk`), in the Display currency. */
+    private static AggregateChunk perRecordMetricChunk(
+        Schema.DescribeSObjectResult objectDescribe,
+        Map<String, Object> request
+    ) {
+        ChartMeasures measures = new ChartMeasures(objectDescribe, new List<Object>{ request });
+        AggregateChunk chunk = readPerRecordChunk(
+            deserializeCursor(getString(request, 'cursor')),
+            getInteger(request, 'offset'),
+            measures
+        );
+        BoardCurrencyConverter converter = BoardCurrencyConverter.forRequest();
+        return converter.toDisplay(
+            chunk,
+            converter.isoCodeFor(BoardAveragePerRecord.AGGREGATE_FUNCTION, measures.valueTypes[0], request)
+        );
+    }
+
+    /**
+     * One Metric Average per record cursor chunk as one bucket of record values (`sum` of them, `count` of records),
+     * ending before the rows of its last record (see `BoardAveragePerRecord.completeRecords`).
+     */
+    private static AggregateChunk readPerRecordChunk(Database.Cursor cursor, Integer offset, ChartMeasures measures) {
+        Integer start = Math.max(0, offset == null ? 0 : offset);
+        CursorRows rows = readCursorRows(cursor, start);
+        Integer readCount = measures.completeRecords(rows.records, rows.nextOffset >= rows.totalRows);
+        BoardAveragePerRecord.RecordFold fold = new BoardAveragePerRecord.RecordFold(measures.inners);
+        for (Integer i = 0; i < readCount; i++) {
+            SObject record = rows.records[i];
+            fold.add(null, null, null, null, measures.recordKey(record), measures.perRecordValues(record));
+        }
+        BoardChartEngine.Accumulator values = new BoardChartEngine.Accumulator(1);
+        fold.putInto(values);
+        BoardChartEngine.Partial bucket = new BoardChartEngine.Partial();
+        if (!values.rows.isEmpty()) {
+            BoardChartEngine.Partial partial = values.rows[0].partials[0];
+            bucket.sum = partial.sum;
+            bucket.count = partial.count;
+            bucket.min = partial.min;
+            bucket.max = partial.max;
         }
         AggregateChunk chunk = new AggregateChunk();
         chunk.cursor = JSON.serialize(cursor);
         chunk.offset = start;
-        chunk.nextOffset = start + fetchSize;
-        chunk.totalRows = totalRows;
-        chunk.isComplete = chunk.nextOffset >= totalRows;
-        chunk.buckets = buckets.values();
+        chunk.nextOffset = start + readCount;
+        chunk.totalRows = rows.totalRows;
+        chunk.isComplete = chunk.nextOffset >= rows.totalRows;
+        chunk.buckets = new List<BoardChartEngine.Partial>{ bucket };
         return chunk;
+    }
+
+    /**
+     * One Average per record query group (`groupMeasures` share one per-record field): `GROUP BY` category (+ series,
+     * with a `grouping`) + per-record field, each row one record's value per Measure, added to `averages` (whose
+     * partials then average them per category / series). Rows without a record are left out. True when the query
+     * hit `CHART_GROUP_LIMIT`, so records may be missing.
+     */
+    private static Boolean queryPerRecordGroup(
+        QueryScope scope,
+        ChartGrouping grouping,
+        ChartMeasures groupMeasures,
+        List<String> predicates,
+        BoardChartEngine.Accumulator averages
+    ) {
+        String perPath = groupMeasures.perRecordPath();
+        List<String> allPredicates = new List<String>(predicates);
+        allPredicates.add(perPath + ' != null');
+        String selectClause = groupMeasures.aggregateSelect();
+        String groupByClause = perPath;
+        if (grouping != null) {
+            selectClause = grouping.aggregateSelect() + ', ' + selectClause;
+            groupByClause = grouping.groupByClause() + ', ' + perPath;
+        }
+        List<SObject> rows = scope.query(
+            scope.buildSoql(selectClause, allPredicates, 'GROUP BY ' + groupByClause + ' LIMIT ' + CHART_GROUP_LIMIT)
+        );
+        List<String> none = new List<String>{ null, null };
+        for (SObject row : rows) {
+            AggregateResult aggregate = (AggregateResult) row;
+            List<String> category = grouping == null ? none : grouping.groupBy.fromAggregate(aggregate);
+            List<String> series = grouping == null ||
+                grouping.stackBy == null
+                ? none
+                : grouping.stackBy.fromAggregate(aggregate);
+            List<Object> values = new List<Object>();
+            for (Integer i = 0; i < groupMeasures.size(); i++) {
+                values.add(aggregate.get('v' + i));
+            }
+            List<String> panel = grouping == null ? none : grouping.panelOfAggregate(aggregate);
+            averages.add(panel[0], panel[1], category[0], category[1], series[0], series[1], values);
+        }
+        return rows.size() >= CHART_GROUP_LIMIT;
+    }
+
+    /** Opens a User Mode `Database.Cursor` over `soql` and aggregates its first chunk. */
+    private static AggregateChunk openAggregateCursor(QueryScope scope, String soql, String valuePath, String isoPath) {
+        Database.Cursor cursor = Database.getCursorWithBinds(soql, scope.binds, AccessLevel.USER_MODE);
+        return fetchChunk(cursor, 0, valuePath, isoPath);
+    }
+
+    /**
+     * Aggregates one cursor chunk (`readCursorRows`) into one partial bucket. A non-null `isoPath` (currency value
+     * fields in multi-currency orgs) converts each row to the corporate currency before it is added.
+     */
+    private static AggregateChunk fetchChunk(Database.Cursor cursor, Integer offset, String valuePath, String isoPath) {
+        Integer start = Math.max(0, offset);
+        CursorRows rows = readCursorRows(cursor, start);
+        BoardChartEngine.Partial bucket = new BoardChartEngine.Partial();
+        for (SObject row : rows.records) {
+            bucket.add(readCorporateValue(row, valuePath, isoPath));
+        }
+        AggregateChunk chunk = new AggregateChunk();
+        chunk.cursor = JSON.serialize(cursor);
+        chunk.offset = start;
+        chunk.nextOffset = rows.nextOffset;
+        chunk.totalRows = rows.totalRows;
+        chunk.isComplete = chunk.nextOffset >= rows.totalRows;
+        chunk.buckets = new List<BoardChartEngine.Partial>{ bucket };
+        return chunk;
+    }
+
+    private static List<SObject> fetchCursorRows(Database.Cursor cursor, Integer position, Integer count) {
+        try {
+            return cursor.fetch(position, count);
+        } catch (System.TransientCursorException cursorError) {
+            throw aggregationCursorExpired();
+        } catch (System.FatalCursorException cursorError) {
+            throw aggregationCursorExpired();
+        }
     }
 
     private static Database.Cursor deserializeCursor(String cursorJson) {
@@ -381,9 +536,22 @@ public with sharing class BoardQueryService {
         }
     }
 
-    /** Value-field value of a queried row; parent paths traverse the queried relationships. */
-    private static Object readValue(SObject row, String path) {
-        return readPath(row, path);
+    /** `CurrencyIsoCode` path to select next to a currency value field in multi-currency orgs; otherwise null. */
+    private static String currencyIsoPath(ResolvedField valueField) {
+        return valueField == null ||
+            valueField.type != Schema.DisplayType.CURRENCY
+            ? null
+            : BoardCurrencyConverter.forRequest().isoCodePath(valueField.path, valueField.type);
+    }
+
+    /** Value-field value of a queried row, converted from the record's currency to corporate when `isoPath` is set. */
+    private static Object readCorporateValue(SObject row, String valuePath, String isoPath) {
+        Object value = readPath(row, valuePath);
+        if (isoPath == null || value == null) {
+            return value;
+        }
+        return BoardCurrencyConverter.forRequest()
+            .toCorporate(Decimal.valueOf(String.valueOf(value)), (String) readPath(row, isoPath));
     }
 
     private static BoardErrors.BoardException limitExceeded(Integer totalRows) {
@@ -399,44 +567,30 @@ public with sharing class BoardQueryService {
     }
 
     // ---------------------------------------------------------------------------------------------------------
-    // Table execution (`Database.PaginationCursor` infinite scroll)
+    // Table entry points (execution lives in `BoardTableQuery`)
     // ---------------------------------------------------------------------------------------------------------
-
-    /** Max rows a Table `Database.PaginationCursor` spans (platform pagination cursor limit). */
-    @TestVisible
-    private static Integer TABLE_MAX_ROWS = 100000;
-    private static final Integer TABLE_DEFAULT_PAGE_SIZE = 25;
-    private static final Integer TABLE_MIN_PAGE_SIZE = 10;
-    private static final Integer TABLE_MAX_PAGE_SIZE = 100;
-    /** `fieldPath` of the retryable `QUERY_ERROR` raised for an expired/invalid cursor; the Table re-opens it. */
-    private static final String PAGINATION_CURSOR_PATH = 'paginationCursor';
-    /** Leaf fields linked by `linkToRecord: 'auto'` in addition to describe name fields. */
-    private static final Set<String> PRIMARY_NAME_FIELDS = new Set<String>{ 'name', 'casenumber', 'subject' };
-    private static final Integer CHILD_DEFAULT_LIMIT = 10;
-    private static final Integer CHILD_MAX_LIMIT = 50;
-    /** Row cap of the page-scoped child count query (`FeedItem` disallows `COUNT(Id)` + `GROUP BY`). */
-    @TestVisible
-    private static Integer CHILD_COUNT_QUERY_LIMIT = 2001;
-    /** Count queries per page: each saturated query re-queries only the parents it did not reach. */
-    @TestVisible
-    private static Integer CHILD_COUNT_MAX_QUERIES = 3;
 
     /**
      * Opens a Table Widget `Database.PaginationCursor` and returns its first page.
      *
-     * Request: `{ objectApiName, columns[], sortBy, sortDirection, pageSize, start, childRelationship, filters[],
-     * baseFilters[], refreshToken, widgetRefreshToken }`. `columns[]` items are `TableColumnConfig` (`id`,
+     * Request: `{ objectApiName, columns[], sortBy, sortDirection, pageSize, start, filters[],
+     * baseFilters[], displayCurrency, refreshToken, widgetRefreshToken }`. Currency cells come back converted from
+     * each record's currency to `displayCurrency`, and currency columns carry its `currencyIsoCode`. `columns[]` items are `TableColumnConfig` (`id`,
      * `fieldPath`, `linkToRecord`); paths are direct fields or 1-5 hop parent dot-paths and fail closed with
      * `ACCESS_ERROR` when unreadable. Ordering is `sortBy sortDirection NULLS LAST, Id ASC`. `start` (default 0)
-     * lets the caller re-open an expired cursor and continue at the row it had reached. An optional
-     * `childRelationship` adds page-scoped `childCount`s to each row (no child subqueries in the page SOQL).
+     * lets the caller re-open an expired cursor and continue at the row it had reached. A request that still
+     * carries `childRelationship` fails with `CONFIG_ERROR` (child rows were replaced by Row grouping).
+     * With Row grouping (`groupBy`: up to two `{ fieldPath, sortDirection, dateGranularity, orderBy }`) records stream group-sorted and the result also
+     * carries `groupField` and the first page's `groups` (see `BoardTableGrouping`); later pages come from
+     * `fetchGroupedTablePage`.
      */
     @AuraEnabled(cacheable=true)
     public static TableResult queryTable(String requestJson) {
         try {
             Map<String, Object> request = parseRequest(requestJson);
+            BoardTableQuery.rejectChildRelationship(request);
             QueryScope scope = new QueryScope(request);
-            return runTable(scope, request);
+            return BoardTableQuery.runTable(scope, request);
         } catch (Exception error) {
             throw BoardErrors.toAuraException(error);
         }
@@ -445,591 +599,1581 @@ public with sharing class BoardQueryService {
     /**
      * Fetches the page at `start` from a cursor returned by `queryTable`, without recompiling the query.
      * An expired or invalid cursor fails with a retryable `QUERY_ERROR` whose `fieldPath` is `paginationCursor`.
-     * `childConfig` is the Table's serialized `childRelationship` (blank for none) and adds page-scoped child counts.
+     * Currency cells are converted to `displayCurrency` (the `queryTable` request's; blank = the viewer's currency).
      */
     @AuraEnabled(cacheable=true)
     public static TablePage fetchTablePage(
         String paginationCursor,
         Integer start,
         Integer pageSize,
-        String childConfig
+        String displayCurrency
     ) {
         try {
-            ChildRelationship child = String.isBlank(childConfig)
-                ? null
-                : new ChildRelationship(parseRequest(childConfig));
-            return fetchTableRows(
-                deserializePaginationCursor(paginationCursor),
-                paginationCursor,
-                start == null ? 0 : Math.max(0, start),
-                clampPageSize(pageSize),
-                child
-            );
+            return BoardTableQuery.fetchPage(paginationCursor, start, pageSize, displayCurrency);
         } catch (Exception error) {
             throw BoardErrors.toAuraException(error);
         }
     }
 
     /**
-     * Lazily fetches one parent row's child records for an expanded Table row.
-     *
-     * `childConfig` is the Table's serialized `childRelationship` (`childObjectApiName`, `foreignKeyField`,
-     * `columns[]`, `sortBy`, `sortDirection`, `limit` 1..50 default 10; extra keys such as `refreshToken` only
-     * vary the cache key). Runs in User Mode with `Security.stripInaccessible`; unreadable child columns fail
-     * closed with `ACCESS_ERROR`.
+     * Row grouping: fetches the page at `start` from a grouped Table's cursor (as `fetchTablePage`, page size from
+     * the request) plus `groups`, the full-group record count of each group on the page. `requestJson` is the
+     * `queryTable` request that opened the cursor (its scope and `groupBy` restrict the page-scoped `GROUP BY`).
      */
     @AuraEnabled(cacheable=true)
-    public static ChildRowsResult queryChildRows(String childConfig, String parentId) {
+    public static TablePage fetchGroupedTablePage(String requestJson, String paginationCursor, Integer start) {
         try {
-            ChildRelationship child = new ChildRelationship(parseRequest(childConfig));
-            Id parentRecordId = BoardDescribe.toId(parentId);
-            if (parentRecordId == null) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    'A valid parent record Id is required.',
-                    null,
-                    'parentId'
-                );
-            }
-            return child.queryRows(parentRecordId);
+            Map<String, Object> request = parseRequest(requestJson);
+            BoardTableQuery.rejectChildRelationship(request);
+            QueryScope scope = new QueryScope(request);
+            return BoardTableQuery.fetchGroupedPage(scope, request, paginationCursor, start);
         } catch (Exception error) {
             throw BoardErrors.toAuraException(error);
         }
     }
 
-    private static TableResult runTable(QueryScope scope, Map<String, Object> request) {
-        TableResult result = new TableResult(scope);
-        result.columns = resolveTableColumns(scope.objectDescribe, getList(request, 'columns'), 'columns');
-        TableOrder order = new TableOrder(
-            scope.objectDescribe,
-            getString(request, 'sortBy'),
-            getString(request, 'sortDirection')
-        );
-        result.sortBy = order.sortBy;
-        result.sortDirection = order.sortDirection;
-        Object rawChild = request.get('childRelationship');
-        ChildRelationship child = rawChild == null ? null : new ChildRelationship(asMap(rawChild));
-        if (child != null) {
-            child.matchedChildIds.addAll(scope.searchChildIds);
+    /**
+     * Detail rows off, cursor tier: the next chunk of a Table whose `queryTable` response carried an incomplete
+     * `aggregateCursor`. Request: the `queryTable` request plus `{ cursor, offset, partialState }` from the previous
+     * response. Only the final chunk carries the Group rows (see `BoardTableAggregateCursor`).
+     */
+    @AuraEnabled(cacheable=true)
+    public static TableResult fetchTableAggregateChunk(String requestJson) {
+        try {
+            Map<String, Object> request = parseRequest(requestJson);
+            if (getString(request, 'cursor') == null) {
+                throw BoardErrors.error(
+                    BoardErrors.QUERY_ERROR,
+                    'The table calculation can no longer continue. Retry to recalculate.',
+                    null,
+                    null,
+                    true
+                );
+            }
+            BoardTableQuery.rejectChildRelationship(request);
+            return BoardTableQuery.runTable(new QueryScope(request), request);
+        } catch (Exception error) {
+            throw BoardErrors.toAuraException(error);
         }
-        result.searchChildIds = new List<Id>(scope.searchChildIds);
+    }
 
-        String soql = scope.buildSoql(
-            tableSelectList(result.columns),
-            null,
-            'ORDER BY ' + order.clause + ' LIMIT ' + TABLE_MAX_ROWS
+    // ---------------------------------------------------------------------------------------------------------
+    // Shared cursor tier (Table with Detail rows off: `BoardTableAggregateCursor`)
+    // ---------------------------------------------------------------------------------------------------------
+
+    /** Max matching rows for a single SOQL aggregate; above it aggregates read cursor chunks. */
+    public static Integer cursorAggregateThreshold() {
+        return CURSOR_AGGREGATE_THRESHOLD;
+    }
+
+    /** Max matching rows the cursor tier aggregates; above it the request is blocked. */
+    public static Integer cursorMaxRows() {
+        return CURSOR_MAX_ROWS;
+    }
+
+    /** Records the scope matches. */
+    public static Integer countScopeRows(QueryScope scope) {
+        return countScopeRows(scope, null);
+    }
+
+    /** A cursor serialized by a previous chunk call; an invalid one is the retryable expired-cursor error. */
+    public static Database.Cursor restoreCursor(String cursorJson) {
+        return deserializeCursor(cursorJson);
+    }
+
+    /**
+     * The readable records of one cursor chunk at `offset`: up to `CURSOR_CHUNK_SIZE` rows in `CURSOR_FETCH_SIZE`
+     * fetches, capped by the remaining query-row budget. Only cursor exceptions map to the retryable expired-cursor
+     * error; anything else (fetch-size or bound errors) surfaces as a real failure. Every cursor tier reads through it.
+     */
+    public static CursorRows readCursorRows(Database.Cursor cursor, Integer offset) {
+        Integer start = Math.max(0, offset == null ? 0 : offset);
+        CursorRows chunk = new CursorRows();
+        try {
+            chunk.totalRows = cursor.getNumRecords();
+        } catch (System.TransientCursorException cursorError) {
+            throw aggregationCursorExpired();
+        } catch (System.FatalCursorException cursorError) {
+            throw aggregationCursorExpired();
+        }
+        Integer rowBudget = Limits.getLimitQueryRows() - Limits.getQueryRows();
+        Integer fetchSize = Math.max(0, Math.min(Math.min(CURSOR_CHUNK_SIZE, rowBudget), chunk.totalRows - start));
+        List<SObject> rows = new List<SObject>();
+        for (Integer fetched = 0; fetched < fetchSize; fetched += CURSOR_FETCH_SIZE) {
+            rows.addAll(fetchCursorRows(cursor, start + fetched, Math.min(CURSOR_FETCH_SIZE, fetchSize - fetched)));
+        }
+        chunk.records = Security.stripInaccessible(AccessType.READABLE, rows).getRecords();
+        chunk.nextOffset = start + fetchSize;
+        return chunk;
+    }
+
+    /** One cursor chunk: its readable records, the cursor's row count and the offset of the next chunk. */
+    public class CursorRows {
+        public List<SObject> records = new List<SObject>();
+        public Integer totalRows;
+        public Integer nextOffset;
+    }
+
+    private static Integer countScopeRows(QueryScope scope, List<String> extraPredicates) {
+        return scope.countSoql(scope.buildSoql('COUNT()', extraPredicates, ''));
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // Chart widget grouped scan (entry points in `BoardChartQuery`, shaping in `BoardChartEngine`)
+    // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Groups a Chart widget request (see `BoardChartQuery`) by its category field and optional series field
+     * (`stackByField`) and aggregates every Measure per group into `result.accumulator`, unshaped. Two tiers:
+     * one `GROUP BY` query with one column per Measure, or `Database.Cursor` chunks when a value Measure
+     * spans more than `CURSOR_AGGREGATE_THRESHOLD` rows or the `GROUP BY` hits `CHART_GROUP_LIMIT` (never with a
+     * `COUNT_DISTINCT` Measure, whose chunks cannot merge). A request carrying `cursor` continues that cursor at
+     * `offset`, adding to the grouped rows of its `partialState`.
+     *
+     * Measure conditions (`measures[].condition`, see `BoardMeasureGroups`) narrow the scope per Measure: the SOQL tier
+     * runs one `GROUP BY` query per Measure condition group and joins them on the category / series key; the cursor
+     * tier reads the scope once and evaluates each Measure's condition per record.
+     *
+     * Average per record Measures (`BoardAveragePerRecord`) run their own query grouped by category / series + their
+     * per-record field, averaged in Apex; their cursor is ordered by that field and each chunk ends at a record boundary.
+     * Not available with a Bucket field.
+     */
+    public static BoardChartQuery.ChartResult scanChart(Map<String, Object> request) {
+        String groupBucketId = BoardBucketField.referencedId(getString(request, 'groupByField'));
+        String stackBucketId = BoardBucketField.referencedId(getString(request, 'stackByField'));
+        String panelBucketId = BoardBucketField.referencedId(getString(request, 'panelField'));
+        if (groupBucketId != null || stackBucketId != null || panelBucketId != null) {
+            return scanBucketChart(request, groupBucketId, stackBucketId, panelBucketId);
+        }
+        String cursorJson = getString(request, 'cursor');
+        QueryScope scope = cursorJson == null ? new QueryScope(request) : null;
+        Schema.DescribeSObjectResult objectDescribe = scope == null
+            ? BoardDescribe.requireReadableObject(getString(request, 'objectApiName'))
+            : scope.objectDescribe;
+        ChartGrouping grouping = new ChartGrouping(objectDescribe, request);
+        ChartMeasures measures = new ChartMeasures(objectDescribe, getList(request, 'measures'));
+        if (measures.size() > 1 && grouping.stackBy != null) {
+            throw BoardErrors.error(
+                BoardErrors.CONFIG_ERROR,
+                'A Chart widget shows several Measures or one Measure split by a series field, not both.',
+                null,
+                'stackByField'
+            );
+        }
+        BoardChartQuery.ChartResult result = new BoardChartQuery.ChartResult();
+        result.aggregateFunctions = measures.functions;
+        result.valueTypes = measures.valueTypes;
+        result.groupBy = grouping.groupBy.info();
+        result.stackBy = grouping.stackBy == null ? null : grouping.stackBy.info();
+        result.panelBy = grouping.panelBy == null ? null : grouping.panelBy.info();
+        result.accumulator = new BoardChartEngine.Accumulator(measures.size());
+        // A cursor chunk call compiles the Measure conditions into a scope of its own, to evaluate them per record.
+        measures.compileConditions(
+            scope != null
+                ? scope
+                : new QueryScope(new Map<String, Object>{ 'objectApiName' => objectDescribe.getName() })
         );
-        Database.PaginationCursor cursor = Database.getPaginationCursorWithBinds(
-            soql,
-            scope.binds,
-            AccessLevel.USER_MODE
-        );
-        Integer start = getInteger(request, 'start');
-        result.copyPage(
-            fetchTableRows(
-                cursor,
-                JSON.serialize(cursor),
-                start == null ? 0 : Math.max(0, start),
-                clampPageSize(getInteger(request, 'pageSize')),
-                child
-            )
-        );
+        if (scope == null) {
+            result.accumulator.restore(getString(request, 'partialState'));
+            Integer offset = getInteger(request, 'offset');
+            scanChartChunk(deserializeCursor(cursorJson), offset == null ? 0 : offset, grouping, measures, result);
+            return result;
+        }
+        result.appliedFilterIds = scope.appliedFilterIds;
+        result.ignoredFilterIds = scope.ignoredFilterIds;
+
+        List<String> extraPredicates = grouping.extraPredicates();
+        String cursorSoql = scope.buildSoql(measures.cursorSelect(grouping), extraPredicates, measures.cursorOrder());
+        if (measures.needsRowCount()) {
+            result.totalRows = countScopeRows(scope, extraPredicates);
+            if (result.totalRows > CURSOR_AGGREGATE_THRESHOLD) {
+                if (measures.hasCountDistinct() || result.totalRows > CURSOR_MAX_ROWS) {
+                    throw limitExceeded(result.totalRows);
+                }
+                openChartCursor(scope, cursorSoql, grouping, measures, result);
+                return result;
+            }
+        }
+
+        // One GROUP BY query per Measure condition group, joined on the category / series key.
+        BoardMeasureGroups.MeasureJoin measureJoin = new BoardMeasureGroups.MeasureJoin(measures.functions);
+        Boolean capped = false;
+        for (Integer g = 0; g < measures.groups.groups.size(); g++) {
+            BoardMeasureGroups.MeasureGroup measureGroup = measures.groups.groups[g];
+            ChartMeasures groupMeasures = measures.subset(measureGroup.measureIndexes);
+            if (measureGroup.perField != null) {
+                capped = joinPerRecordGroup(scope, grouping, measures, g, extraPredicates, measureJoin) || capped;
+                continue;
+            }
+            String soql = scope.buildSoql(
+                grouping.aggregateSelect() + ', ' + groupMeasures.aggregateSelect(),
+                measures.predicatesFor(g, extraPredicates),
+                'GROUP BY ' +
+                    grouping.groupByClause() +
+                    ' ORDER BY ' +
+                    groupMeasures.expressions[0] +
+                    ' DESC NULLS LAST LIMIT ' +
+                    CHART_GROUP_LIMIT
+            );
+            List<SObject> rows = scope.query(soql);
+            for (SObject row : rows) {
+                AggregateResult aggregate = (AggregateResult) row;
+                List<String> category = grouping.groupBy.fromAggregate(aggregate);
+                List<String> series = grouping.stackBy == null
+                    ? new List<String>{ null, null }
+                    : grouping.stackBy.fromAggregate(aggregate);
+                List<Object> values = new List<Object>();
+                for (Integer i = 0; i < groupMeasures.size(); i++) {
+                    values.add(aggregate.get('v' + i));
+                }
+                List<String> panel = grouping.panelOfAggregate(aggregate);
+                measureJoin.put(measureGroup, panel, category, series, values);
+            }
+            capped = capped || rows.size() >= CHART_GROUP_LIMIT;
+        }
+        measureJoin.putInto(result.accumulator);
+        result.overallValues = referenceLineTotals(request, scope, extraPredicates, measures);
+        result.panelQueryTotals = chartPanelTotals(request, scope, extraPredicates, measures, grouping.panelBy);
+        Boolean mergeOther = !capped && !measures.hasCountDistinct() && needsMergedOther(request, measures, result);
+        if (!capped && !mergeOther) {
+            return result;
+        }
+        // Capped (smaller groups were dropped), or an "Other" that must merge partials: re-aggregate every group
+        // through cursor chunks when possible.
+        if (!measures.hasCountDistinct()) {
+            if (result.totalRows == null) {
+                result.totalRows = countScopeRows(scope, extraPredicates);
+            }
+            if (result.totalRows <= CURSOR_MAX_ROWS) {
+                result.accumulator = new BoardChartEngine.Accumulator(measures.size());
+                openChartCursor(scope, cursorSoql, grouping, measures, result);
+                return result;
+            }
+        }
+        if (mergeOther) {
+            return result; // Too many rows to re-read: the final values stand and "Other" truncates.
+        }
+        result.hasMoreGroups = true;
+        if (BoardChartQuery.usesShareOfTotal(request)) {
+            result.grandTotals = chartGrandTotals(scope, extraPredicates, measures);
+        }
         return result;
     }
 
-    private static List<TableColumn> resolveTableColumns(
-        Schema.DescribeSObjectResult objectDescribe,
-        List<Object> rawColumns,
-        String configPath
+    /**
+     * True when the shaped chart needs an "Other" category or series for Measures that don't add up (AVG, MIN, MAX,
+     * Average per record, or a Formula measure over any of them): only cursor partials merge into it
+     * (`BoardChartEngine`), so the SOQL tier's final values re-run through the cursor tier. Never with a Panel field
+     * (Panels sum their "Other") or on a date axis (always truncated).
+     */
+    private static Boolean needsMergedOther(
+        Map<String, Object> request,
+        ChartMeasures measures,
+        BoardChartQuery.ChartResult result
     ) {
-        List<TableColumn> columns = new List<TableColumn>();
-        for (Object rawColumn : rawColumns) {
-            columns.add(new TableColumn(objectDescribe, asMap(rawColumn)));
+        if (result.panelBy != null) {
+            return false;
         }
-        if (columns.isEmpty()) {
-            throw BoardErrors.error(BoardErrors.CONFIG_ERROR, 'A table needs at least one column.', null, configPath);
+        Boolean additive = !BoardFormulaMeasures.hasFormulaMeasures(request);
+        for (String aggregateFunction : measures.functions) {
+            additive = additive && (aggregateFunction == 'COUNT' || aggregateFunction == 'SUM');
         }
-        return columns;
+        if (additive) {
+            return false;
+        }
+        Boolean includeBlank = request.get('includeNullBucket') != false;
+        Set<String> categoryValues = new Set<String>();
+        Set<String> seriesValues = new Set<String>();
+        for (BoardChartEngine.GroupedRow row : result.accumulator.rows) {
+            if (row.categoryValue == null && !includeBlank) {
+                continue;
+            }
+            categoryValues.add(row.categoryValue);
+            seriesValues.add(row.seriesValue);
+        }
+        Boolean dateAxis = result.groupBy != null && result.groupBy.dateGranularity != null;
+        Boolean otherCategory =
+            'OTHER'.equalsIgnoreCase(getString(request, 'overflowMode')) &&
+            !dateAxis &&
+            categoryValues.size() > BoardChartQuery.maxCategories(request);
+        Boolean otherSeries = result.stackBy != null && seriesValues.size() > BoardChartQuery.maxSeries(request);
+        return otherCategory || otherSeries;
     }
 
-    /** `Id` plus each column's `fieldPath` and `linkPath`, case-insensitively deduped. */
-    private static String tableSelectList(List<TableColumn> columns) {
-        List<String> selectPaths = new List<String>{ 'Id' };
-        Set<String> selected = new Set<String>{ 'id' };
-        for (TableColumn column : columns) {
-            for (String path : new List<String>{ column.fieldPath, column.linkPath }) {
-                if (path != null && selected.add(path.toLowerCase())) {
-                    selectPaths.add(path);
+    /** Reference line overall values: every Measure over the whole scope; null when no Measure is a Reference line. */
+    private static List<Decimal> referenceLineTotals(
+        Map<String, Object> request,
+        QueryScope scope,
+        List<String> predicates,
+        ChartMeasures measures
+    ) {
+        return BoardChartQuery.usesReferenceLines(request) ? chartGrandTotals(scope, predicates, measures) : null;
+    }
+
+    /**
+     * Panel totals (`BoardChartPanelTotals`): every Measure per Panel field value, in one query grouped by the Panel
+     * field alone per Measure condition group, keyed by Panel key; null unless a Panel headline or Reference line
+     * needs them.
+     */
+    private static Map<String, List<Decimal>> chartPanelTotals(
+        Map<String, Object> request,
+        QueryScope scope,
+        List<String> extraPredicates,
+        ChartMeasures measures,
+        ChartDimension panelBy
+    ) {
+        if (panelBy == null || !BoardChartPanelTotals.isNeeded(request)) {
+            return null;
+        }
+        Map<String, List<Decimal>> totals = new Map<String, List<Decimal>>();
+        String panelSelect = String.join(panelBy.selectColumns(), ', ');
+        String panelGroupBy = String.join(panelBy.expressions, ', ');
+        for (Integer g = 0; g < measures.groups.groups.size(); g++) {
+            BoardMeasureGroups.MeasureGroup measureGroup = measures.groups.groups[g];
+            ChartMeasures groupMeasures = measures.subset(measureGroup.measureIndexes);
+            List<String> predicates = measures.predicatesFor(g, extraPredicates);
+            // Average per record: one row per Panel and record, averaged per Panel (records beyond the cap left out).
+            String perPath = measureGroup.perField != null ? groupMeasures.perRecordPath() : null;
+            if (perPath != null) {
+                predicates = new List<String>(predicates);
+                predicates.add(perPath + ' != null');
+            }
+            String soql = scope.buildSoql(
+                panelSelect + ', ' + groupMeasures.aggregateSelect(),
+                predicates,
+                'GROUP BY ' + panelGroupBy + (perPath == null ? '' : ', ' + perPath) + ' LIMIT ' + CHART_GROUP_LIMIT
+            );
+            BoardChartEngine.Accumulator perPanel = new BoardChartEngine.Accumulator(groupMeasures.size());
+            for (SObject row : scope.query(soql)) {
+                AggregateResult aggregate = (AggregateResult) row;
+                List<String> panel = panelBy.fromAggregate(aggregate);
+                List<Object> values = new List<Object>();
+                for (Integer i = 0; i < groupMeasures.size(); i++) {
+                    values.add(aggregate.get('v' + i));
+                }
+                if (perPath != null) {
+                    perPanel.add(panel[0], panel[1], null, null, null, null, values);
+                } else {
+                    perPanel.put(panel[0], panel[1], null, null, null, null, values);
+                }
+            }
+            for (BoardChartEngine.GroupedRow row : perPanel.rows) {
+                String panelKey = row.panelValue == null ? BoardChartEngine.BLANK_KEY : row.panelValue;
+                List<Decimal> panelTotals = totals.get(panelKey);
+                if (panelTotals == null) {
+                    panelTotals = new List<Decimal>();
+                    for (Integer i = 0; i < measures.size(); i++) {
+                        panelTotals.add(null);
+                    }
+                    totals.put(panelKey, panelTotals);
+                }
+                for (Integer i = 0; i < groupMeasures.size(); i++) {
+                    panelTotals[measureGroup.measureIndexes[i]] = row.value(i, groupMeasures.functions[i]);
                 }
             }
         }
-        return String.join(selectPaths, ', ');
+        return totals;
     }
 
-    /** Fetches one page with the prototype-verified final-page `fetchSize` clamp and `getNextIndex()` wrap guard. */
-    private static TablePage fetchTableRows(
-        Database.PaginationCursor paginationCursor,
-        String cursorJson,
-        Integer start,
-        Integer pageSize,
-        ChildRelationship child
+    /**
+     * SOQL tier of an Average per record group `groupIndex` of a Chart: its per-record query averaged per category /
+     * series and put into `measureJoin`. True when the query was capped.
+     */
+    private static Boolean joinPerRecordGroup(
+        QueryScope scope,
+        ChartGrouping grouping,
+        ChartMeasures measures,
+        Integer groupIndex,
+        List<String> extraPredicates,
+        BoardMeasureGroups.MeasureJoin measureJoin
     ) {
-        TablePage page = new TablePage();
-        Integer totalRecords;
-        List<SObject> records = new List<SObject>();
-        Integer nextIndex = start;
-        Integer deletedRows = 0;
-        try {
-            totalRecords = paginationCursor.getNumRecords();
-            Integer fetchSize = Math.max(0, Math.min(pageSize, totalRecords - start));
-            if (fetchSize > 0) {
-                Database.CursorFetchResult fetchResult = paginationCursor.fetchPage(start, fetchSize);
-                records = fetchResult.getRecords();
-                deletedRows = fetchResult.getNumDeletedRecords();
-                Integer rawNext = fetchResult.getNextIndex();
-                nextIndex = (rawNext > start) ? rawNext : (start + records.size() + deletedRows);
+        BoardMeasureGroups.MeasureGroup measureGroup = measures.groups.groups[groupIndex];
+        ChartMeasures groupMeasures = measures.subset(measureGroup.measureIndexes);
+        BoardChartEngine.Accumulator averages = new BoardChartEngine.Accumulator(groupMeasures.size());
+        Boolean capped = queryPerRecordGroup(
+            scope,
+            grouping,
+            groupMeasures,
+            measures.predicatesFor(groupIndex, extraPredicates),
+            averages
+        );
+        for (BoardChartEngine.GroupedRow row : averages.rows) {
+            List<Object> values = new List<Object>();
+            for (Integer i = 0; i < groupMeasures.size(); i++) {
+                values.add(row.value(i, BoardAveragePerRecord.AGGREGATE_FUNCTION));
             }
-        } catch (Exception cursorError) {
-            throw paginationCursorExpired();
+            measureJoin.put(
+                measureGroup,
+                new List<String>{ row.panelValue, row.panelLabel },
+                new List<String>{ row.categoryValue, row.categoryLabel },
+                new List<String>{ row.seriesValue, row.seriesLabel },
+                values
+            );
         }
-        if (start > totalRecords) {
-            // A cursor that cannot reach rows the caller already read is no longer the one it opened.
-            throw paginationCursorExpired();
-        }
-        if (!records.isEmpty()) {
-            for (SObject record : Security.stripInaccessible(AccessType.READABLE, records).getRecords()) {
-                page.rows.add(new TableRow(record));
-            }
-        }
-        if (child != null) {
-            child.applyCounts(page.rows);
-            child.applySearchMatches(page.rows);
-        }
-        page.paginationCursor = cursorJson;
-        page.start = start;
-        page.nextIndex = nextIndex;
-        page.totalCount = totalRecords;
-        page.deletedRows = deletedRows;
-        page.hasMore = nextIndex < totalRecords && !records.isEmpty();
-        return page;
+        return capped;
     }
 
-    private static Database.PaginationCursor deserializePaginationCursor(String cursorJson) {
-        if (String.isBlank(cursorJson)) {
-            throw paginationCursorExpired();
-        }
-        try {
-            return (Database.PaginationCursor) JSON.deserialize(cursorJson, Database.PaginationCursor.class);
-        } catch (Exception invalidCursor) {
-            throw paginationCursorExpired();
+    /**
+     * Share of total denominators of a capped result: every Measure over the whole scope, in one ungrouped query per
+     * Measure condition group.
+     */
+    /** The Panel field must differ from the Group by and series fields (a duplicate grouping fails in SOQL). */
+    private static void requirePanelDistinct(String panelPath, String groupPath, String stackPath) {
+        String panel = panelPath.deleteWhitespace().toLowerCase();
+        Boolean isGroup = groupPath != null && panel == groupPath.deleteWhitespace().toLowerCase();
+        Boolean isStack = stackPath != null && panel == stackPath.deleteWhitespace().toLowerCase();
+        if (isGroup || isStack) {
+            throw BoardErrors.error(
+                BoardErrors.CONFIG_ERROR,
+                'The Panel field must differ from the Group by and Stack by fields.',
+                null,
+                'panelField'
+            );
         }
     }
 
-    private static BoardErrors.BoardException paginationCursorExpired() {
+    private static List<Decimal> chartGrandTotals(
+        QueryScope scope,
+        List<String> extraPredicates,
+        ChartMeasures measures
+    ) {
+        List<Decimal> totals = new List<Decimal>();
+        for (Integer i = 0; i < measures.size(); i++) {
+            totals.add(null);
+        }
+        for (Integer g = 0; g < measures.groups.groups.size(); g++) {
+            BoardMeasureGroups.MeasureGroup measureGroup = measures.groups.groups[g];
+            ChartMeasures groupMeasures = measures.subset(measureGroup.measureIndexes);
+            if (measureGroup.perField != null) {
+                // Average per record over the whole scope; blank when there are more records than one query returns.
+                BoardChartEngine.Accumulator averages = new BoardChartEngine.Accumulator(groupMeasures.size());
+                Boolean capped = queryPerRecordGroup(
+                    scope,
+                    null,
+                    groupMeasures,
+                    measures.predicatesFor(g, extraPredicates),
+                    averages
+                );
+                for (Integer i = 0; i < groupMeasures.size() && !capped && !averages.rows.isEmpty(); i++) {
+                    totals[measureGroup.measureIndexes[i]] = averages.rows[0]
+                        .value(i, BoardAveragePerRecord.AGGREGATE_FUNCTION);
+                }
+                continue;
+            }
+            AggregateResult total = (AggregateResult) scope.query(
+                scope.buildSoql(groupMeasures.aggregateSelect(), measures.predicatesFor(g, extraPredicates), '')
+            )[0];
+            for (Integer i = 0; i < groupMeasures.size(); i++) {
+                Object value = total.get('v' + i);
+                totals[measureGroup.measureIndexes[i]] = value == null ? null : Decimal.valueOf(String.valueOf(value));
+            }
+        }
+        return totals;
+    }
+
+    /**
+     * Standard leg of a Data provider Widget (`BoardDataProviders`): the request's rows grouped like `scanChart`
+     * (one ungrouped row without a `groupByField`), each Measure as a mergeable `{ sum, count, min, max }` partial in
+     * `result.accumulator`, from one SOQL query. With `runQuery` false only the header (groups, Measures, applied and
+     * ignored filter ids) is returned. Scopes beyond `CURSOR_AGGREGATE_THRESHOLD` rows fail with `LIMIT_EXCEEDED`.
+     */
+    public static BoardChartQuery.ChartResult scanPartials(
+        QueryScope scope,
+        Map<String, Object> request,
+        Boolean runQuery
+    ) {
+        return scanPartials(scope, request, runQuery, false);
+    }
+
+    /**
+     * `scanPartials`, and with `allowCursor` a scope beyond `CURSOR_AGGREGATE_THRESHOLD` (up to `CURSOR_MAX_ROWS`)
+     * opens a `Database.Cursor` and returns its first chunk (`mode: 'CURSOR'`), continued like `scanChart` (Chart
+     * widget: `fetchChartChunk`) or `fetchAggregateChunk` (Metric widget, ungrouped).
+     */
+    public static BoardChartQuery.ChartResult scanPartials(
+        QueryScope scope,
+        Map<String, Object> request,
+        Boolean runQuery,
+        Boolean allowCursor
+    ) {
+        String groupBucketId = BoardBucketField.referencedId(getString(request, 'groupByField'));
+        String stackBucketId = BoardBucketField.referencedId(getString(request, 'stackByField'));
+        if (groupBucketId != null || stackBucketId != null) {
+            if (new ChartMeasures(scope.objectDescribe, getList(request, 'measures')).hasCountDistinct()) {
+                throw countDistinctUnmergeable();
+            }
+            return scanBucketPartials(scope, request, groupBucketId, stackBucketId, runQuery, allowCursor);
+        }
+        ChartGrouping grouping = String.isBlank(getString(request, 'groupByField'))
+            ? null
+            : new ChartGrouping(scope.objectDescribe, request);
+        ChartMeasures measures = new ChartMeasures(scope.objectDescribe, getList(request, 'measures'));
+        if (measures.size() > 1 && grouping != null && grouping.stackBy != null) {
+            throw BoardErrors.error(
+                BoardErrors.CONFIG_ERROR,
+                'A Chart widget shows several Measures or one Measure split by a series field, not both.',
+                null,
+                'stackByField'
+            );
+        }
+        if (measures.hasCountDistinct()) {
+            throw countDistinctUnmergeable();
+        }
+        measures.compileConditions(scope);
+        BoardChartQuery.ChartResult result = new BoardChartQuery.ChartResult();
+        result.aggregateFunctions = measures.functions;
+        result.valueTypes = measures.valueTypes;
+        result.groupBy = grouping == null ? null : grouping.groupBy.info();
+        result.stackBy = grouping == null || grouping.stackBy == null ? null : grouping.stackBy.info();
+        result.panelBy = grouping == null || grouping.panelBy == null ? null : grouping.panelBy.info();
+        result.appliedFilterIds = new List<String>(scope.appliedFilterIds);
+        result.ignoredFilterIds = new List<String>(scope.ignoredFilterIds);
+        result.accumulator = new BoardChartEngine.Accumulator(measures.size());
+        if (!runQuery) {
+            return result;
+        }
+        List<String> extraPredicates = grouping == null ? new List<String>() : grouping.extraPredicates();
+        result.totalRows = countScopeRows(scope, extraPredicates);
+        if (result.totalRows > CURSOR_AGGREGATE_THRESHOLD) {
+            // Metric chunk continuations evaluate the Measure condition per record too (`providerMetricChunk`).
+            if (!allowCursor || result.totalRows > CURSOR_MAX_ROWS) {
+                throw limitExceeded(result.totalRows);
+            }
+            openChartCursor(
+                scope,
+                scope.buildSoql(measures.cursorSelect(grouping), extraPredicates, measures.cursorOrder()),
+                grouping,
+                measures,
+                result
+            );
+            return result;
+        }
+        String suffix = grouping == null ? '' : 'GROUP BY ' + grouping.groupByClause() + ' LIMIT ' + CHART_GROUP_LIMIT;
+        List<String> none = new List<String>{ null, null };
+        // One query per Measure condition group; partials merge on the category / series key.
+        for (Integer g = 0; g < measures.groups.groups.size(); g++) {
+            BoardMeasureGroups.MeasureGroup measureGroup = measures.groups.groups[g];
+            ChartMeasures groupMeasures = measures.subset(measureGroup.measureIndexes);
+            if (measureGroup.perField != null) {
+                // Average per record: one value per record, merged as `{ sum, count }` of record values.
+                BoardChartEngine.Accumulator averages = new BoardChartEngine.Accumulator(groupMeasures.size());
+                Boolean perRecordCapped = queryPerRecordGroup(
+                    scope,
+                    grouping,
+                    groupMeasures,
+                    measures.predicatesFor(g, extraPredicates),
+                    averages
+                );
+                for (BoardChartEngine.GroupedRow row : averages.rows) {
+                    result.accumulator.addPartials(
+                        row.panelValue,
+                        row.panelLabel,
+                        row.categoryValue,
+                        row.categoryLabel,
+                        row.seriesValue,
+                        row.seriesLabel,
+                        measureGroup.spread(row.partials, measures.size())
+                    );
+                }
+                result.hasMoreGroups = result.hasMoreGroups || perRecordCapped;
+                continue;
+            }
+            String selectClause = groupMeasures.partialSelect();
+            if (grouping != null) {
+                selectClause = grouping.aggregateSelect() + ', ' + selectClause;
+            }
+            List<SObject> rows = scope.query(
+                scope.buildSoql(selectClause, measures.predicatesFor(g, extraPredicates), suffix)
+            );
+            for (SObject row : rows) {
+                AggregateResult aggregate = (AggregateResult) row;
+                List<String> category = grouping == null ? none : grouping.groupBy.fromAggregate(aggregate);
+                List<String> series = grouping == null ||
+                    grouping.stackBy == null
+                    ? none
+                    : grouping.stackBy.fromAggregate(aggregate);
+                // A Cross-object measure's leg groups by its panel mapping too (Small multiples).
+                List<String> panel = grouping == null ? none : grouping.panelOfAggregate(aggregate);
+                result.accumulator.addPartials(
+                    panel[0],
+                    panel[1],
+                    category[0],
+                    category[1],
+                    series[0],
+                    series[1],
+                    measureGroup.spread(groupMeasures.partials(aggregate), measures.size())
+                );
+            }
+            result.hasMoreGroups = result.hasMoreGroups || (grouping != null && rows.size() >= CHART_GROUP_LIMIT);
+        }
+        return result;
+    }
+
+    private static BoardErrors.BoardException countDistinctUnmergeable() {
         return BoardErrors.error(
-            BoardErrors.QUERY_ERROR,
-            'The table cursor is no longer available. Reload the table to continue.',
+            BoardErrors.CONFIG_ERROR,
+            'A Widget with a Data provider cannot show COUNT_DISTINCT Measures: their partial results cannot be merged.',
             null,
-            PAGINATION_CURSOR_PATH,
-            true
+            'measures'
         );
     }
 
-    private static Integer clampPageSize(Integer pageSize) {
-        if (pageSize == null) {
-            return TABLE_DEFAULT_PAGE_SIZE;
-        }
-        return Math.max(TABLE_MIN_PAGE_SIZE, Math.min(TABLE_MAX_PAGE_SIZE, pageSize));
+    private static void openChartCursor(
+        QueryScope scope,
+        String soql,
+        ChartGrouping grouping,
+        ChartMeasures measures,
+        BoardChartQuery.ChartResult result
+    ) {
+        Database.Cursor cursor = Database.getCursorWithBinds(soql, scope.binds, AccessLevel.USER_MODE);
+        scanChartChunk(cursor, 0, grouping, measures, result);
     }
 
-    /** Direct field or 1-5 hop parent dot-path (no semi-joins) for Table columns and sorting. */
-    private static ResolvedField resolveTablePath(Schema.DescribeSObjectResult objectDescribe, String path) {
-        String compactPath = path.deleteWhitespace();
-        if (compactPath.contains('(')) {
+    /** Adds one cursor chunk's records (`readCursorRows`) to `result.accumulator`. */
+    private static void scanChartChunk(
+        Database.Cursor cursor,
+        Integer offset,
+        ChartGrouping grouping,
+        ChartMeasures measures,
+        BoardChartQuery.ChartResult result
+    ) {
+        Integer start = Math.max(0, offset);
+        CursorRows chunk = readCursorRows(cursor, start);
+        Integer totalRows = chunk.totalRows;
+        Integer fetchSize = chunk.nextOffset - start;
+        List<String> none = new List<String>{ null, null };
+        List<SObject> records = chunk.records;
+        // Average per record: the chunk ends before its last record's rows, which the next chunk re-reads.
+        Integer readCount = measures.completeRecords(records, chunk.nextOffset >= totalRows);
+        BoardAveragePerRecord.RecordFold fold = new BoardAveragePerRecord.RecordFold(measures.inners);
+        for (Integer r = 0; r < readCount; r++) {
+            SObject row = records[r];
+            // No grouping: the ungrouped standard leg of a Metric widget's Data provider.
+            List<String> category = grouping == null ? none : grouping.groupBy.fromRecord(row);
+            List<String> series = grouping == null ||
+                grouping.stackBy == null
+                ? new List<String>{ null, null }
+                : grouping.stackBy.fromRecord(row);
+            List<String> panel = grouping == null ? none : grouping.panelOfRecord(row);
+            result.accumulator.add(
+                panel[0],
+                panel[1],
+                category[0],
+                category[1],
+                series[0],
+                series[1],
+                measures.recordValues(row)
+            );
+            if (measures.hasPerRecord()) {
+                fold.add(
+                    panel[0],
+                    panel[1],
+                    category[0],
+                    category[1],
+                    series[0],
+                    series[1],
+                    measures.recordKey(row),
+                    measures.perRecordValues(row)
+                );
+            }
+        }
+        fold.putInto(result.accumulator);
+        Integer consumed = fetchSize - (records.size() - readCount);
+        result.mode = MODE_CURSOR;
+        result.cursor = JSON.serialize(cursor);
+        result.totalRows = totalRows;
+        result.processedRows = start + consumed;
+        result.nextOffset = start + consumed;
+        result.isComplete = result.nextOffset >= totalRows;
+    }
+
+    /**
+     * A Chart widget grouped, split or paneled by a Bucket field (`bucket:<id>` in `groupByField`, `stackByField` or
+     * `panelField`, defined in the request's Widget-level `bucketFields`, else its Board-level `boardBucketFields`;
+     * see `BoardBucketField.find`). SOQL tier: one aggregate query
+     * per bucket, `WHERE <scope> AND rule_i AND NOT(rule_1..i-1)`, grouped by the other dimensions when there are any,
+     * so every aggregate is exact. Cursor tier (a value Measure over more than `CURSOR_AGGREGATE_THRESHOLD`, up to
+     * `CURSOR_MAX_ROWS` rows): one `Database.Cursor` over the scope, each record labelled in memory by
+     * `BoardBucketField.labelOf` (same buckets as the `SOQL` predicates), continued like `scanChart`. `COUNT_DISTINCT`
+     * cannot merge across chunks, so it fails with `LIMIT_EXCEEDED` there (as without a Bucket field). A grouped
+     * per-bucket query capped at `CHART_GROUP_LIMIT` re-runs through the cursor tier up to `CURSOR_MAX_ROWS` rows (as
+     * `scanChart`); above that, or with `COUNT_DISTINCT`, the capped groups come back with `hasMoreGroups`.
+     */
+    private static BoardChartQuery.ChartResult scanBucketChart(
+        Map<String, Object> request,
+        String groupBucketId,
+        String stackBucketId,
+        String panelBucketId
+    ) {
+        String cursorJson = getString(request, 'cursor');
+        // A chunk continuation reads its open cursor: the scope only compiles the Bucket rules, without the filters.
+        QueryScope scope = new QueryScope(
+            cursorJson == null ? request : new Map<String, Object>{ 'objectApiName' => request.get('objectApiName') }
+        );
+        BucketChart chart = new BucketChart(scope, request, groupBucketId, stackBucketId, panelBucketId);
+        ChartMeasures measures = chart.measures;
+        BoardBucketField bucketField = chart.bucketField;
+        BoardChartQuery.ChartResult result = chart.result;
+        BucketChunkScan chunkScan = chart.chunkScan;
+        if (cursorJson != null) {
+            result.accumulator.restore(getString(request, 'partialState'));
+            Integer offset = getInteger(request, 'offset');
+            chunkScan.scan(deserializeCursor(cursorJson), offset == null ? 0 : offset, result);
+            return result;
+        }
+        result.appliedFilterIds = scope.appliedFilterIds;
+        result.ignoredFilterIds = scope.ignoredFilterIds;
+
+        List<String> extraPredicates = chart.extraPredicates();
+        if (measures.needsRowCount()) {
+            result.totalRows = countScopeRows(scope, extraPredicates);
+            if (result.totalRows > CURSOR_AGGREGATE_THRESHOLD) {
+                if (measures.hasCountDistinct() || result.totalRows > CURSOR_MAX_ROWS) {
+                    throw limitExceeded(result.totalRows);
+                }
+                String soql = scope.buildSoql(chunkScan.selectClause(), extraPredicates, '');
+                chunkScan.scan(Database.getCursorWithBinds(soql, scope.binds, AccessLevel.USER_MODE), 0, result);
+                return result;
+            }
+        }
+        String suffix = chart.groupBySuffix();
+        Map<String, String> bucketPredicates = bucketField.predicates(scope);
+        // One query per bucket and Measure condition group, joined on the Panel / category / series key.
+        BoardMeasureGroups.MeasureJoin measureJoin = new BoardMeasureGroups.MeasureJoin(measures.functions);
+        for (String bucketLabel : bucketField.labels()) {
+            for (Integer g = 0; g < measures.groups.groups.size(); g++) {
+                BoardMeasureGroups.MeasureGroup measureGroup = measures.groups.groups[g];
+                ChartMeasures groupMeasures = measures.subset(measureGroup.measureIndexes);
+                // A bucket without rows is skipped; a query without GROUP BY still returns one row, so count its rows.
+                Integer countIndex = groupMeasures.functions.indexOf('COUNT');
+                String rowCountAlias = countIndex >= 0 ? 'v' + countIndex : 'bn';
+                String selectClause = groupMeasures.aggregateSelect() + (countIndex >= 0 ? '' : ', COUNT(Id) bn');
+                if (chart.isGrouped()) {
+                    selectClause = chart.selectColumns() + ', ' + selectClause;
+                }
+                List<String> predicates = measures.predicatesFor(g, extraPredicates);
+                predicates.add(bucketPredicates.get(bucketLabel));
+                List<SObject> rows = scope.query(scope.buildSoql(selectClause, predicates, suffix));
+                if (chart.isGrouped() && rows.size() >= CHART_GROUP_LIMIT) {
+                    result.hasMoreGroups = true;
+                }
+                for (SObject row : rows) {
+                    AggregateResult aggregate = (AggregateResult) row;
+                    if (Integer.valueOf(aggregate.get(rowCountAlias)) == 0) {
+                        continue;
+                    }
+                    List<Object> values = new List<Object>();
+                    for (Integer i = 0; i < groupMeasures.size(); i++) {
+                        values.add(aggregate.get('v' + i));
+                    }
+                    List<List<String>> keys = chart.keysOfAggregate(aggregate, bucketLabel);
+                    measureJoin.put(measureGroup, keys[0], keys[1], keys[2], values);
+                }
+            }
+        }
+        measureJoin.putInto(result.accumulator);
+        Boolean mergeOther =
+            !result.hasMoreGroups &&
+            !measures.hasCountDistinct() &&
+            needsMergedOther(request, measures, result);
+        // Capped (smaller groups were dropped), or an "Other" that must merge partials: re-aggregate every group
+        // through cursor chunks when possible.
+        if ((result.hasMoreGroups || mergeOther) && !measures.hasCountDistinct()) {
+            if (result.totalRows == null) {
+                result.totalRows = countScopeRows(scope, extraPredicates);
+            }
+            if (result.totalRows <= CURSOR_MAX_ROWS) {
+                result.hasMoreGroups = false;
+                result.accumulator = new BoardChartEngine.Accumulator(measures.size());
+                String soql = scope.buildSoql(chunkScan.selectClause(), extraPredicates, '');
+                chunkScan.scan(Database.getCursorWithBinds(soql, scope.binds, AccessLevel.USER_MODE), 0, result);
+                return result;
+            }
+        }
+        // Share of total and Reference lines over every bucketed row (an excluded fallback stays out).
+        List<String> bucketedPredicates = new List<String>(extraPredicates);
+        bucketedPredicates.add('(' + String.join(bucketPredicates.values(), ') OR (') + ')');
+        if (result.hasMoreGroups && BoardChartQuery.usesShareOfTotal(request)) {
+            result.grandTotals = chartGrandTotals(scope, bucketedPredicates, measures);
+        }
+        result.overallValues = referenceLineTotals(request, scope, bucketedPredicates, measures);
+        result.panelQueryTotals = chart.panel != null
+            ? chartPanelTotals(request, scope, bucketedPredicates, measures, chart.panel)
+            : bucketPanelTotals(request, scope, extraPredicates, bucketPredicates, chart);
+        return result;
+    }
+
+    /**
+     * Panel totals of a Bucket field Panel field (`BoardChartPanelTotals`): every Measure over each bucket's rows, in
+     * one ungrouped query per bucket and Measure condition group, keyed by bucket label (the Panel key), so an AVG is
+     * exact. Null unless the Bucket field is the Panel field and a Panel headline or Reference line needs them.
+     */
+    private static Map<String, List<Decimal>> bucketPanelTotals(
+        Map<String, Object> request,
+        QueryScope scope,
+        List<String> extraPredicates,
+        Map<String, String> bucketPredicates,
+        BucketChart chart
+    ) {
+        if (chart.bucketRole != BUCKET_AS_PANEL || !BoardChartPanelTotals.isNeeded(request)) {
+            return null;
+        }
+        ChartMeasures measures = chart.measures;
+        Map<String, List<Decimal>> totals = new Map<String, List<Decimal>>();
+        for (String bucketLabel : chart.bucketField.labels()) {
+            for (Integer g = 0; g < measures.groups.groups.size(); g++) {
+                BoardMeasureGroups.MeasureGroup measureGroup = measures.groups.groups[g];
+                ChartMeasures groupMeasures = measures.subset(measureGroup.measureIndexes);
+                List<String> predicates = measures.predicatesFor(g, extraPredicates);
+                predicates.add(bucketPredicates.get(bucketLabel));
+                // An ungrouped query returns one row even for an empty bucket, so count its rows.
+                AggregateResult aggregate = (AggregateResult) scope.query(
+                    scope.buildSoql(groupMeasures.aggregateSelect() + ', COUNT(Id) bn', predicates, '')
+                )[0];
+                if (Integer.valueOf(aggregate.get('bn')) == 0) {
+                    continue;
+                }
+                List<Decimal> bucketTotals = totals.get(bucketLabel);
+                if (bucketTotals == null) {
+                    bucketTotals = new List<Decimal>();
+                    for (Integer i = 0; i < measures.size(); i++) {
+                        bucketTotals.add(null);
+                    }
+                    totals.put(bucketLabel, bucketTotals);
+                }
+                for (Integer i = 0; i < groupMeasures.size(); i++) {
+                    Object value = aggregate.get('v' + i);
+                    bucketTotals[measureGroup.measureIndexes[i]] = value == null
+                        ? null
+                        : Decimal.valueOf(String.valueOf(value));
+                }
+            }
+        }
+        return totals;
+    }
+
+    /**
+     * The setup a Bucket field chart shares between the Widget query (`scanBucketChart`) and a Data provider's
+     * standard leg (`scanBucketPartials`): where the Bucket field goes (category, series or Panel field), the plain
+     * dimensions grouped next to it, the Measures, the Bucket field compiled into `scope`, the result header and the
+     * cursor-tier scan. A chart uses one Bucket field.
+     */
+    private class BucketChart {
+        /** `BUCKET_AS_CATEGORY`, `BUCKET_AS_SERIES` or `BUCKET_AS_PANEL`. */
+        String bucketRole;
+        /** The plain category, series and Panel fields; null in the Bucket field's role or when not set. */
+        ChartDimension category;
+        ChartDimension series;
+        ChartDimension panel;
+        /** The plain dimensions, in `GROUP BY` order. */
+        List<ChartDimension> dimensions = new List<ChartDimension>();
+        Boolean includeNullBucket;
+        ChartMeasures measures;
+        BoardBucketField bucketField;
+        BoardChartQuery.ChartResult result;
+        BucketChunkScan chunkScan;
+
+        BucketChart(
+            QueryScope scope,
+            Map<String, Object> request,
+            String groupBucketId,
+            String stackBucketId,
+            String panelBucketId
+        ) {
+            Integer bucketCount =
+                (groupBucketId != null ? 1 : 0) +
+                (stackBucketId != null ? 1 : 0) +
+                (panelBucketId != null ? 1 : 0);
+            if (bucketCount > 1) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'A Chart widget uses one Bucket field: as its category, series or Panel field.',
+                    null,
+                    panelBucketId != null ? 'panelField' : 'stackByField'
+                );
+            }
+            String bucketId = panelBucketId;
+            bucketRole = BUCKET_AS_PANEL;
+            if (groupBucketId != null) {
+                bucketId = groupBucketId;
+                bucketRole = BUCKET_AS_CATEGORY;
+            } else if (stackBucketId != null) {
+                bucketId = stackBucketId;
+                bucketRole = BUCKET_AS_SERIES;
+            }
+            includeNullBucket = request.get('includeNullBucket') != false;
+            measures = new ChartMeasures(scope.objectDescribe, getList(request, 'measures'));
+            if (measures.hasPerRecord()) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'Average per record isn\'t available on a chart grouped or split by a Bucket field.',
+                    null,
+                    'measures'
+                );
+            }
+            String groupPath = getString(request, 'groupByField');
+            String stackPath = getString(request, 'stackByField');
+            String panelPath = getString(request, 'panelField');
+            if (bucketRole != BUCKET_AS_CATEGORY) {
+                if (String.isBlank(groupPath)) {
+                    throw BoardErrors.error(
+                        BoardErrors.CONFIG_ERROR,
+                        'A group-by field is required.',
+                        null,
+                        'groupByField'
+                    );
+                }
+                category = new ChartDimension(
+                    scope.objectDescribe,
+                    groupPath,
+                    getString(request, 'dateGranularity'),
+                    'g0'
+                );
+                dimensions.add(category);
+            }
+            if (bucketRole != BUCKET_AS_SERIES && String.isNotBlank(stackPath)) {
+                series = new ChartDimension(scope.objectDescribe, stackPath, null, 'g1');
+                dimensions.add(series);
+            }
+            if (bucketRole != BUCKET_AS_PANEL && String.isNotBlank(panelPath)) {
+                requirePanelDistinct(panelPath, groupPath, stackPath);
+                panel = new ChartDimension(
+                    scope.objectDescribe,
+                    panelPath,
+                    getString(request, 'panelDateGranularity'),
+                    'g2'
+                );
+                dimensions.add(panel);
+            }
+            Boolean hasSeries = bucketRole == BUCKET_AS_SERIES || series != null;
+            if (measures.size() > 1 && hasSeries) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'A Chart widget shows several Measures or one Measure split by a series field, not both.',
+                    null,
+                    'stackByField'
+                );
+            }
+            bucketField = BoardBucketField.find(
+                getList(request, 'bucketFields'),
+                getList(request, 'boardBucketFields'),
+                bucketId
+            );
+            scope.compileBucketRules(bucketField);
+            // Before the cursor tier, which evaluates each Measure condition per record.
+            measures.compileConditions(scope);
+
+            result = new BoardChartQuery.ChartResult();
+            result.aggregateFunctions = measures.functions;
+            result.valueTypes = measures.valueTypes;
+            ChartDimensionInfo bucketInfo = bucketDimensionInfo(bucketField);
+            result.groupBy = bucketRole == BUCKET_AS_CATEGORY ? bucketInfo : category.info();
+            result.stackBy = bucketRole == BUCKET_AS_SERIES ? bucketInfo : (series == null ? null : series.info());
+            result.panelBy = bucketRole == BUCKET_AS_PANEL ? bucketInfo : (panel == null ? null : panel.info());
+            result.accumulator = new BoardChartEngine.Accumulator(measures.size());
+            chunkScan = new BucketChunkScan(scope, this);
+        }
+
+        /** Without include blank: no blank plain category or Panel field value (as `ChartGrouping`). */
+        List<String> extraPredicates() {
+            List<String> predicates = new List<String>();
+            if (!includeNullBucket) {
+                if (category != null) {
+                    predicates.add(category.field.path + ' != null');
+                }
+                if (panel != null) {
+                    predicates.add(panel.field.path + ' != null');
+                }
+            }
+            return predicates;
+        }
+
+        /** Whether the per-bucket queries group by a plain dimension. */
+        Boolean isGrouped() {
+            return !dimensions.isEmpty();
+        }
+
+        /** `GROUP BY` of the per-bucket queries (capped at `CHART_GROUP_LIMIT`), or empty when ungrouped. */
+        String groupBySuffix() {
+            if (!isGrouped()) {
+                return '';
+            }
+            List<String> expressions = new List<String>();
+            for (ChartDimension dimension : dimensions) {
+                expressions.addAll(dimension.expressions);
+            }
+            return 'GROUP BY ' + String.join(expressions, ', ') + ' LIMIT ' + CHART_GROUP_LIMIT;
+        }
+
+        /** The plain dimensions' aggregate SELECT columns. */
+        String selectColumns() {
+            List<String> columns = new List<String>();
+            for (ChartDimension dimension : dimensions) {
+                columns.addAll(dimension.selectColumns());
+            }
+            return String.join(columns, ', ');
+        }
+
+        /** Raw field paths of the plain dimensions (cursor tier). */
+        List<String> rawPaths() {
+            List<String> paths = new List<String>();
+            for (ChartDimension dimension : dimensions) {
+                paths.addAll(dimension.rawPaths());
+            }
+            return paths;
+        }
+
+        /** `[panel, category, series]` `[value, label]` keys of a grouped row of `bucketLabel`'s query. */
+        List<List<String>> keysOfAggregate(AggregateResult aggregate, String bucketLabel) {
+            return keysOf(
+                bucketLabel,
+                panel == null ? null : panel.fromAggregate(aggregate),
+                category == null ? null : category.fromAggregate(aggregate),
+                series == null ? null : series.fromAggregate(aggregate)
+            );
+        }
+
+        /** `[panel, category, series]` `[value, label]` keys of a cursor record in `bucketLabel`. */
+        List<List<String>> keysOfRecord(SObject record, String bucketLabel) {
+            return keysOf(
+                bucketLabel,
+                panel == null ? null : panel.fromRecord(record),
+                category == null ? null : category.fromRecord(record),
+                series == null ? null : series.fromRecord(record)
+            );
+        }
+
+        /** The bucket label in the Bucket field's role, the plain keys elsewhere (`[null, null]` when not set). */
+        List<List<String>> keysOf(
+            String bucketLabel,
+            List<String> panelKey,
+            List<String> categoryKey,
+            List<String> seriesKey
+        ) {
+            List<String> bucketKey = new List<String>{ bucketLabel, bucketLabel };
+            return new List<List<String>>{
+                bucketRole == BUCKET_AS_PANEL ? bucketKey : orNone(panelKey),
+                bucketRole == BUCKET_AS_CATEGORY ? bucketKey : orNone(categoryKey),
+                bucketRole == BUCKET_AS_SERIES ? bucketKey : orNone(seriesKey)
+            };
+        }
+
+        List<String> orNone(List<String> key) {
+            return key == null ? new List<String>{ null, null } : key;
+        }
+    }
+
+    /**
+     * `scanPartials` for a Chart widget grouped or split by a Bucket field (a Data provider's standard leg): each
+     * bucket's rows as mergeable `{ sum, count, min, max }` partials under the bucket label, the keys `scanBucketChart`
+     * gives them. SOQL tier: one partial query per bucket and Measure condition group. Beyond
+     * `CURSOR_AGGREGATE_THRESHOLD` rows: the cursor tier with `allowCursor` (continued by `scanBucketChart`), else
+     * `LIMIT_EXCEEDED`.
+     */
+    private static BoardChartQuery.ChartResult scanBucketPartials(
+        QueryScope scope,
+        Map<String, Object> request,
+        String groupBucketId,
+        String stackBucketId,
+        Boolean runQuery,
+        Boolean allowCursor
+    ) {
+        BucketChart chart = new BucketChart(scope, request, groupBucketId, stackBucketId, null);
+        BoardChartQuery.ChartResult result = chart.result;
+        result.appliedFilterIds = new List<String>(scope.appliedFilterIds);
+        result.ignoredFilterIds = new List<String>(scope.ignoredFilterIds);
+        if (!runQuery) {
+            return result;
+        }
+        List<String> extraPredicates = chart.extraPredicates();
+        result.totalRows = countScopeRows(scope, extraPredicates);
+        if (result.totalRows > CURSOR_AGGREGATE_THRESHOLD) {
+            if (!allowCursor || result.totalRows > CURSOR_MAX_ROWS) {
+                throw limitExceeded(result.totalRows);
+            }
+            String soql = scope.buildSoql(chart.chunkScan.selectClause(), extraPredicates, '');
+            chart.chunkScan.scan(Database.getCursorWithBinds(soql, scope.binds, AccessLevel.USER_MODE), 0, result);
+            return result;
+        }
+        String suffix = chart.groupBySuffix();
+        Map<String, String> bucketPredicates = chart.bucketField.predicates(scope);
+        ChartMeasures measures = chart.measures;
+        for (String bucketLabel : chart.bucketField.labels()) {
+            for (Integer g = 0; g < measures.groups.groups.size(); g++) {
+                BoardMeasureGroups.MeasureGroup measureGroup = measures.groups.groups[g];
+                ChartMeasures groupMeasures = measures.subset(measureGroup.measureIndexes);
+                // A query without GROUP BY returns one row even for an empty bucket, so count the bucket's rows.
+                String selectClause = groupMeasures.partialSelect() + ', COUNT(Id) bn';
+                if (chart.isGrouped()) {
+                    selectClause = chart.selectColumns() + ', ' + selectClause;
+                }
+                List<String> predicates = measures.predicatesFor(g, extraPredicates);
+                predicates.add(bucketPredicates.get(bucketLabel));
+                List<SObject> rows = scope.query(scope.buildSoql(selectClause, predicates, suffix));
+                if (chart.isGrouped() && rows.size() >= CHART_GROUP_LIMIT) {
+                    result.hasMoreGroups = true;
+                }
+                for (SObject row : rows) {
+                    AggregateResult aggregate = (AggregateResult) row;
+                    if (Integer.valueOf(aggregate.get('bn')) == 0) {
+                        continue;
+                    }
+                    List<BoardChartEngine.Partial> partials = measureGroup.spread(
+                        groupMeasures.partials(aggregate),
+                        measures.size()
+                    );
+                    // A Data provider draws no Small multiples: its partials key on category and series only.
+                    List<List<String>> keys = chart.keysOfAggregate(aggregate, bucketLabel);
+                    result.accumulator.addPartials(keys[1][0], keys[1][1], keys[2][0], keys[2][1], partials);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Cursor tier of a Bucket field chart: reads a chunk of records (fetched like `fetchChunk`), labels each with its
+     * bucket in memory and adds it to `result.accumulator` under that bucket and the plain dimensions' keys. Rule
+     * fields on currency amounts are read in the corporate currency, the amount `SOQL` compares a rule value with.
+     */
+    private class BucketChunkScan {
+        BucketChart chart;
+        BoardBucketField bucketField;
+        ChartMeasures measures;
+        List<String> rulePaths;
+        Map<String, String> ruleIsoPaths = new Map<String, String>();
+
+        BucketChunkScan(QueryScope scope, BucketChart chart) {
+            this.chart = chart;
+            this.bucketField = chart.bucketField;
+            this.measures = chart.measures;
+            rulePaths = bucketField.paths();
+            for (String path : rulePaths) {
+                String isoPath = currencyIsoPath(resolveFieldPath(scope.objectDescribe, path, null, path));
+                if (isoPath != null) {
+                    ruleIsoPaths.put(path, isoPath);
+                }
+            }
+        }
+
+        /** Cursor SELECT list: Measure value fields, the plain dimensions' fields and every rule field, once. */
+        String selectClause() {
+            List<String> paths = measures.cursorSelect(null).split(', ');
+            paths.addAll(chart.rawPaths());
+            paths.addAll(rulePaths);
+            paths.addAll(ruleIsoPaths.values());
+            List<String> columns = new List<String>();
+            Set<String> seen = new Set<String>();
+            for (String path : paths) {
+                if (seen.add(path.toLowerCase())) {
+                    columns.add(path);
+                }
+            }
+            return String.join(columns, ', ');
+        }
+
+        void scan(Database.Cursor cursor, Integer offset, BoardChartQuery.ChartResult result) {
+            CursorRows chunk = readCursorRows(cursor, offset);
+            for (SObject record : chunk.records) {
+                String bucketLabel = bucketOf(record);
+                if (bucketLabel == null) {
+                    continue; // Matches no rule and the fallback bucket is excluded.
+                }
+                List<List<String>> keys = chart.keysOfRecord(record, bucketLabel);
+                result.accumulator.add(
+                    keys[0][0],
+                    keys[0][1],
+                    keys[1][0],
+                    keys[1][1],
+                    keys[2][0],
+                    keys[2][1],
+                    measures.recordValues(record)
+                );
+            }
+            result.mode = MODE_CURSOR;
+            result.cursor = JSON.serialize(cursor);
+            result.totalRows = chunk.totalRows;
+            result.processedRows = chunk.nextOffset;
+            result.nextOffset = chunk.nextOffset;
+            result.isComplete = result.nextOffset >= chunk.totalRows;
+        }
+
+        String bucketOf(SObject record) {
+            Map<String, Object> row = new Map<String, Object>();
+            for (String path : rulePaths) {
+                row.put(path, readCorporateValue(record, path, ruleIsoPaths.get(path)));
+            }
+            return bucketField.labelOf(row);
+        }
+    }
+
+    /** A Bucket field as a chart dimension: `bucket:<id>`, type `BUCKET`, its bucket labels as the picklist order. */
+    private static ChartDimensionInfo bucketDimensionInfo(BoardBucketField bucketField) {
+        ChartDimensionInfo info = new ChartDimensionInfo();
+        info.fieldPath = BoardBucketField.REFERENCE_PREFIX + bucketField.id;
+        info.dataType = 'BUCKET';
+        info.picklistOrder = bucketField.labels();
+        return info;
+    }
+
+    /** A Chart widget's Measures (1–6): aggregate function, resolved value field, and their query columns. */
+    private class ChartMeasures {
+        List<String> functions = new List<String>();
+        List<String> valueTypes = new List<String>();
+        List<String> expressions = new List<String>();
+        List<String> valuePaths = new List<String>();
+        List<String> isoPaths = new List<String>();
+        /** Per Measure: an Average per record Measure's per-record field path and inner mode; null for the others. */
+        List<String> perPaths = new List<String>();
+        List<String> inners = new List<String>();
+        /** Measure condition groups (`compileConditions`); one query each. */
+        BoardMeasureGroups groups;
+        /** Parallel to `groups.groups`: the group's compiled Measure condition `SOQL`, or null without one. */
+        List<String> groupPredicates = new List<String>();
+        /** Per Measure: its compiled Measure condition, evaluated per record in the cursor tier (null without one). */
+        List<BoardCondition.Node> conditionNodes = new List<BoardCondition.Node>();
+        /** Field paths the Measure conditions read (cursor tier). */
+        Set<String> conditionPaths = new Set<String>();
+        /** `CurrencyIsoCode` path of each currency condition path, so the cursor tier compares corporate amounts. */
+        Map<String, String> conditionIsoPaths = new Map<String, String>();
+        List<Object> rawMeasures;
+
+        /** A subset's Measures (see `subset`). */
+        ChartMeasures() {
+        }
+
+        ChartMeasures(Schema.DescribeSObjectResult objectDescribe, List<Object> rawMeasures) {
+            this.rawMeasures = rawMeasures;
+            if (rawMeasures.isEmpty() || rawMeasures.size() > BoardChartQuery.MAX_MEASURES) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'A Chart widget needs 1 to ' + BoardChartQuery.MAX_MEASURES + ' Measures.',
+                    null,
+                    'measures'
+                );
+            }
+            for (Object rawMeasure : rawMeasures) {
+                Map<String, Object> measure = asMap(rawMeasure);
+                String aggregateFunction = parseAggregateFunction(measure);
+                functions.add(aggregateFunction);
+                Boolean isPerRecord = aggregateFunction == BoardAveragePerRecord.AGGREGATE_FUNCTION;
+                Integer index = functions.size() - 1;
+                perPaths.add(isPerRecord ? resolvePerRecordField(objectDescribe, measure, index) : null);
+                inners.add(isPerRecord ? BoardAveragePerRecord.innerOf(measure, index) : null);
+                if (aggregateFunction == 'COUNT') {
+                    valueTypes.add(null);
+                    expressions.add('COUNT(Id)');
+                    valuePaths.add(null);
+                    isoPaths.add(null);
+                    continue;
+                }
+                ResolvedField valueField = resolveValueField(objectDescribe, getString(measure, 'valueFieldApiName'));
+                if (aggregateFunction != 'COUNT_DISTINCT' && !BoardDescribe.NUMERIC_TYPES.contains(valueField.type)) {
+                    throw BoardErrors.error(
+                        BoardErrors.CONFIG_ERROR,
+                        aggregateFunction + ' Measures require a numeric value field: ' + valueField.path,
+                        null,
+                        valueField.path
+                    );
+                }
+                valueTypes.add(valueField.type.name());
+                // Average per record: the query column is one record's value (SUM or MAX of its rows).
+                expressions.add(
+                    isPerRecord
+                        ? BoardAveragePerRecord.innerExpression(inners[index], valueField.path)
+                        : aggregateFunction + '(' + valueField.path + ')'
+                );
+                valuePaths.add(valueField.path);
+                isoPaths.add(currencyIsoPath(valueField));
+            }
+            Set<String> perRecordFields = new Set<String>();
+            for (String perPath : perPaths) {
+                if (perPath != null) {
+                    perRecordFields.add(perPath.toLowerCase());
+                }
+            }
+            if (perRecordFields.size() > 1) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'Average per record Measures of one Widget must use the same per-record field.',
+                    null,
+                    'measures'
+                );
+            }
+        }
+
+        /** True when any Measure is an Average per record Measure. */
+        Boolean hasPerRecord() {
+            return perRecordPath() != null;
+        }
+
+        /** The Average per record Measures' per-record field path (one per Widget), or null. */
+        String perRecordPath() {
+            for (String perPath : perPaths) {
+                if (perPath != null) {
+                    return perPath;
+                }
+            }
+            return null;
+        }
+
+        /** Cursor `ORDER BY`: by the per-record field, so each record's rows are contiguous; else none. */
+        String cursorOrder() {
+            return hasPerRecord() ? 'ORDER BY ' + perRecordPath() : '';
+        }
+
+        /** A cursor row's record (its per-record field value). */
+        Object recordKey(SObject row) {
+            return readPath(row, perRecordPath());
+        }
+
+        /** How many leading `records` of a cursor chunk to read now (all without Average per record Measures). */
+        Integer completeRecords(List<SObject> records, Boolean isLastChunk) {
+            if (!hasPerRecord()) {
+                return records.size();
+            }
+            List<Object> recordKeys = new List<Object>();
+            for (SObject record : records) {
+                recordKeys.add(recordKey(record));
+            }
+            return BoardAveragePerRecord.completeRecords(recordKeys, isLastChunk);
+        }
+
+        /**
+         * One cursor row's value per Average per record Measure (folded per record by `BoardAveragePerRecord`),
+         * currency converted to corporate; null for the other Measures and outside a Measure's condition.
+         */
+        List<Object> perRecordValues(SObject row) {
+            Map<String, Object> conditionValues = conditionValuesOf(row);
+            List<Object> values = new List<Object>();
+            for (Integer i = 0; i < functions.size(); i++) {
+                BoardCondition.Node condition = conditionNodes.isEmpty() ? null : conditionNodes[i];
+                Boolean included = perPaths[i] != null && (condition == null || condition.evaluate(conditionValues));
+                values.add(included ? readCorporateValue(row, valuePaths[i], isoPaths[i]) : null);
+            }
+            return values;
+        }
+
+        private Map<String, Object> conditionValuesOf(SObject row) {
+            Map<String, Object> values = new Map<String, Object>();
+            for (String path : conditionPaths) {
+                values.put(path, readCorporateValue(row, path, conditionIsoPaths.get(path)));
+            }
+            return values;
+        }
+
+        Integer size() {
+            return functions.size();
+        }
+
+        /**
+         * Groups the Measures by Measure condition and compiles each condition into `scope`'s binds (Widget object
+         * and parent fields only, so the cursor tier can evaluate it per record).
+         */
+        void compileConditions(QueryScope scope) {
+            groups = new BoardMeasureGroups(rawMeasures);
+            for (Integer i = 0; i < functions.size(); i++) {
+                conditionNodes.add(null);
+            }
+            for (BoardMeasureGroups.MeasureGroup measureGroup : groups.groups) {
+                if (measureGroup.condition == null) {
+                    groupPredicates.add(null);
+                    continue;
+                }
+                CompiledCondition compiled = scope.compileMeasureCondition(measureGroup.condition);
+                groupPredicates.add(compiled.soql);
+                collectPaths(compiled.node, conditionPaths);
+                for (Integer index : measureGroup.measureIndexes) {
+                    conditionNodes[index] = compiled.node;
+                }
+            }
+            for (String path : conditionPaths) {
+                String isoPath = currencyIsoPath(resolveFieldPath(scope.objectDescribe, path, null, path));
+                if (isoPath != null) {
+                    conditionIsoPaths.put(path, isoPath);
+                }
+            }
+        }
+
+        /** `extraPredicates` plus group `groupIndex`'s Measure condition. */
+        List<String> predicatesFor(Integer groupIndex, List<String> extraPredicates) {
+            List<String> predicates = new List<String>(extraPredicates);
+            if (groupPredicates[groupIndex] != null) {
+                predicates.add(groupPredicates[groupIndex]);
+            }
+            return predicates;
+        }
+
+        /** The Measures at `indexes` (one Measure group), their query columns numbered from 0. */
+        ChartMeasures subset(List<Integer> indexes) {
+            ChartMeasures part = new ChartMeasures();
+            for (Integer index : indexes) {
+                part.functions.add(functions[index]);
+                part.valueTypes.add(valueTypes[index]);
+                part.expressions.add(expressions[index]);
+                part.valuePaths.add(valuePaths[index]);
+                part.isoPaths.add(isoPaths[index]);
+                part.perPaths.add(perPaths[index]);
+                part.inners.add(inners[index]);
+            }
+            return part;
+        }
+
+        Boolean needsRowCount() {
+            for (String aggregateFunction : functions) {
+                if (aggregateFunction != 'COUNT') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        Boolean hasCountDistinct() {
+            return functions.contains('COUNT_DISTINCT');
+        }
+
+        /** `COUNT(Id) v0, SUM(Amount) v1, ...` */
+        String aggregateSelect() {
+            List<String> columns = new List<String>();
+            for (Integer i = 0; i < expressions.size(); i++) {
+                columns.add(expressions[i] + ' v' + i);
+            }
+            return String.join(columns, ', ');
+        }
+
+        /** Partial columns per Measure `i`: `COUNT(Id) ci`, or `SUM(f) si, COUNT(f) ci, MIN(f) ni, MAX(f) xi`. */
+        String partialSelect() {
+            List<String> columns = new List<String>();
+            for (Integer i = 0; i < functions.size(); i++) {
+                if (valuePaths[i] == null) {
+                    columns.add('COUNT(Id) c' + i);
+                    continue;
+                }
+                String path = valuePaths[i];
+                columns.add('SUM(' + path + ') s' + i);
+                columns.add('COUNT(' + path + ') c' + i);
+                columns.add('MIN(' + path + ') n' + i);
+                columns.add('MAX(' + path + ') x' + i);
+            }
+            return String.join(columns, ', ');
+        }
+
+        /** One `partialSelect` row's partial per Measure (`COUNT` Measures: `sum == count ==` rows). */
+        List<BoardChartEngine.Partial> partials(AggregateResult aggregate) {
+            List<BoardChartEngine.Partial> result = new List<BoardChartEngine.Partial>();
+            for (Integer i = 0; i < functions.size(); i++) {
+                BoardChartEngine.Partial partial = new BoardChartEngine.Partial();
+                Object rawCount = aggregate.get('c' + i);
+                partial.count = rawCount == null ? 0 : Integer.valueOf(rawCount);
+                if (valuePaths[i] == null) {
+                    partial.sum = partial.count;
+                } else {
+                    Object rawSum = aggregate.get('s' + i);
+                    Object rawMin = aggregate.get('n' + i);
+                    Object rawMax = aggregate.get('x' + i);
+                    partial.sum = rawSum == null ? 0 : Decimal.valueOf(String.valueOf(rawSum));
+                    partial.min = rawMin == null ? null : Decimal.valueOf(String.valueOf(rawMin));
+                    partial.max = rawMax == null ? null : Decimal.valueOf(String.valueOf(rawMax));
+                }
+                result.add(partial);
+            }
+            return result;
+        }
+
+        /** Plain cursor SELECT list: every value field, its `CurrencyIsoCode` path, and the dimension paths, once. */
+        String cursorSelect(ChartGrouping grouping) {
+            List<String> paths = new List<String>();
+            for (Integer i = 0; i < valuePaths.size(); i++) {
+                if (valuePaths[i] != null) {
+                    paths.add(valuePaths[i]);
+                }
+                if (isoPaths[i] != null) {
+                    paths.add(isoPaths[i]);
+                }
+            }
+            if (grouping != null) {
+                paths.addAll(grouping.rawSelect().split(', '));
+            }
+            if (hasPerRecord()) {
+                paths.add(perRecordPath());
+            }
+            paths.addAll(conditionPaths);
+            paths.addAll(conditionIsoPaths.values());
+            if (paths.isEmpty()) {
+                paths.add('Id');
+            }
+            List<String> columns = new List<String>();
+            Set<String> seen = new Set<String>();
+            for (String path : paths) {
+                if (seen.add(path.toLowerCase())) {
+                    columns.add(path);
+                }
+            }
+            return String.join(columns, ', ');
+        }
+
+        /**
+         * One record's value per Measure, currency converted to corporate; `COUNT` Measures count every record. A
+         * record outside a Measure's condition adds nothing to that Measure (null).
+         */
+        List<Object> recordValues(SObject row) {
+            Map<String, Object> conditionRow = new Map<String, Object>();
+            for (String path : conditionPaths) {
+                conditionRow.put(path, readCorporateValue(row, path, conditionIsoPaths.get(path)));
+            }
+            List<Object> values = new List<Object>();
+            for (Integer i = 0; i < functions.size(); i++) {
+                BoardCondition.Node condition = conditionNodes.isEmpty() ? null : conditionNodes[i];
+                if (condition != null && !condition.evaluate(conditionRow)) {
+                    values.add(null);
+                } else if (perPaths[i] != null) {
+                    values.add(null); // Average per record: folded per record (`perRecordValues`).
+                } else if (functions[i] == 'COUNT') {
+                    values.add(1);
+                } else {
+                    values.add(readCorporateValue(row, valuePaths[i], isoPaths[i]));
+                }
+            }
+            return values;
+        }
+    }
+
+    /** An Average per record Measure's per-record field: a lookup on the Widget object (or a parent path to one). */
+    private static String resolvePerRecordField(
+        Schema.DescribeSObjectResult objectDescribe,
+        Map<String, Object> measure,
+        Integer index
+    ) {
+        String path = BoardAveragePerRecord.requirePerField(measure, index);
+        ResolvedField field = resolveFieldPath(objectDescribe, path, null, path);
+        if (field.type != Schema.DisplayType.REFERENCE) {
             throw BoardErrors.error(
                 BoardErrors.CONFIG_ERROR,
-                'Table columns support direct fields and parent paths only: ' + path,
+                'Measure ' +
+                    (index + 1) +
+                    ': the per-record field must be a lookup (e.g. OpportunityId), not ' +
+                    path +
+                    '.',
                 null,
                 path
             );
         }
-        return resolveFieldPath(objectDescribe, compactPath, null, path);
+        return field.path;
     }
 
-    /** Record ID path a column links to: `Id` for direct fields, the last hop's reference field for parent paths. */
-    private static String recordIdPath(Schema.DescribeSObjectResult rootDescribe, String canonicalPath) {
-        List<String> segments = canonicalPath.split('\\.');
-        if (segments.size() == 1) {
-            return 'Id';
+    /** Adds the field path of every condition in `node`'s tree to `paths`. */
+    private static void collectPaths(BoardCondition.Node node, Set<String> paths) {
+        if (node instanceof BoardCondition.Predicate) {
+            paths.add(((BoardCondition.Predicate) node).path);
+            return;
         }
-        Schema.DescribeSObjectResult current = rootDescribe;
-        Schema.DescribeFieldResult reference;
-        for (Integer i = 0; i < segments.size() - 1; i++) {
-            reference = relationshipIndex(current).get(segments[i].toLowerCase()).getDescribe();
-            current = BoardDescribe.describeObject(parentType(reference));
+        for (BoardCondition.Node child : ((BoardCondition.Junction) node).children) {
+            collectPaths(child, paths);
         }
-        segments[segments.size() - 2] = reference.getName();
-        segments.remove(segments.size() - 1);
-        return String.join(segments, '.');
-    }
-
-    /** Flattens a queried record into `path -> value` (e.g. `Account.Owner.Name`). */
-    private static void flattenRecord(SObject record, String prefix, Map<String, Object> values) {
-        Map<String, Object> populated = record.getPopulatedFieldsAsMap();
-        for (String key : populated.keySet()) {
-            Object value = populated.get(key);
-            if (value instanceof SObject) {
-                flattenRecord((SObject) value, prefix + key + '.', values);
-            } else if (!(value instanceof List<SObject>)) {
-                values.put(prefix + key, value);
-            }
-        }
-    }
-
-    /** Validated Table sort: canonical `sortBy`/`sortDirection` and the `ORDER BY` clause with an `Id` tie-breaker. */
-    private class TableOrder {
-        String sortBy;
-        String sortDirection;
-        String clause = 'Id ASC';
-
-        TableOrder(Schema.DescribeSObjectResult objectDescribe, String rawSortBy, String rawDirection) {
-            if (String.isBlank(rawSortBy)) {
-                return;
-            }
-            ResolvedField sortField = resolveTablePath(objectDescribe, rawSortBy);
-            if (!sortField.describe.isSortable()) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    'Field is not sortable: ' + rawSortBy,
-                    null,
-                    rawSortBy
-                );
-            }
-            sortBy = sortField.path;
-            sortDirection = 'DESC'.equalsIgnoreCase(rawDirection) ? 'DESC' : 'ASC';
-            clause = sortBy.equalsIgnoreCase('Id')
-                ? 'Id ' + sortDirection
-                : sortBy + ' ' + sortDirection + ' NULLS LAST, Id ASC';
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------------------
-    // Table child relationship (page-scoped counts + lazy child rows)
-    // ---------------------------------------------------------------------------------------------------------
-
-    /**
-     * A Table `childRelationship`: the child object and the reference field pointing at the parent row.
-     * Counts and child rows run in User Mode; the foreign key must reference the parent rows' object.
-     */
-    private class ChildRelationship {
-        Map<String, Object> config;
-        Schema.DescribeSObjectResult childDescribe;
-        String foreignKeyField;
-        Schema.DescribeFieldResult foreignKeyDescribe;
-        Integer rowLimit;
-        /** Child records matched by the Table's text search; matching parents on a page are auto-expanded. */
-        Set<Id> matchedChildIds = new Set<Id>();
-
-        ChildRelationship(Map<String, Object> config) {
-            this.config = config;
-            String childObjectApiName = getString(config, 'childObjectApiName');
-            if (String.isBlank(childObjectApiName)) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    'The child relationship needs a child object.',
-                    null,
-                    'childRelationship.childObjectApiName'
-                );
-            }
-            childDescribe = BoardDescribe.requireReadableObject(childObjectApiName);
-            String rawForeignKey = getString(config, 'foreignKeyField');
-            Schema.SObjectField field = String.isBlank(rawForeignKey)
-                ? null
-                : childDescribe.fields.getMap().get(rawForeignKey.trim());
-            foreignKeyDescribe = field == null ? null : field.getDescribe();
-            if (foreignKeyDescribe == null || foreignKeyDescribe.getType() != Schema.DisplayType.REFERENCE) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    'Unknown child foreign key: ' + childDescribe.getName() + '.' + rawForeignKey,
-                    null,
-                    'childRelationship.foreignKeyField'
-                );
-            }
-            BoardDescribe.requireReadableField(
-                childDescribe.getName(),
-                foreignKeyDescribe,
-                null,
-                'childRelationship.foreignKeyField'
-            );
-            foreignKeyField = foreignKeyDescribe.getName();
-            Integer requestedLimit = getInteger(config, 'limit');
-            rowLimit = requestedLimit == null
-                ? CHILD_DEFAULT_LIMIT
-                : Math.max(1, Math.min(CHILD_MAX_LIMIT, requestedLimit));
-            for (Object rawId : getList(config, 'matchedChildIds')) {
-                Id childId = BoardDescribe.toId(rawId == null ? null : String.valueOf(rawId));
-                if (childId != null) {
-                    matchedChildIds.add(childId);
-                }
-            }
-        }
-
-        /** Ids of the page `rows` after checking the foreign key references their object. */
-        List<Id> parentIdsOf(List<TableRow> rows) {
-            List<Id> parentIds = new List<Id>();
-            for (TableRow row : rows) {
-                parentIds.add(row.id);
-            }
-            requireParentObject(parentIds[0]);
-            return parentIds;
-        }
-
-        void requireParentObject(Id parentId) {
-            String parentObject = parentId.getSObjectType().getDescribe().getName();
-            if (!referencesObject(foreignKeyDescribe, parentObject)) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    childDescribe.getName() + '.' + foreignKeyField + ' does not reference ' + parentObject,
-                    null,
-                    'childRelationship.foreignKeyField'
-                );
-            }
-        }
-
-        /**
-         * Sets `childCount` (capped at the row limit) and `childCountCapped` on every row with
-         * `SELECT Id, <fk> ... WHERE <fk> IN :parentIds LIMIT 2001` queries. A saturated query may omit parents
-         * entirely, so it marks the parents it saw as capped (their counts may be partial) and re-queries only the
-         * unseen ones, up to `CHILD_COUNT_MAX_QUERIES`. Parents still unresolved get an unknown count
-         * (`childCount` null, `childCountCapped` true) and stay expandable.
-         */
-        void applyCounts(List<TableRow> rows) {
-            if (rows.isEmpty()) {
-                return;
-            }
-            Set<Id> unresolved = new Set<Id>(parentIdsOf(rows));
-            Map<Id, Integer> counts = new Map<Id, Integer>();
-            Set<Id> partial = new Set<Id>();
-            Boolean saturated = true;
-            for (
-                Integer attempt = 0; attempt < CHILD_COUNT_MAX_QUERIES && saturated && !unresolved.isEmpty(); attempt++
-            ) {
-                List<SObject> children = Database.queryWithBinds(
-                    'SELECT Id, ' +
-                        foreignKeyField +
-                        ' FROM ' +
-                        childDescribe.getName() +
-                        ' WHERE ' +
-                        foreignKeyField +
-                        ' IN :parentIds LIMIT ' +
-                        CHILD_COUNT_QUERY_LIMIT,
-                    new Map<String, Object>{ 'parentIds' => unresolved },
-                    AccessLevel.USER_MODE
-                );
-                saturated = children.size() >= CHILD_COUNT_QUERY_LIMIT;
-                for (SObject childRecord : children) {
-                    Id parentId = (Id) childRecord.get(foreignKeyField);
-                    Integer current = counts.get(parentId);
-                    counts.put(parentId, current == null ? 1 : current + 1);
-                }
-                if (saturated) {
-                    partial.addAll(counts.keySet());
-                }
-                unresolved.removeAll(counts.keySet());
-            }
-            for (TableRow row : rows) {
-                if (saturated && unresolved.contains(row.id)) {
-                    row.childCount = null;
-                    row.childCountCapped = true;
-                    continue;
-                }
-                Integer count = counts.containsKey(row.id) ? counts.get(row.id) : 0;
-                row.childCount = Math.min(count, rowLimit);
-                row.childCountCapped = count > rowLimit || partial.contains(row.id);
-            }
-        }
-
-        List<TableColumn> resolveColumns() {
-            return resolveTableColumns(childDescribe, getList(config, 'columns'), 'childRelationship.columns');
-        }
-
-        TableOrder resolveOrder() {
-            return new TableOrder(childDescribe, getString(config, 'sortBy'), getString(config, 'sortDirection'));
-        }
-
-        ChildRowsResult newResult(Id parentId, List<TableColumn> columns, TableOrder order) {
-            ChildRowsResult result = new ChildRowsResult();
-            result.parentId = parentId;
-            result.columns = columns;
-            result.sortBy = order.sortBy;
-            result.sortDirection = order.sortDirection;
-            result.hasMore = false;
-            return result;
-        }
-
-        /**
-         * Batch-fetches, in one query, the search-matched child rows of every page row that has any, attaching
-         * them as `children` (up to the row limit) and marking those rows `autoExpanded`.
-         */
-        void applySearchMatches(List<TableRow> rows) {
-            if (rows.isEmpty() || matchedChildIds.isEmpty()) {
-                return;
-            }
-            List<Id> parentIds = parentIdsOf(rows);
-            List<TableColumn> columns = resolveColumns();
-            TableOrder order = resolveOrder();
-            String selectList = tableSelectList(columns);
-            if (!(', ' + selectList.toLowerCase() + ',').contains(', ' + foreignKeyField.toLowerCase() + ',')) {
-                selectList += ', ' + foreignKeyField;
-            }
-            List<SObject> records = Database.queryWithBinds(
-                'SELECT ' +
-                    selectList +
-                    ' FROM ' +
-                    childDescribe.getName() +
-                    ' WHERE Id IN :matchedChildIds AND ' +
-                    foreignKeyField +
-                    ' IN :parentIds ORDER BY ' +
-                    order.clause +
-                    ' LIMIT ' +
-                    CHILD_COUNT_QUERY_LIMIT,
-                new Map<String, Object>{ 'matchedChildIds' => matchedChildIds, 'parentIds' => parentIds },
-                AccessLevel.USER_MODE
-            );
-            Map<Id, ChildRowsResult> byParent = new Map<Id, ChildRowsResult>();
-            for (SObject record : Security.stripInaccessible(AccessType.READABLE, records).getRecords()) {
-                Id parentId = (Id) record.get(foreignKeyField);
-                ChildRowsResult result = byParent.get(parentId);
-                if (result == null) {
-                    result = newResult(parentId, columns, order);
-                    byParent.put(parentId, result);
-                }
-                if (result.rows.size() < rowLimit) {
-                    result.rows.add(new TableRow(record));
-                } else {
-                    result.hasMore = true;
-                }
-            }
-            for (TableRow row : rows) {
-                ChildRowsResult result = byParent.get(row.id);
-                if (result != null) {
-                    row.autoExpanded = true;
-                    row.children = result;
-                }
-            }
-        }
-
-        /** Up to `limit` child rows of one parent, ordered by the configured sort with an `Id` tie-breaker. */
-        ChildRowsResult queryRows(Id parentId) {
-            requireParentObject(parentId);
-            TableOrder order = resolveOrder();
-            ChildRowsResult result = newResult(parentId, resolveColumns(), order);
-            List<SObject> records = Database.queryWithBinds(
-                'SELECT ' +
-                    tableSelectList(result.columns) +
-                    ' FROM ' +
-                    childDescribe.getName() +
-                    ' WHERE ' +
-                    foreignKeyField +
-                    ' = :parentId ORDER BY ' +
-                    order.clause +
-                    ' LIMIT ' +
-                    (rowLimit + 1),
-                new Map<String, Object>{ 'parentId' => parentId },
-                AccessLevel.USER_MODE
-            );
-            result.hasMore = records.size() > rowLimit;
-            Integer index = 0;
-            for (SObject record : Security.stripInaccessible(AccessType.READABLE, records).getRecords()) {
-                if (index++ < rowLimit) {
-                    result.rows.add(new TableRow(record));
-                }
-            }
-            return result;
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------------------
-    // Bar Chart execution
-    // ---------------------------------------------------------------------------------------------------------
-
-    private static BarResult runBar(QueryScope scope, Map<String, Object> request) {
-        String aggregateFunction = parseAggregateFunction(request);
-        BarGrouping grouping = new BarGrouping(scope.objectDescribe, request);
-        BarResult result = new BarResult(aggregateFunction, scope, grouping);
-        String measure = 'COUNT(Id)';
-        ResolvedField valueField;
-        if (aggregateFunction != 'COUNT') {
-            valueField = resolveValueField(scope.objectDescribe, getString(request, 'valueFieldApiName'));
-            if (aggregateFunction != 'COUNT_DISTINCT' && !BoardDescribe.NUMERIC_TYPES.contains(valueField.type)) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    aggregateFunction + ' bars require a numeric value field: ' + valueField.path,
-                    null,
-                    valueField.path
-                );
-            }
-            measure = aggregateFunction + '(' + valueField.path + ')';
-            result.valueType = valueField.type.name();
-        }
-        List<String> extraPredicates = grouping.extraPredicates();
-        String valuePath = valueField == null ? null : valueField.path;
-        String cursorSoql = scope.buildSoql(grouping.cursorSelect(valuePath), extraPredicates, '');
-
-        if (aggregateFunction != 'COUNT') {
-            result.totalRows = countBarRows(scope, extraPredicates);
-            if (result.totalRows > CURSOR_AGGREGATE_THRESHOLD) {
-                if (aggregateFunction == 'COUNT_DISTINCT' || result.totalRows > CURSOR_MAX_ROWS) {
-                    throw limitExceeded(result.totalRows);
-                }
-                result.useCursor(openAggregateCursor(scope, cursorSoql, valuePath, grouping));
-                return result;
-            }
-        }
-
-        String soql = scope.buildSoql(
-            grouping.aggregateSelect() + ', ' + measure + ' v',
-            extraPredicates,
-            'GROUP BY ' +
-                grouping.groupByClause() +
-                ' ORDER BY ' +
-                measure +
-                ' DESC NULLS LAST LIMIT ' +
-                BAR_GROUP_LIMIT
-        );
-        for (SObject row : scope.query(soql)) {
-            AggregateResult aggregate = (AggregateResult) row;
-            result.buckets.add(grouping.toBucket(aggregate, aggregate.get('v')));
-        }
-        if (result.buckets.size() < BAR_GROUP_LIMIT) {
-            return result;
-        }
-        // Capped: smaller groups were dropped. Re-aggregate every group through cursor chunks when possible
-        // (COUNT_DISTINCT cannot be merged across chunks).
-        if (aggregateFunction != 'COUNT_DISTINCT') {
-            if (result.totalRows == null) {
-                result.totalRows = countBarRows(scope, extraPredicates);
-            }
-            if (result.totalRows <= CURSOR_MAX_ROWS) {
-                result.buckets = new List<BarBucket>();
-                result.useCursor(openAggregateCursor(scope, cursorSoql, valuePath, grouping));
-                return result;
-            }
-        }
-        result.hasMoreGroups = true;
-        return result;
-    }
-
-    private static Integer countBarRows(QueryScope scope, List<String> extraPredicates) {
-        return Database.countQueryWithBinds(
-            scope.buildSoql('COUNT()', extraPredicates, ''),
-            scope.binds,
-            AccessLevel.USER_MODE
-        );
     }
 
     /** Reads a direct field or parent dot-path value from a queried record (null when a parent is empty). */
-    private static Object readPath(SObject row, String path) {
+    public static Object readPath(SObject row, String path) {
         List<String> segments = path.split('\\.');
         SObject current = row;
         try {
@@ -1042,26 +2186,15 @@ public with sharing class BoardQueryService {
         }
     }
 
-    /** Org fiscal year settings, used to bucket cursor rows exactly like SOQL `FISCAL_*` date functions. */
-    private static Organization getFiscalSettings() {
-        if (fiscalSettings == null) {
-            fiscalSettings = [
-                SELECT FiscalYearStartMonth, UsesStartDateAsFiscalYearName
-                FROM Organization
-                WITH USER_MODE
-                LIMIT 1
-            ];
-        }
-        return fiscalSettings;
-    }
-
-    /** The Bar Chart's primary group dimension plus optional stack dimension. */
-    private class BarGrouping {
-        BarDimension groupBy;
-        BarDimension stackBy;
+    /** The Chart's primary group dimension plus optional stack dimension and Panel field (Small multiples). */
+    private class ChartGrouping {
+        ChartDimension groupBy;
+        ChartDimension stackBy;
+        /** Small multiples: the Panel field, one more grouping of the same query; null without one. */
+        ChartDimension panelBy;
         Boolean includeNullBucket;
 
-        BarGrouping(Schema.DescribeSObjectResult objectDescribe, Map<String, Object> request) {
+        ChartGrouping(Schema.DescribeSObjectResult objectDescribe, Map<String, Object> request) {
             String groupPath = getString(request, 'groupByField');
             if (String.isBlank(groupPath)) {
                 throw BoardErrors.error(
@@ -1071,22 +2204,42 @@ public with sharing class BoardQueryService {
                     'groupByField'
                 );
             }
-            groupBy = new BarDimension(objectDescribe, groupPath, getString(request, 'dateGranularity'), 'g0');
+            groupBy = new ChartDimension(objectDescribe, groupPath, getString(request, 'dateGranularity'), 'g0');
             String stackPath = getString(request, 'stackByField');
             if (String.isNotBlank(stackPath)) {
-                stackBy = new BarDimension(objectDescribe, stackPath, null, 'g1');
+                stackBy = new ChartDimension(objectDescribe, stackPath, null, 'g1');
+            }
+            String panelPath = getString(request, 'panelField');
+            if (String.isNotBlank(panelPath)) {
+                requirePanelDistinct(panelPath, groupPath, stackPath);
+                panelBy = new ChartDimension(
+                    objectDescribe,
+                    panelPath,
+                    getString(request, 'panelDateGranularity'),
+                    'g2'
+                );
             }
             includeNullBucket = request.get('includeNullBucket') != false;
         }
 
         List<String> extraPredicates() {
-            return includeNullBucket ? new List<String>() : new List<String>{ groupBy.field.path + ' != null' };
+            List<String> predicates = new List<String>();
+            if (!includeNullBucket) {
+                predicates.add(groupBy.field.path + ' != null');
+                if (panelBy != null) {
+                    predicates.add(panelBy.field.path + ' != null');
+                }
+            }
+            return predicates;
         }
 
         String aggregateSelect() {
             List<String> columns = groupBy.selectColumns();
             if (stackBy != null) {
                 columns.addAll(stackBy.selectColumns());
+            }
+            if (panelBy != null) {
+                columns.addAll(panelBy.selectColumns());
             }
             return String.join(columns, ', ');
         }
@@ -1096,18 +2249,33 @@ public with sharing class BoardQueryService {
             if (stackBy != null) {
                 expressions.addAll(stackBy.expressions);
             }
+            if (panelBy != null) {
+                expressions.addAll(panelBy.expressions);
+            }
             return String.join(expressions, ', ');
         }
 
-        /** Plain (non-aggregate) SELECT list for cursor rows: value field (none for `COUNT`) plus every raw dimension path. */
-        String cursorSelect(String valuePath) {
+        /** The Panel `[value, label]` of a grouped row; `[null, null]` without a Panel field. */
+        List<String> panelOfAggregate(AggregateResult aggregate) {
+            return panelBy == null ? new List<String>{ null, null } : panelBy.fromAggregate(aggregate);
+        }
+
+        /** The Panel `[value, label]` of a cursor record; `[null, null]` without a Panel field. */
+        List<String> panelOfRecord(SObject row) {
+            return panelBy == null ? new List<String>{ null, null } : panelBy.fromRecord(row);
+        }
+
+        /**
+         * Plain (non-aggregate) SELECT list for cursor rows: every raw dimension path (each selected once).
+         */
+        String rawSelect() {
             List<String> paths = new List<String>();
-            if (valuePath != null) {
-                paths.add(valuePath);
-            }
             paths.addAll(groupBy.rawPaths());
             if (stackBy != null) {
                 paths.addAll(stackBy.rawPaths());
+            }
+            if (panelBy != null) {
+                paths.addAll(panelBy.rawPaths());
             }
             List<String> columns = new List<String>();
             Set<String> seen = new Set<String>();
@@ -1118,50 +2286,15 @@ public with sharing class BoardQueryService {
             }
             return String.join(columns, ', ');
         }
-
-        BarBucket toBucket(AggregateResult aggregate, Object value) {
-            BarBucket bucket = new BarBucket();
-            List<String> groupKey = groupBy.fromAggregate(aggregate);
-            bucket.groupValue = groupKey[0];
-            bucket.groupLabel = groupKey[1];
-            if (stackBy != null) {
-                List<String> stackKey = stackBy.fromAggregate(aggregate);
-                bucket.stackValue = stackKey[0];
-                bucket.stackLabel = stackKey[1];
-            }
-            bucket.value = value;
-            return bucket;
-        }
-
-        AggregateBucket bucketFor(SObject row, Map<String, AggregateBucket> buckets) {
-            List<String> groupKey = groupBy.fromRecord(row);
-            List<String> stackKey = stackBy == null ? null : stackBy.fromRecord(row);
-            List<Object> values = new List<Object>{ groupKey[0] };
-            if (stackKey != null) {
-                values.add(stackKey[0]);
-            }
-            String mapKey = JSON.serialize(values);
-            AggregateBucket bucket = buckets.get(mapKey);
-            if (bucket == null) {
-                bucket = new AggregateBucket();
-                bucket.groupValues = values;
-                bucket.groupLabels.add(groupKey[1]);
-                if (stackKey != null) {
-                    bucket.groupLabels.add(stackKey[1]);
-                }
-                buckets.put(mapKey, bucket);
-            }
-            return bucket;
-        }
     }
 
     /**
-     * One Bar Chart dimension (`groupByField` or `stackByField`): a groupable direct field or 1-5 hop parent path,
+     * One Chart dimension (`groupByField` or `stackByField`): a groupable direct field or 1-5 hop parent path,
      * a Reference field labelled by its target's name field, or a Date/DateTime field bucketed by granularity.
      * Buckets are `[value, label]` pairs: sortable keys (`2026-03`, `2026-Q1`, `FY2026-Q2`, record Ids, picklist API
      * values) and display labels (null for the null bucket).
      */
-    private class BarDimension {
+    private class ChartDimension {
         ResolvedField field;
         String alias;
         String granularity;
@@ -1172,17 +2305,30 @@ public with sharing class BoardQueryService {
         List<String> expressions = new List<String>();
         List<String> aliases = new List<String>();
 
-        BarDimension(Schema.DescribeSObjectResult objectDescribe, String rawPath, String rawGranularity, String alias) {
+        ChartDimension(
+            Schema.DescribeSObjectResult objectDescribe,
+            String rawPath,
+            String rawGranularity,
+            String alias
+        ) {
             String path = rawPath.deleteWhitespace();
             if (path.contains('(')) {
                 throw BoardErrors.error(
                     BoardErrors.CONFIG_ERROR,
-                    'Bar dimensions must be a field or parent field path: ' + rawPath,
+                    'Chart dimensions must be a field or parent field path: ' + rawPath,
                     null,
                     rawPath
                 );
             }
             this.field = resolveFieldPath(objectDescribe, path, null, rawPath);
+            if (field.describe.isCalculated() && !field.describe.isGroupable()) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    BoardBucketField.formulaGroupingMessage(rawPath),
+                    null,
+                    rawPath
+                );
+            }
             this.alias = alias;
             String requested = upper(rawGranularity);
             Boolean isDate = DATE_TYPES.contains(field.type);
@@ -1271,14 +2417,12 @@ public with sharing class BoardQueryService {
             if (!BoardDescribe.isReadableObject(target)) {
                 return null;
             }
-            for (Schema.SObjectField candidate : target.fields.getMap().values()) {
-                Schema.DescribeFieldResult candidateDescribe = candidate.getDescribe();
-                if (candidateDescribe.isNameField() && candidateDescribe.isAccessible()) {
-                    segments[segments.size() - 1] = relationshipName;
-                    return String.join(segments, '.') + '.' + candidateDescribe.getName();
-                }
+            String nameField = BoardDescribe.readableNameField(target);
+            if (nameField == null) {
+                return null;
             }
-            return null;
+            segments[segments.size() - 1] = relationshipName;
+            return String.join(segments, '.') + '.' + nameField;
         }
 
         List<String> selectColumns() {
@@ -1313,34 +2457,9 @@ public with sharing class BoardQueryService {
             if (granularity == null) {
                 return pair(raw, labelPath == null ? null : readPath(row, labelPath));
             }
-            if (raw == null) {
-                return new List<String>{ null, null };
-            }
-            Date day = isDateTime ? ((Datetime) raw).date() : (Date) raw;
-            switch on granularity {
-                when 'DAY' {
-                    return dateBucket(day, null, null);
-                }
-                when 'CALENDAR_MONTH' {
-                    return dateBucket(null, day.year(), day.month());
-                }
-                when 'CALENDAR_QUARTER' {
-                    return dateBucket(null, day.year(), (day.month() - 1) / 3 + 1);
-                }
-                when 'CALENDAR_YEAR' {
-                    return dateBucket(null, day.year(), null);
-                }
-                when else {
-                    Organization settings = getFiscalSettings();
-                    Integer startMonth = settings.FiscalYearStartMonth == null ? 1 : settings.FiscalYearStartMonth;
-                    Integer startYear = day.month() >= startMonth ? day.year() : day.year() - 1;
-                    Integer fiscalYear = startMonth == 1 || settings.UsesStartDateAsFiscalYearName
-                        ? startYear
-                        : startYear + 1;
-                    Integer fiscalQuarter = Math.mod(day.month() - startMonth + 12, 12) / 3 + 1;
-                    return dateBucket(null, fiscalYear, granularity == 'FISCAL_QUARTER' ? fiscalQuarter : null);
-                }
-            }
+            // A DateTime field buckets by its date in the user's time zone (`DAY_ONLY(convertTimezone())` in SOQL).
+            Object day = isDateTime && raw != null ? (Object) ((Datetime) raw).date() : raw;
+            return BoardDataProviderRows.dateBucket(day, granularity);
         }
 
         List<String> pair(Object raw, Object label) {
@@ -1356,41 +2475,11 @@ public with sharing class BoardQueryService {
         }
 
         List<String> dateBucket(Date day, Integer year, Integer period) {
-            if (granularity == 'DAY') {
-                return day == null
-                    ? new List<String>{ null, null }
-                    : new List<String>{ String.valueOf(day), day.format() };
-            }
-            if (year == null) {
-                return new List<String>{ null, null };
-            }
-            String yearText = String.valueOf(year);
-            switch on granularity {
-                when 'CALENDAR_MONTH' {
-                    return new List<String>{
-                        yearText +
-                        '-' +
-                        String.valueOf(period).leftPad(2, '0'),
-                        Datetime.newInstance(year, period, 1).format('MMM yyyy')
-                    };
-                }
-                when 'CALENDAR_QUARTER' {
-                    return new List<String>{ yearText + '-Q' + period, 'Q' + period + ' ' + yearText };
-                }
-                when 'CALENDAR_YEAR' {
-                    return new List<String>{ yearText, yearText };
-                }
-                when 'FISCAL_QUARTER' {
-                    return new List<String>{ 'FY' + yearText + '-Q' + period, 'Q' + period + ' FY' + yearText };
-                }
-                when else {
-                    return new List<String>{ 'FY' + yearText, 'FY' + yearText };
-                }
-            }
+            return BoardDataProviderRows.periodBucket(granularity, day, year, period);
         }
 
-        BarDimensionInfo info() {
-            BarDimensionInfo info = new BarDimensionInfo();
+        ChartDimensionInfo info() {
+            ChartDimensionInfo info = new ChartDimensionInfo();
             info.fieldPath = field.path;
             info.labelFieldPath = labelPath;
             info.dataType = field.type.name();
@@ -1405,29 +2494,43 @@ public with sharing class BoardQueryService {
     // ---------------------------------------------------------------------------------------------------------
 
     /**
+     * Runs a scope's single-statement queries and counts in place of `AccessLevel.USER_MODE` (`QueryScope.executor`).
+     * Only deployed Apex sets one, e.g. the Quota provider reading in system mode for viewers granted it; config can't.
+     * Cursors, text searches and label lookups stay USER_MODE.
+     */
+    public interface QueryExecutor {
+        List<SObject> query(String soql, Map<String, Object> binds);
+        Integer countQuery(String soql, Map<String, Object> binds);
+    }
+
+    /**
      * Compiles a Widget request's data scope (`objectApiName` + resolved Filter bindings + base filters) into a
      * bind-safe `WHERE` clause and executes User Mode queries, counts, and cursors against it.
      */
-    private class QueryScope {
-        Schema.DescribeSObjectResult objectDescribe;
-        Map<String, Object> binds = new Map<String, Object>();
+    public class QueryScope implements BoardCondition.Binder {
+        public Schema.DescribeSObjectResult objectDescribe;
+        public Map<String, Object> binds = new Map<String, Object>();
         List<String> appliedFilterIds = new List<String>();
         List<String> ignoredFilterIds = new List<String>();
+        /**
+         * The scope's condition tree: one node per applied Filter binding and Base filter (a child-path node's path is
+         * relative to its child object; `SOSL` text searches are not part of it). `predicates` holds its compiled `SOQL`.
+         */
+        public BoardCondition.Junction conditions = BoardCondition.allOf(new List<BoardCondition.Node>());
         List<String> predicates = new List<String>();
         /** Parallel to `predicates`: true when the predicate only uses direct fields, so `SOSL` `WHERE` can apply it. */
         List<Boolean> searchSafe = new List<Boolean>();
         /** Bind names holding escaped `LIKE` patterns (their `\` sequences must survive inlining into `SOSL`). */
         Set<String> likeBindNames = new Set<String>();
         Integer semiJoinCount = 0;
-        /** Table `childRelationship` config (`childObjectApiName`, `foreignKeyField`) that convention `SOSL` unions. */
-        Map<String, Object> childRelationship;
-        /** Records of the Table's `childRelationship` matched by a `SOSL` text search. */
-        Set<Id> searchChildIds = new Set<Id>();
+        /** Runs the scope's queries and counts instead of USER_MODE when set (see `QueryExecutor`). */
+        public QueryExecutor executor;
+        /** The Widget request: `displayCurrency` types end-user amount ranges, `configCurrency` Base filter amounts. */
+        Map<String, Object> request;
 
-        QueryScope(Map<String, Object> request) {
+        public QueryScope(Map<String, Object> request) {
+            this.request = request;
             objectDescribe = BoardDescribe.requireReadableObject(getString(request, 'objectApiName'));
-            Object rawChild = request.get('childRelationship');
-            childRelationship = rawChild instanceof Map<String, Object> ? (Map<String, Object>) rawChild : null;
             List<FilterBinding> searches = new List<FilterBinding>();
             for (Object rawFilter : getList(request, 'filters')) {
                 FilterBinding filter = new FilterBinding(rawFilter);
@@ -1446,7 +2549,57 @@ public with sharing class BoardQueryService {
             }
         }
 
-        String buildSoql(String selectClause, List<String> extraPredicates, String suffix) {
+        /** A copy of `parent` narrowed by `narrowing` (a Measure condition); shares `parent`'s binds. */
+        QueryScope(QueryScope parent, CompiledCondition narrowing) {
+            objectDescribe = parent.objectDescribe;
+            binds = parent.binds;
+            appliedFilterIds = parent.appliedFilterIds;
+            ignoredFilterIds = parent.ignoredFilterIds;
+            conditions = BoardCondition.allOf(new List<BoardCondition.Node>(parent.conditions.children));
+            conditions.children.add(narrowing.node);
+            predicates = new List<String>(parent.predicates);
+            searchSafe = new List<Boolean>(parent.searchSafe);
+            likeBindNames = parent.likeBindNames;
+            semiJoinCount = parent.semiJoinCount;
+            executor = parent.executor;
+            addCompiled(narrowing.soql, narrowing.isSearchSafe);
+        }
+
+        /**
+         * This scope narrowed by a Measure condition (ANDed with the Filter context and Base filters); this scope
+         * itself when the condition is blank.
+         */
+        public QueryScope withMeasureCondition(Object rawCondition) {
+            if (BoardMeasureGroups.isBlank(rawCondition)) {
+                return this;
+            }
+            return new QueryScope(this, compileMeasureCondition(rawCondition));
+        }
+
+        /** A Measure condition's condition tree, compiled into this scope's binds; null when blank. */
+        public BoardCondition.Node measureConditionNode(Object rawCondition) {
+            return BoardMeasureGroups.isBlank(rawCondition) ? null : compileMeasureCondition(rawCondition).node;
+        }
+
+        /**
+         * A Measure condition (Base filter condition tree), compiled into this scope's binds. Like Bucket rules it can
+         * only use the Widget's object and its parents, so a record's membership is computable from the record.
+         */
+        CompiledCondition compileMeasureCondition(Object rawCondition) {
+            Integer semiJoinsBefore = semiJoinCount;
+            CompiledCondition compiled = compileBaseFilterTree(new BaseFilter(rawCondition), false);
+            if (semiJoinCount != semiJoinsBefore) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'A Measure condition can only use fields of the Widget\'s object and its parents.',
+                    null,
+                    'measures'
+                );
+            }
+            return compiled;
+        }
+
+        public String buildSoql(String selectClause, List<String> extraPredicates, String suffix) {
             List<String> allPredicates = new List<String>(predicates);
             if (extraPredicates != null) {
                 allPredicates.addAll(extraPredicates);
@@ -1458,16 +2611,32 @@ public with sharing class BoardQueryService {
             return String.isBlank(suffix) ? soql : soql + ' ' + suffix;
         }
 
+        /**
+         * Narrows the scope with one more compiled `SOQL` predicate whose binds are already in `binds` (e.g. a Row
+         * limit's top groups). Not applied to text-search legs, which compiled with the scope.
+         */
+        public void restrict(String predicate) {
+            addCompiled(predicate, false);
+        }
+
         String conjunction(List<String> clauses) {
             return '(' + String.join(clauses, ') AND (') + ')';
         }
 
         Integer countRows() {
-            return Database.countQueryWithBinds(buildSoql('COUNT()', null, ''), binds, AccessLevel.USER_MODE);
+            return countSoql(buildSoql('COUNT()', null, ''));
+        }
+
+        Integer countSoql(String soql) {
+            return executor == null
+                ? Database.countQueryWithBinds(soql, binds, AccessLevel.USER_MODE)
+                : executor.countQuery(soql, binds);
         }
 
         List<SObject> query(String soql) {
-            List<SObject> rows = Database.queryWithBinds(soql, binds, AccessLevel.USER_MODE);
+            List<SObject> rows = executor == null
+                ? Database.queryWithBinds(soql, binds, AccessLevel.USER_MODE)
+                : executor.query(soql, binds);
             if (rows.isEmpty() || rows[0] instanceof AggregateResult) {
                 return rows;
             }
@@ -1478,6 +2647,15 @@ public with sharing class BoardQueryService {
             String name = 'b' + binds.size();
             binds.put(name, value);
             return ':' + name;
+        }
+
+        /** `BoardCondition.Binder`: condition values bind into this scope's bind map. */
+        public String bind(Object value, Boolean isLikePattern) {
+            if (value instanceof BoardCurrencyConverter.IsoAmount) {
+                // A validated ISO currency literal: inlined, since a bound number is read in the corporate currency.
+                return ((BoardCurrencyConverter.IsoAmount) value).toSoql();
+            }
+            return isLikePattern ? bindLike((String) value) : bind(value);
         }
 
         String bindLike(String pattern) {
@@ -1493,6 +2671,10 @@ public with sharing class BoardQueryService {
             String path = String.isBlank(filter.fieldPath) ? null : filter.fieldPath.trim();
             if (path != null && path.equalsIgnoreCase(IGNORE_BINDING)) {
                 ignoredFilterIds.add(filter.filterId);
+                return;
+            }
+            if (filter.type == BUCKET_FILTER) {
+                addBucketFilter(filter);
                 return;
             }
             if (filter.isTextSearch() && filter.text.trim().length() < filter.minimumCharacters()) {
@@ -1536,20 +2718,138 @@ public with sharing class BoardQueryService {
                 ignoredFilterIds.add(filter.filterId);
                 return;
             }
-            addPredicate(field, compileFilter(filter, field), filter.filterId);
+            // A Team condition reaches through `<relationship>.UserRoleId`, which `SOSL` `WHERE` can't apply.
+            addPredicate(field, compileFilter(filter, field), filter.filterId, !filter.matchesTeams());
             appliedFilterIds.add(filter.filterId);
         }
 
+        /**
+         * A Bucket filter: the rows in the selected buckets of the Bucket field the Widget's Filter binding maps it to
+         * (sent resolved in `bucketField`). Its rules compile against this Widget's object; when they don't fit it, a
+         * convention binding is ignored and an explicit one is a config error.
+         */
+        void addBucketFilter(FilterBinding filter) {
+            BoardBucketField bucketField;
+            try {
+                if (filter.bucketField == null) {
+                    throw BoardErrors.error(
+                        BoardErrors.CONFIG_ERROR,
+                        'Bucket filter "' + filter.filterId + '" has no Bucket field.',
+                        filter.filterId,
+                        filter.fieldPath
+                    );
+                }
+                bucketField = BoardBucketField.fromConfig(filter.bucketField);
+                compileBucketRules(bucketField);
+            } catch (BoardErrors.BoardException bindingError) {
+                if (filter.explicit) {
+                    throw bindingError;
+                }
+                ignoredFilterIds.add(filter.filterId);
+                return;
+            }
+            BoardBucketField.Selection selection = bucketField.selection(
+                filter.filterId,
+                new Set<String>(filter.values)
+            );
+            conditions.children.add(selection);
+            // Rule paths may reach parents, which `SOSL` `WHERE` can't apply.
+            addCompiled(selection.toSoql(this), false);
+            appliedFilterIds.add(filter.filterId);
+        }
+
+        /**
+         * Compiles every rule condition of `bucketField` (Base filter condition shape) into its condition node and
+         * `SOQL`, binding into this scope. Rules use the Widget's object and its parents only: a row's bucket must be
+         * computable from the row itself.
+         */
+        public void compileBucketRules(BoardBucketField bucketField) {
+            for (BoardBucketField.Rule rule : bucketField.rules) {
+                Integer semiJoinsBefore = semiJoinCount;
+                CompiledCondition compiled = compileBaseFilterTree(new BaseFilter(rule.rawCondition), false);
+                if (semiJoinCount != semiJoinsBefore) {
+                    throw BoardErrors.error(
+                        BoardErrors.CONFIG_ERROR,
+                        'Bucket rule "' + rule.label + '" can only use fields of the Widget\'s object and its parents.',
+                        null,
+                        BoardBucketField.REFERENCE_PREFIX + bucketField.id
+                    );
+                }
+                rule.condition = compiled.node;
+                rule.soql = compiled.soql;
+            }
+        }
+
         void addBaseFilter(BaseFilter condition) {
+            CompiledCondition compiled = compileBaseFilterTree(condition, false);
+            conditions.children.add(compiled.node);
+            addCompiled(compiled.soql, compiled.isSearchSafe);
+        }
+
+        /**
+         * A Base filter condition or AND / OR group, compiled to its condition node and `SOQL` (child paths wrapped in
+         * semi-joins). `insideOr` marks conditions under an OR group, where `SOQL` allows no semi-join.
+         */
+        CompiledCondition compileBaseFilterTree(BaseFilter condition, Boolean insideOr) {
+            if (condition.isGroup) {
+                return compileBaseFilterGroup(condition, insideOr);
+            }
             if (String.isBlank(condition.fieldPath)) {
                 throw BoardErrors.error(BoardErrors.CONFIG_ERROR, 'Base filter has no field path.', condition.id, null);
             }
             ResolvedField field = resolveBinding(condition.fieldPath.trim(), condition.id);
-            addPredicate(field, compileBaseFilter(condition, field), condition.id);
+            if (insideOr && field.childObject != null) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'Child relationship conditions cannot be combined with OR in base filters.',
+                    condition.id,
+                    field.bindingPath
+                );
+            }
+            BoardCondition.Node node = compileBaseFilter(condition, field);
+            return new CompiledCondition(
+                node,
+                wrapSemiJoin(field, node.toSoql(this), condition.id),
+                isDirectField(field)
+            );
         }
 
-        void addPredicate(ResolvedField field, String predicate, String filterId) {
-            addCompiled(wrapSemiJoin(field, predicate, filterId), isDirectField(field));
+        CompiledCondition compileBaseFilterGroup(BaseFilter baseGroup, Boolean insideOr) {
+            if (baseGroup.logic != 'AND' && baseGroup.logic != 'OR') {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'Base filter group logic must be AND or OR.',
+                    baseGroup.id,
+                    null
+                );
+            }
+            if (baseGroup.children.isEmpty()) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'Base filter group has no conditions.',
+                    baseGroup.id,
+                    null
+                );
+            }
+            Boolean isOr = baseGroup.logic == 'OR';
+            List<BoardCondition.Node> nodes = new List<BoardCondition.Node>();
+            List<String> clauses = new List<String>();
+            Boolean isSearchSafe = true;
+            for (BaseFilter child : baseGroup.children) {
+                CompiledCondition compiled = compileBaseFilterTree(child, insideOr || isOr);
+                nodes.add(compiled.node);
+                clauses.add(compiled.soql);
+                isSearchSafe &= compiled.isSearchSafe;
+            }
+            String soql = clauses.size() == 1
+                ? clauses[0]
+                : '(' + String.join(clauses, ') ' + baseGroup.logic + ' (') + ')';
+            return new CompiledCondition(new BoardCondition.Junction(baseGroup.logic, nodes), soql, isSearchSafe);
+        }
+
+        void addPredicate(ResolvedField field, BoardCondition.Node condition, String filterId, Boolean isSearchSafe) {
+            conditions.children.add(condition);
+            addCompiled(wrapSemiJoin(field, condition.toSoql(this), filterId), isDirectField(field) && isSearchSafe);
         }
 
         void addCompiled(String predicate, Boolean isSearchSafe) {
@@ -1589,6 +2889,7 @@ public with sharing class BoardQueryService {
                 );
             }
             List<String> clauses = new List<String>();
+            List<BoardCondition.Node> alternatives = new List<BoardCondition.Node>();
             Boolean allDirect = true;
             for (String part : path.split(',')) {
                 if (String.isBlank(part)) {
@@ -1596,9 +2897,12 @@ public with sharing class BoardQueryService {
                 }
                 ResolvedField field = resolveBinding(part.trim(), filter.filterId);
                 requireFilterCompatible(filter, field);
-                clauses.add('(' + wrapSemiJoin(field, compileFilter(filter, field), filter.filterId) + ')');
+                BoardCondition.Node condition = compileFilter(filter, field);
+                alternatives.add(condition);
+                clauses.add('(' + wrapSemiJoin(field, condition.toSoql(this), filter.filterId) + ')');
                 allDirect &= isDirectField(field);
             }
+            conditions.children.add(BoardCondition.anyOf(alternatives));
             addCompiled(String.join(clauses, ' OR '), allDirect);
             appliedFilterIds.add(filter.filterId);
         }
@@ -1607,7 +2911,7 @@ public with sharing class BoardQueryService {
          * `SOSL` text search compiled to `Id IN :matchedParentIds`: the single-transaction union of
          * `Search.query` (full-text indexes, incl. non-filterable Long Text Area fields) and a bounded `SOQL LIKE`
          * leg on filterable text fields (zero index lag). Targets are `SELF` and `Child(ForeignKey)` entries; by
-         * convention `SELF` plus the Table's `childRelationship`. Child matches keep their parent rows.
+         * convention `SELF`. Child matches keep their parent rows.
          * Both legs are restricted to the scope compiled so far (every other filter and base filter), so their row
          * caps never fill up with records the Widget would discard.
          */
@@ -1624,23 +2928,7 @@ public with sharing class BoardQueryService {
         }
 
         List<SearchTarget> conventionSearchTargets() {
-            List<SearchTarget> targets = new List<SearchTarget>{ new SearchTarget(objectDescribe, null) };
-            if (childRelationship != null) {
-                try {
-                    targets.add(
-                        childSearchTarget(
-                            getString(childRelationship, 'childObjectApiName'),
-                            getString(childRelationship, 'foreignKeyField'),
-                            null,
-                            'childRelationship'
-                        )
-                    );
-                } catch (BoardErrors.BoardException invalidChild) {
-                    // The Table reports an invalid childRelationship itself; search the parent only.
-                    return targets;
-                }
-            }
-            return targets;
+            return new List<SearchTarget>{ new SearchTarget(objectDescribe, null) };
         }
 
         List<SearchTarget> parseSearchTargets(String filterId, String path) {
@@ -1700,15 +2988,10 @@ public with sharing class BoardQueryService {
                 filterId,
                 bindingPath
             );
-            SearchTarget target = new SearchTarget(
+            return new SearchTarget(
                 BoardDescribe.describeObject(BoardDescribe.getGlobalDescribe().get(fk.childObject)),
                 fk.foreignKey
             );
-            target.isTableChild =
-                childRelationship != null &&
-                fk.childObject.equalsIgnoreCase(getString(childRelationship, 'childObjectApiName')) &&
-                fk.foreignKey.equalsIgnoreCase(getString(childRelationship, 'foreignKeyField'));
-            return target;
         }
 
         /**
@@ -1865,9 +3148,6 @@ public with sharing class BoardQueryService {
                     continue;
                 }
                 parentIds.add(parentId);
-                if (target.isTableChild) {
-                    searchChildIds.add(record.Id);
-                }
             }
         }
 
@@ -2027,45 +3307,129 @@ public with sharing class BoardQueryService {
             return field;
         }
 
-        String compileFilter(FilterBinding filter, ResolvedField field) {
+        /** The condition a resolved Filter binding contributes (compiled to `SOQL` through this scope's binds). */
+        BoardCondition.Node compileFilter(FilterBinding filter, ResolvedField field) {
             String path = field.path;
+            String filterId = filter.filterId;
             switch on filter.operator {
                 when 'IN' {
-                    return compileIn(path, field, filter.effectiveValues(), false, filter.filterId);
+                    BoardCondition.Node users = compileIn(path, field, filter.effectiveValues(), false, filterId);
+                    return filter.matchesTeams() ? compileTeam(users, filter, field) : users;
+                }
+                when 'EMPTY' {
+                    return BoardCondition.field(filterId, path, 'EQ', new List<Object>{ null });
+                }
+                when 'FILLED' {
+                    return BoardCondition.field(filterId, path, 'NEQ', new List<Object>{ null });
                 }
                 when 'LITERAL' {
-                    return path + ' = ' + requireRelativeDate(filter.literal, filter.filterId, field.bindingPath);
+                    return relativeDate(
+                        filterId,
+                        path,
+                        requireRelativeDate(filter.literal, filterId, field.bindingPath)
+                    );
                 }
                 when 'BETWEEN', 'GTE', 'LTE' {
-                    List<String> range = new List<String>();
+                    List<BoardCondition.Node> range = new List<BoardCondition.Node>();
                     if (filter.operator != 'LTE' && String.isNotBlank(filter.fromValue)) {
-                        range.add(path + ' >= ' + bind(dateBound(filter.fromValue, field, false, filter.filterId)));
+                        range.add(
+                            typed(filterId, path, 'GTE', rangeBound(filter.fromValue, field, false, filterId), field)
+                        );
                     }
                     if (filter.operator != 'GTE' && String.isNotBlank(filter.toValue)) {
-                        range.add(path + ' <= ' + bind(dateBound(filter.toValue, field, true, filter.filterId)));
+                        range.add(
+                            typed(filterId, path, 'LTE', rangeBound(filter.toValue, field, true, filterId), field)
+                        );
                     }
-                    return String.join(range, ' AND ');
+                    return BoardCondition.allOf(range);
                 }
                 when 'CONTAINS' {
-                    return path + ' LIKE ' + bindLike('%' + BoardDescribe.escapeLike(filter.text.trim()) + '%');
+                    return escapedLike(filterId, path, '%' + BoardDescribe.escapeLike(filter.text.trim()) + '%');
                 }
                 when else {
                     // STARTS_WITH (requireFilterCompatible rejects every other operator)
-                    return path + ' LIKE ' + bindLike(BoardDescribe.escapeLike(filter.text.trim()) + '%');
+                    return escapedLike(filterId, path, BoardDescribe.escapeLike(filter.text.trim()) + '%');
                 }
             }
         }
 
-        String compileBaseFilter(BaseFilter condition, ResolvedField field) {
+        /** A range bound: a date, a number, or (currency fields) an amount in the request's Display currency. */
+        Object rangeBound(String value, ResolvedField field, Boolean endOfDay, String filterId) {
+            if (!BoardDescribe.NUMERIC_TYPES.contains(field.type)) {
+                return dateBound(value, field, endOfDay, filterId);
+            }
+            Decimal amount = (Decimal) coerce(value, field, filterId);
+            if (field.type != Schema.DisplayType.CURRENCY) {
+                return amount;
+            }
+            return BoardCurrencyConverter.forRequest().displayAmountBound(amount, request);
+        }
+
+        /**
+         * Team condition of a `usersAndTeam` User filter: `<path> IN :userIds OR <path's relationship>.UserRoleId IN
+         * :rolesBelow`, where `rolesBelow` are the roles strictly below the picked users' roles (role Ids stay in the
+         * bind map, never in a result). Without roles below, only the picked users' own records match. Works on any
+         * user-lookup path (custom lookups, parent paths, inside a child semi-join); a path whose `.UserRoleId`
+         * would exceed the 5-hop limit is a config error regardless of the selection.
+         */
+        BoardCondition.Node compileTeam(BoardCondition.Node usersCondition, FilterBinding filter, ResolvedField field) {
+            requireTeamHops(filter, field);
+            Set<Id> userIds = new Set<Id>();
+            for (String value : filter.effectiveValues()) {
+                Id userId = BoardDescribe.toId(value);
+                if (userId != null) {
+                    userIds.add(userId);
+                }
+            }
+            Set<Id> rolesBelow = BoardTeamResolver.rolesBelowUsers(userIds);
+            String relationshipName = field.describe.getRelationshipName();
+            if (rolesBelow.isEmpty() || relationshipName == null) {
+                return usersCondition;
+            }
+            List<String> segments = field.path.split('\\.');
+            segments[segments.size() - 1] = relationshipName;
+            String rolePath = String.join(segments, '.') + '.UserRoleId';
+            return BoardCondition.anyOf(
+                new List<BoardCondition.Node>{
+                    usersCondition,
+                    BoardCondition.field(filter.filterId, rolePath, 'IN', new List<Id>(rolesBelow))
+                }
+            );
+        }
+
+        /** `<path>.UserRoleId` adds one relationship hop to the bound path; past `MAX_PARENT_HOPS` SOQL rejects it. */
+        void requireTeamHops(FilterBinding filter, ResolvedField field) {
+            Integer roleHops = field.path.split('\\.').size();
+            if (roleHops > MAX_PARENT_HOPS) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'Filter binding "' +
+                        filter.filterId +
+                        '": Include team needs ' +
+                        field.bindingPath +
+                        '.UserRoleId, which exceeds the ' +
+                        MAX_PARENT_HOPS +
+                        '-hop limit. Bind the filter to a shorter user-lookup path.',
+                    filter.filterId,
+                    field.bindingPath
+                );
+            }
+        }
+
+        /** The condition a Base filter contributes (compiled to `SOQL` through this scope's binds). */
+        BoardCondition.Node compileBaseFilter(BaseFilter condition, ResolvedField field) {
             String path = field.path;
             String filterId = condition.id;
             switch on condition.operator {
                 when 'IS_NULL' {
                     Boolean isNull = condition.value == null || String.valueOf(condition.value) != 'false';
-                    return path + (isNull ? ' = null' : ' != null');
+                    return single(filterId, path, isNull ? 'EQ' : 'NEQ', null);
                 }
                 when 'EQ', 'NEQ', 'GT', 'GTE', 'LT', 'LTE' {
-                    return compileComparison(path, condition.operator, condition.value, field, filterId);
+                    return inConfigCurrency(
+                        compileComparison(path, condition.operator, condition.value, field, filterId),
+                        field
+                    );
                 }
                 when 'IN', 'NOT_IN' {
                     List<String> values = new List<String>();
@@ -2084,7 +3448,10 @@ public with sharing class BoardQueryService {
                             field.bindingPath
                         );
                     }
-                    return compileIn(path, field, values, condition.operator == 'NOT_IN', filterId);
+                    return inConfigCurrency(
+                        compileIn(path, field, values, condition.operator == 'NOT_IN', filterId),
+                        field
+                    );
                 }
                 when 'LIKE' {
                     if (!TEXT_FILTER_TYPES.contains(field.type) || condition.value == null) {
@@ -2096,7 +3463,12 @@ public with sharing class BoardQueryService {
                         );
                     }
                     String likePattern = String.valueOf(condition.value);
-                    return path + ' LIKE ' + bind(likePattern.contains('%') ? likePattern : '%' + likePattern + '%');
+                    return single(
+                        filterId,
+                        path,
+                        'LIKE',
+                        likePattern.contains('%') ? likePattern : '%' + likePattern + '%'
+                    );
                 }
                 when 'LITERAL' {
                     if (!DATE_TYPES.contains(field.type)) {
@@ -2108,7 +3480,7 @@ public with sharing class BoardQueryService {
                         );
                     }
                     String literal = condition.value == null ? null : String.valueOf(condition.value);
-                    return path + ' = ' + requireRelativeDate(literal, filterId, field.bindingPath);
+                    return relativeDate(filterId, path, requireRelativeDate(literal, filterId, field.bindingPath));
                 }
                 when else {
                     throw BoardErrors.error(
@@ -2121,8 +3493,46 @@ public with sharing class BoardQueryService {
             }
         }
 
-        String compileComparison(String path, String operator, Object rawValue, ResolvedField field, String filterId) {
-            String symbol = COMPARISON_SYMBOLS.get(operator);
+        /**
+         * A Base filter amount on a currency field is written in the Config currency: it compiles to an ISO literal
+         * (`Amount > EUR5000`), never a `HAVING`. An `IN` / `NOT_IN` list becomes one `=` per amount (ORed) / `!=` per
+         * amount (ANDed), each an ISO literal; in memory each compares as its corporate amount. Single-currency orgs
+         * and other fields: unchanged.
+         */
+        BoardCondition.Node inConfigCurrency(BoardCondition.Node node, ResolvedField field) {
+            BoardCurrencyConverter converter = BoardCurrencyConverter.forRequest();
+            if (
+                field.type != Schema.DisplayType.CURRENCY ||
+                !converter.isMultiCurrency() ||
+                !(node instanceof BoardCondition.Predicate)
+            ) {
+                return node;
+            }
+            BoardCondition.Predicate predicate = (BoardCondition.Predicate) node;
+            if (predicate.operator == 'IN' || predicate.operator == 'NOT_IN') {
+                Boolean negate = predicate.operator == 'NOT_IN';
+                List<BoardCondition.Node> clauses = new List<BoardCondition.Node>();
+                for (Object value : predicate.values) {
+                    Object amount = value instanceof Decimal
+                        ? converter.configAmountBound((Decimal) value, request)
+                        : value;
+                    clauses.add(single(predicate.filterId, predicate.path, negate ? 'NEQ' : 'EQ', amount));
+                }
+                return negate ? BoardCondition.allOf(clauses) : BoardCondition.anyOf(clauses);
+            }
+            if (!predicate.values.isEmpty() && predicate.values[0] instanceof Decimal) {
+                predicate.values[0] = converter.configAmountBound((Decimal) predicate.values[0], request);
+            }
+            return predicate;
+        }
+
+        BoardCondition.Node compileComparison(
+            String path,
+            String operator,
+            Object rawValue,
+            ResolvedField field,
+            String filterId
+        ) {
             if (rawValue == null) {
                 if (operator != 'EQ' && operator != 'NEQ') {
                     throw BoardErrors.error(
@@ -2132,56 +3542,113 @@ public with sharing class BoardQueryService {
                         field.bindingPath
                     );
                 }
-                return path + ' ' + symbol + ' null';
+                return single(filterId, path, operator, null);
             }
             String text = String.valueOf(rawValue);
             if (field.type == Schema.DisplayType.DATETIME && ISO_DATE_PATTERN.matcher(text).matches()) {
-                String dayStart = bind(dateBound(text, field, false, filterId));
-                String dayEnd = bind(dateBound(text, field, true, filterId));
+                // A whole user-time-zone day on a DateTime field.
+                Object dayStart = dateBound(text, field, false, filterId);
+                Object dayEnd = dateBound(text, field, true, filterId);
                 switch on operator {
                     when 'EQ' {
-                        return path + ' >= ' + dayStart + ' AND ' + path + ' <= ' + dayEnd;
+                        return BoardCondition.allOf(
+                            new List<BoardCondition.Node>{
+                                single(filterId, path, 'GTE', dayStart),
+                                single(filterId, path, 'LTE', dayEnd)
+                            }
+                        );
                     }
                     when 'NEQ' {
-                        return path + ' < ' + dayStart + ' OR ' + path + ' > ' + dayEnd;
+                        return BoardCondition.anyOf(
+                            new List<BoardCondition.Node>{
+                                single(filterId, path, 'LT', dayStart),
+                                single(filterId, path, 'GT', dayEnd)
+                            }
+                        );
                     }
                     when 'GT' {
-                        return path + ' > ' + dayEnd;
+                        return single(filterId, path, 'GT', dayEnd);
                     }
                     when 'GTE' {
-                        return path + ' >= ' + dayStart;
+                        return single(filterId, path, 'GTE', dayStart);
                     }
                     when 'LT' {
-                        return path + ' < ' + dayStart;
+                        return single(filterId, path, 'LT', dayStart);
                     }
                     when else {
-                        return path + ' <= ' + dayEnd;
+                        return single(filterId, path, 'LTE', dayEnd);
                     }
                 }
             }
-            return path + ' ' + symbol + ' ' + bind(coerce(rawValue, field, filterId));
+            return typed(filterId, path, operator, coerce(rawValue, field, filterId), field);
         }
 
-        String compileIn(String path, ResolvedField field, List<String> values, Boolean negate, String filterId) {
+        BoardCondition.Node compileIn(
+            String path,
+            ResolvedField field,
+            List<String> values,
+            Boolean negate,
+            String filterId
+        ) {
             if (field.type == Schema.DisplayType.MULTIPICKLIST) {
-                List<String> tokens = new List<String>();
+                List<Object> tokens = new List<Object>();
                 for (String value : values) {
-                    tokens.add(bind(value == null ? '' : value));
+                    tokens.add(value);
                 }
-                return path + (negate ? ' EXCLUDES (' : ' INCLUDES (') + String.join(tokens, ', ') + ')';
+                return BoardCondition.field(filterId, path, negate ? 'EXCLUDES' : 'INCLUDES', tokens);
             }
             if (field.type == Schema.DisplayType.BOOLEAN) {
-                List<String> clauses = new List<String>();
+                List<BoardCondition.Node> clauses = new List<BoardCondition.Node>();
                 for (String value : values) {
-                    clauses.add(path + (negate ? ' != ' : ' = ') + bind(coerce(value, field, filterId)));
+                    clauses.add(single(filterId, path, negate ? 'NEQ' : 'EQ', coerce(value, field, filterId)));
                 }
-                return String.join(clauses, negate ? ' AND ' : ' OR ');
+                return negate ? BoardCondition.allOf(clauses) : BoardCondition.anyOf(clauses);
             }
-            List<Object> coerced = typedList(field.type);
+            Boolean isWholeNumberField = isWholeNumberType(field.type);
+            List<Object> coerced = isWholeNumberField ? new List<Object>() : typedList(field.type);
             for (String value : values) {
                 coerced.add(coerce(value, field, filterId));
             }
-            return path + (negate ? ' NOT IN ' : ' IN ') + bind(coerced);
+            String operator = negate ? 'NOT_IN' : 'IN';
+            if (isWholeNumberField) {
+                return BoardCondition.wholeNumberField(
+                    filterId,
+                    path,
+                    operator,
+                    coerced,
+                    field.type == Schema.DisplayType.LONG
+                );
+            }
+            return BoardCondition.field(filterId, path, operator, coerced);
+        }
+
+        BoardCondition.Predicate single(String filterId, String path, String operator, Object value) {
+            return BoardCondition.field(filterId, path, operator, new List<Object>{ value });
+        }
+
+        /** `single`, or on an Integer / Long field its whole-number form (`BoardCondition.wholeNumberField`). */
+        BoardCondition.Node typed(String filterId, String path, String operator, Object value, ResolvedField field) {
+            if (!isWholeNumberType(field.type)) {
+                return single(filterId, path, operator, value);
+            }
+            return BoardCondition.wholeNumberField(
+                filterId,
+                path,
+                operator,
+                new List<Object>{ value },
+                field.type == Schema.DisplayType.LONG
+            );
+        }
+
+        BoardCondition.Predicate relativeDate(String filterId, String path, String literal) {
+            return single(filterId, path, 'RELATIVE_DATE', literal);
+        }
+
+        /** A `LIKE` on user text already escaped by `BoardDescribe.escapeLike`. */
+        BoardCondition.Predicate escapedLike(String filterId, String path, String likePattern) {
+            BoardCondition.Predicate condition = single(filterId, path, 'LIKE', likePattern);
+            condition.escapedPattern = true;
+            return condition;
         }
     }
 
@@ -2235,8 +3702,6 @@ public with sharing class BoardQueryService {
         Schema.DescribeSObjectResult describe;
         /** Child reference field pointing at the Widget object; null for `SELF`. */
         String foreignKey;
-        /** True when this child is the Table's `childRelationship` (its matches auto-expand parent rows). */
-        Boolean isTableChild = false;
 
         SearchTarget(Schema.DescribeSObjectResult describe, String foreignKey) {
             this.describe = describe;
@@ -2266,6 +3731,10 @@ public with sharing class BoardQueryService {
         String fieldApiName;
         /** `TEXT` `minCharacters` (null when not sent). */
         Integer minCharacters;
+        /** `USER` match mode: `users` (default) or `usersAndTeam`. */
+        String matchMode;
+        /** `BUCKET`: the config of the Bucket field the Widget's Filter binding maps the filter to. */
+        Object bucketField;
 
         FilterBinding(Object raw) {
             Map<String, Object> source = asMap(raw);
@@ -2286,6 +3755,8 @@ public with sharing class BoardQueryService {
             text = getString(source, 'text');
             targetObjectApiName = getString(source, 'targetObjectApiName');
             fieldApiName = getString(source, 'fieldApiName');
+            matchMode = getString(source, 'matchMode');
+            bucketField = source.get('bucketField');
             Object rawMinimum = source.get('minCharacters');
             if (rawMinimum instanceof Integer) {
                 minCharacters = (Integer) rawMinimum;
@@ -2329,6 +3800,11 @@ public with sharing class BoardQueryService {
             return minCharacters == null ? MIN_SEARCH_CHARACTERS : Math.max(MIN_SEARCH_CHARACTERS, minCharacters);
         }
 
+        /** A `USER` filter in Team match mode: each picked user's Team instead of only the user. */
+        Boolean matchesTeams() {
+            return type == 'USER' && matchMode == MATCH_MODE_TEAM;
+        }
+
         List<String> effectiveValues() {
             List<String> effective = new List<String>(values);
             if (token == TOKEN_ME) {
@@ -2338,12 +3814,18 @@ public with sharing class BoardQueryService {
         }
     }
 
-    /** A Widget's static base filter condition (`BaseFilterCondition`). */
+    /**
+     * A Widget's static base filter entry: a condition (`BaseFilterCondition`) or, when it has `conditions`, an AND /
+     * OR group (`{ id, logic, conditions[] }`) of further entries.
+     */
     private class BaseFilter {
         String id;
         String fieldPath;
         String operator;
         Object value;
+        Boolean isGroup;
+        String logic;
+        List<BaseFilter> children = new List<BaseFilter>();
 
         BaseFilter(Object raw) {
             Map<String, Object> source = asMap(raw);
@@ -2351,15 +3833,33 @@ public with sharing class BoardQueryService {
             fieldPath = getString(source, 'fieldPath');
             operator = upper(getString(source, 'operator'));
             value = source.get('value');
+            isGroup = source.containsKey('conditions');
+            logic = upper(getString(source, 'logic'));
+            for (Object child : getList(source, 'conditions')) {
+                children.add(new BaseFilter(child));
+            }
+        }
+    }
+
+    /** A compiled condition: its node, its `SOQL` (semi-joins included), and whether `SOSL` `WHERE` can apply it. */
+    private class CompiledCondition {
+        BoardCondition.Node node;
+        String soql;
+        Boolean isSearchSafe;
+
+        CompiledCondition(BoardCondition.Node node, String soql, Boolean isSearchSafe) {
+            this.node = node;
+            this.soql = soql;
+            this.isSearchSafe = isSearchSafe;
         }
     }
 
     /** A field path resolved against describes with canonical API names. */
-    private class ResolvedField {
-        String path;
+    public class ResolvedField {
+        public String path;
         String bindingPath;
-        Schema.DescribeFieldResult describe;
-        Schema.DisplayType type;
+        public Schema.DescribeFieldResult describe;
+        public Schema.DisplayType type;
         String childObject;
         String foreignKey;
 
@@ -2375,7 +3875,7 @@ public with sharing class BoardQueryService {
     // Field path resolution & type rules
     // ---------------------------------------------------------------------------------------------------------
 
-    private static ResolvedField resolveFieldPath(
+    public static ResolvedField resolveFieldPath(
         Schema.DescribeSObjectResult rootDescribe,
         String path,
         String filterId,
@@ -2440,7 +3940,7 @@ public with sharing class BoardQueryService {
     }
 
     /** Parent object of a reference hop; polymorphic lookups (e.g. `Owner`) prefer `User`. */
-    private static Schema.SObjectType parentType(Schema.DescribeFieldResult referenceDescribe) {
+    public static Schema.SObjectType parentType(Schema.DescribeFieldResult referenceDescribe) {
         List<Schema.SObjectType> targets = referenceDescribe.getReferenceTo();
         for (Schema.SObjectType target : targets) {
             if (target == User.SObjectType) {
@@ -2450,7 +3950,7 @@ public with sharing class BoardQueryService {
         return targets[0];
     }
 
-    private static Map<String, Schema.SObjectField> relationshipIndex(Schema.DescribeSObjectResult objectDescribe) {
+    public static Map<String, Schema.SObjectField> relationshipIndex(Schema.DescribeSObjectResult objectDescribe) {
         String cacheKey = objectDescribe.getName().toLowerCase();
         Map<String, Schema.SObjectField> index = RELATIONSHIP_INDEX_CACHE.get(cacheKey);
         if (index == null) {
@@ -2494,11 +3994,20 @@ public with sharing class BoardQueryService {
                         (filter.type == 'USER' && referencesObject(field.describe, 'Group'))));
                 }
             }
-            when 'LITERAL', 'BETWEEN', 'GTE', 'LTE' {
+            when 'LITERAL' {
                 compatible = DATE_TYPES.contains(field.type);
+            }
+            when 'BETWEEN', 'GTE', 'LTE' {
+                compatible = filter.type == NUMBER_RANGE
+                    ? BoardDescribe.NUMERIC_TYPES.contains(field.type)
+                    : DATE_TYPES.contains(field.type);
             }
             when 'CONTAINS', 'STARTS_WITH' {
                 compatible = TEXT_FILTER_TYPES.contains(field.type);
+            }
+            when 'EMPTY', 'FILLED' {
+                // Any filterable field (resolveBinding already rejects non-filterable ones, e.g. Long Text Area).
+                compatible = true;
             }
             when else {
                 throw BoardErrors.error(
@@ -2521,7 +4030,7 @@ public with sharing class BoardQueryService {
 
     private static String requireRelativeDate(String literal, String filterId, String fieldPath) {
         String normalized = literal == null ? '' : literal.trim().toUpperCase();
-        if (!RELATIVE_DATE_PATTERN.matcher(normalized).matches()) {
+        if (!BoardCondition.isRelativeDate(normalized)) {
             throw BoardErrors.error(
                 BoardErrors.CONFIG_ERROR,
                 'Invalid relative date literal: ' + literal,
@@ -2574,6 +4083,11 @@ public with sharing class BoardQueryService {
         return new List<String>();
     }
 
+    /** Integer and Long fields: `SOQL` rejects a Decimal bind on them (`BoardCondition.wholeNumberField`). */
+    private static Boolean isWholeNumberType(Schema.DisplayType fieldType) {
+        return fieldType == Schema.DisplayType.INTEGER || fieldType == Schema.DisplayType.LONG;
+    }
+
     private static Object coerce(Object rawValue, ResolvedField field, String filterId) {
         if (rawValue == null) {
             return null;
@@ -2617,7 +4131,8 @@ public with sharing class BoardQueryService {
     // Request parsing & errors
     // ---------------------------------------------------------------------------------------------------------
 
-    private static Map<String, Object> parseRequest(String requestJson) {
+    /** The request JSON as a map; malformed JSON or a non-object is a CONFIG_ERROR. */
+    public static Map<String, Object> parseRequest(String requestJson) {
         try {
             return asMap(JSON.deserializeUntyped(requestJson));
         } catch (Exception malformed) {
@@ -2625,26 +4140,55 @@ public with sharing class BoardQueryService {
         }
     }
 
-    private static Map<String, Object> asMap(Object raw) {
+    public static Map<String, Object> asMap(Object raw) {
         if (!(raw instanceof Map<String, Object>)) {
             throw BoardErrors.error(BoardErrors.CONFIG_ERROR, 'Malformed widget query request.', null, null);
         }
         return (Map<String, Object>) raw;
     }
 
-    private static List<Object> getList(Map<String, Object> source, String key) {
+    public static List<Object> getList(Map<String, Object> source, String key) {
         Object value = source.get(key);
         return value instanceof List<Object> ? (List<Object>) value : new List<Object>();
     }
 
-    private static String getString(Map<String, Object> source, String key) {
+    public static String getString(Map<String, Object> source, String key) {
         Object value = source.get(key);
         return value == null ? null : String.valueOf(value);
     }
 
-    private static Integer getInteger(Map<String, Object> source, String key) {
+    public static Integer getInteger(Map<String, Object> source, String key) {
         Object value = source.get(key);
         return value == null ? null : Integer.valueOf(value);
+    }
+
+    /** A numeric value as a Decimal (null stays null); a non-number throws a `TypeException`. */
+    public static Decimal toDecimal(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw instanceof Decimal) {
+            return (Decimal) raw;
+        }
+        if (raw instanceof Integer) {
+            return Decimal.valueOf((Integer) raw);
+        }
+        if (raw instanceof Long) {
+            return Decimal.valueOf((Long) raw);
+        }
+        if (raw instanceof Double) {
+            return Decimal.valueOf((Double) raw);
+        }
+        return Decimal.valueOf(String.valueOf(raw).trim());
+    }
+
+    /** `toDecimal`, but null for a non-number (e.g. a date MIN/MAX or text). */
+    public static Decimal toDecimalOrNull(Object raw) {
+        try {
+            return toDecimal(raw);
+        } catch (TypeException notNumeric) {
+            return null;
+        }
     }
 
     private static String upper(String value) {
@@ -2655,14 +4199,17 @@ public with sharing class BoardQueryService {
     // DTOs
     // ---------------------------------------------------------------------------------------------------------
 
-    /** Fields shared by Metric and Bar results: binding outcome, row count, and the cursor tier hand-off. */
+    /** Fields of a Metric result: binding outcome, row count, and the cursor tier hand-off. */
     public virtual class AggregateQueryResult {
         @AuraEnabled
         public String aggregateFunction;
         /** `Schema.DisplayType` name of the value field (null for `COUNT`). */
         @AuraEnabled
         public String valueType;
-        /** Matching row count (Metric: null for `MIN`/`MAX`; Bar: null for a single-call `COUNT`). */
+        /** ISO code of a currency `value` (Display currency); null when the value is not an amount. */
+        @AuraEnabled
+        public String currencyIsoCode;
+        /** Matching row count (null for `MIN`/`MAX`). */
         @AuraEnabled
         public Integer totalRows;
         /** `SINGLE` (one-call aggregate) or `CURSOR` (multi-call chunked aggregation). */
@@ -2670,7 +4217,7 @@ public with sharing class BoardQueryService {
         public String mode = MODE_SINGLE;
         @AuraEnabled
         public Boolean isComplete = true;
-        /** First cursor chunk when `mode == 'CURSOR'` (Bar buckets carry `groupValues`/`groupLabels`). */
+        /** First cursor chunk when `mode == 'CURSOR'`. */
         @AuraEnabled
         public AggregateChunk chunk;
         @AuraEnabled
@@ -2684,6 +4231,9 @@ public with sharing class BoardQueryService {
             this.ignoredFilterIds = scope.ignoredFilterIds;
         }
 
+        AggregateQueryResult() {
+        }
+
         void useCursor(AggregateChunk firstChunk) {
             mode = MODE_CURSOR;
             chunk = firstChunk;
@@ -2695,9 +4245,29 @@ public with sharing class BoardQueryService {
         /** Aggregate value (null when no rows match AVG/MIN/MAX, or while `mode == 'CURSOR'`). */
         @AuraEnabled
         public Object value;
+        /** The request's `thresholdAmounts` (Config currency) in the Display currency; as entered for non-amounts. */
+        @AuraEnabled
+        public List<Decimal> thresholdAmounts;
+        /** The request's `gaugeAmounts` (Gauge static minimum, maximum; Config currency) like `thresholdAmounts`. */
+        @AuraEnabled
+        public List<Decimal> gaugeAmounts;
+        /** Measures list: one result per Measure (hidden included), in Measure order; null on each Measure's result. */
+        @AuraEnabled
+        public List<MetricResult> measures;
+        /** Measures list: index in `measures` of the visible Measure, whose result this is. */
+        @AuraEnabled
+        public Integer visibleIndex;
+        /** Measures list: one per Cross-object measure (`BoardCrossObjectMeasures`); null without any. */
+        @AuraEnabled
+        public List<BoardCrossObjectMeasures.Notice> crossObjectNotices;
 
-        MetricResult(String aggregateFunction, QueryScope scope) {
+        public MetricResult(String aggregateFunction, QueryScope scope) {
             super(aggregateFunction, scope);
+        }
+
+        /** An empty result, filled by `BoardMetricQuery` from the visible Measure's result. */
+        public MetricResult() {
+            super();
         }
     }
 
@@ -2715,76 +4285,10 @@ public with sharing class BoardQueryService {
         public Boolean isComplete;
         /** Partial aggregates for this chunk only (one ungrouped bucket for Metric). */
         @AuraEnabled
-        public List<AggregateBucket> buckets;
+        public List<BoardChartEngine.Partial> buckets;
     }
 
-    public class AggregateBucket {
-        /** Group-by values identifying the bucket (empty for ungrouped aggregates; Bar: `[groupValue, stackValue?]`). */
-        @AuraEnabled
-        public List<Object> groupValues = new List<Object>();
-        /** Display labels parallel to `groupValues` (Bar only; null for the null bucket). */
-        @AuraEnabled
-        public List<String> groupLabels = new List<String>();
-        @AuraEnabled
-        public Decimal sum = 0;
-        /** Number of non-null values. */
-        @AuraEnabled
-        public Integer count = 0;
-        @AuraEnabled
-        public Decimal min;
-        @AuraEnabled
-        public Decimal max;
-
-        void add(Object rawValue) {
-            if (rawValue == null) {
-                return;
-            }
-            Decimal value = Decimal.valueOf(String.valueOf(rawValue));
-            sum += value;
-            count++;
-            min = min == null || value < min ? value : min;
-            max = max == null || value > max ? value : max;
-        }
-    }
-
-    public class BarResult extends AggregateQueryResult {
-        /** One entry per group/stack combination when `mode == 'SINGLE'` (largest values first). */
-        @AuraEnabled
-        public List<BarBucket> buckets = new List<BarBucket>();
-        /**
-         * True when the `GROUP BY` query returned `BAR_GROUP_LIMIT` combinations, dropped smaller ones, and the
-         * cursor tier could not re-aggregate them (`COUNT_DISTINCT`, or more than `CURSOR_MAX_ROWS` rows).
-         */
-        @AuraEnabled
-        public Boolean hasMoreGroups = false;
-        @AuraEnabled
-        public BarDimensionInfo groupBy;
-        @AuraEnabled
-        public BarDimensionInfo stackBy;
-
-        BarResult(String aggregateFunction, QueryScope scope, BarGrouping grouping) {
-            super(aggregateFunction, scope);
-            this.groupBy = grouping.groupBy.info();
-            this.stackBy = grouping.stackBy == null ? null : grouping.stackBy.info();
-        }
-    }
-
-    public class BarBucket {
-        /** Sortable group key (record Id, picklist API value, `2026-03`, `2026-Q1`, `FY2026`...); null bucket = null. */
-        @AuraEnabled
-        public String groupValue;
-        /** Display label (reference name, translated picklist label, formatted date bucket); null bucket = null. */
-        @AuraEnabled
-        public String groupLabel;
-        @AuraEnabled
-        public String stackValue;
-        @AuraEnabled
-        public String stackLabel;
-        @AuraEnabled
-        public Object value;
-    }
-
-    public class BarDimensionInfo {
+    public class ChartDimensionInfo {
         /** Canonical field path that was grouped. */
         @AuraEnabled
         public String fieldPath;
@@ -2821,8 +4325,17 @@ public with sharing class BoardQueryService {
         /** Record ID path the cell links to (`Id`, `AccountId`, `Account.OwnerId`), or null for no link. */
         @AuraEnabled
         public String linkPath;
+        /** Currency columns: the Display currency their cells are converted to; null for any other column. */
+        @AuraEnabled
+        public String currencyIsoCode;
+        /** Paths fetched for this column instead of `fieldPath` and `linkPath` (a Bucket field column's rule fields). */
+        public List<String> fetchPaths;
 
-        TableColumn(Schema.DescribeSObjectResult objectDescribe, Map<String, Object> config) {
+        /** An empty column, filled by its builder (see `BoardTableBucketColumns.column`). */
+        public TableColumn() {
+        }
+
+        public TableColumn(Schema.DescribeSObjectResult objectDescribe, Map<String, Object> config) {
             id = getString(config, 'id');
             String rawPath = getString(config, 'fieldPath');
             if (String.isBlank(rawPath)) {
@@ -2833,7 +4346,7 @@ public with sharing class BoardQueryService {
                     null
                 );
             }
-            ResolvedField field = resolveTablePath(objectDescribe, rawPath);
+            ResolvedField field = BoardTableQuery.resolveTablePath(objectDescribe, rawPath);
             fieldPath = field.path;
             dataType = field.type.name();
             isSortable = field.describe.isSortable();
@@ -2846,11 +4359,27 @@ public with sharing class BoardQueryService {
             String linkMode = String.isBlank(getString(config, 'linkToRecord'))
                 ? 'auto'
                 : getString(config, 'linkToRecord').trim().toLowerCase();
-            Boolean primaryName = isNameField || PRIMARY_NAME_FIELDS.contains(field.describe.getName().toLowerCase());
+            Boolean primaryName =
+                isNameField || BoardTableQuery.PRIMARY_NAME_FIELDS.contains(field.describe.getName().toLowerCase());
             if (linkMode == 'always' || (linkMode == 'auto' && primaryName)) {
-                linkPath = recordIdPath(objectDescribe, fieldPath);
+                linkPath = BoardTableQuery.recordIdPath(objectDescribe, fieldPath);
             }
         }
+    }
+
+    /** A Row action's resolved target: the record Id path fetched with each row (never shown as a column). */
+    public class RowActionTarget {
+        @AuraEnabled
+        public String id;
+        /** Key into `TableRow.values` holding the target record Id (`Id` = the row's own record). */
+        @AuraEnabled
+        public String targetPath;
+        /** Object the target Id belongs to, or null when the lookup is polymorphic. */
+        @AuraEnabled
+        public String targetObjectApiName;
+        /** Create actions: resolved paths of the row fields their default values map from (keys into `TableRow.values`). */
+        @AuraEnabled
+        public List<String> fieldPaths = new List<String>();
     }
 
     /** One Table record: `id` plus flattened `path -> value` for every selected column and link path. */
@@ -2859,25 +4388,10 @@ public with sharing class BoardQueryService {
         public Id id;
         @AuraEnabled
         public Map<String, Object> values = new Map<String, Object>();
-        /**
-         * Child records (capped at the child row limit); null when the Table has no `childRelationship`, or when
-         * the count is unknown (`childCountCapped` true: too many children on the page to count them all).
-         */
-        @AuraEnabled
-        public Integer childCount;
-        /** True when the parent has more children than `childCount` shows (the badge renders `N+`). */
-        @AuraEnabled
-        public Boolean childCountCapped;
-        /** True when the row matched the text search via a child record and `children` holds the matches. */
-        @AuraEnabled
-        public Boolean autoExpanded;
-        /** Search-matched child rows (batch-fetched with the page); null unless `autoExpanded`. */
-        @AuraEnabled
-        public ChildRowsResult children;
 
-        TableRow(SObject record) {
+        public TableRow(SObject record) {
             id = record.Id;
-            flattenRecord(record, '', values);
+            BoardTableQuery.flattenRecord(record, '', values);
         }
     }
 
@@ -2895,12 +4409,25 @@ public with sharing class BoardQueryService {
         public Integer nextIndex;
         @AuraEnabled
         public Boolean hasMore;
-        /** Rows the cursor spans (`getNumRecords()`, at most `TABLE_MAX_ROWS`). */
+        /** Rows the cursor spans (`getNumRecords()`, at most `BoardTableQuery.TABLE_MAX_ROWS`). */
         @AuraEnabled
         public Integer totalCount;
         /** Rows deleted since the cursor opened that this page skipped. */
         @AuraEnabled
         public Integer deletedRows;
+        /** Row grouping: the groups of this page's rows in row order, with full-group counts; null when ungrouped. */
+        @AuraEnabled
+        public List<BoardTableEngine.TableGroup> groups;
+    }
+
+    /** Largest and smallest value of a Data bar column over the whole scope; null when no record has a value. */
+    public class BarScale {
+        @AuraEnabled
+        public String columnId;
+        @AuraEnabled
+        public Decimal max;
+        @AuraEnabled
+        public Decimal min;
     }
 
     /** First Table page plus resolved columns, effective sort, and binding outcome. */
@@ -2912,23 +4439,54 @@ public with sharing class BoardQueryService {
         public String sortBy;
         @AuraEnabled
         public String sortDirection;
+        /** Row limit applied to this Table; null when unlimited. `totalCount` is then the full matching count. */
+        @AuraEnabled
+        public Integer rowLimit;
+        /**
+         * Row limit of a grouped Table when it cut first-level groups (the "Top N groups" badge); null otherwise. `totalCount`
+         * then counts the records of the shown groups.
+         */
+        @AuraEnabled
+        public Integer groupLimit;
+        /**
+         * Total row: one entry per column with Stacked summaries (whole scope, or the shown rows under a Row limit);
+         * null when the Total row is off or `totalRowUnavailable`.
+         */
+        @AuraEnabled
+        public List<BoardTableEngine.ColumnTotal> totals;
+        /** True when the scope spans too many records to total in one request; the Total row then shows why. */
+        @AuraEnabled
+        public Boolean totalRowUnavailable = false;
+        /** Resolved Row action targets, in request order. */
+        @AuraEnabled
+        public List<RowActionTarget> rowActions = new List<RowActionTarget>();
+        /** Data bar scale per Data bar column over the whole scope (matching records, ignoring paging and Row limit). */
+        @AuraEnabled
+        public List<BarScale> barScales = new List<BarScale>();
+        /** Detail rows off: every Group row of the aggregated table, in order; null otherwise. */
+        @AuraEnabled
+        public List<BoardTableAggregate.GroupRow> aggregateGroups;
+        /**
+         * Detail rows off, cursor tier: where the chunked load stands (`fetchTableAggregateChunk` continues it until
+         * `isComplete`); null in the SOQL tier.
+         */
+        @AuraEnabled
+        public BoardTableAggregateCursor.Progress aggregateCursor;
+
+        /** Row grouping: the resolved group field (null when ungrouped). */
+        @AuraEnabled
+        public BoardTableGrouping.GroupField groupField;
         @AuraEnabled
         public List<String> appliedFilterIds;
         @AuraEnabled
         public List<String> ignoredFilterIds;
-        /**
-         * Child records matched by a `SOSL` text search on the Table's `childRelationship`; pass them back as
-         * `childConfig.matchedChildIds` to `fetchTablePage` so later pages auto-expand too.
-         */
-        @AuraEnabled
-        public List<Id> searchChildIds = new List<Id>();
 
-        TableResult(QueryScope scope) {
+        public TableResult(QueryScope scope) {
             appliedFilterIds = scope.appliedFilterIds;
             ignoredFilterIds = scope.ignoredFilterIds;
         }
 
-        void copyPage(TablePage page) {
+        public void copyPage(TablePage page) {
             paginationCursor = page.paginationCursor;
             rows = page.rows;
             start = page.start;
@@ -2937,23 +4495,5 @@ public with sharing class BoardQueryService {
             totalCount = page.totalCount;
             deletedRows = page.deletedRows;
         }
-    }
-
-    /** One expanded parent row's child sub-table. */
-    public class ChildRowsResult {
-        @AuraEnabled
-        public Id parentId;
-        @AuraEnabled
-        public List<TableColumn> columns = new List<TableColumn>();
-        @AuraEnabled
-        public List<TableRow> rows = new List<TableRow>();
-        /** Canonical child sort path (null for the default `Id ASC` order). */
-        @AuraEnabled
-        public String sortBy;
-        @AuraEnabled
-        public String sortDirection;
-        /** True when the parent has more children than the configured `limit`. */
-        @AuraEnabled
-        public Boolean hasMore;
     }
 }

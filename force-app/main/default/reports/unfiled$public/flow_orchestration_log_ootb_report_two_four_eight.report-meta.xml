@@ -30,6 +30,7 @@
     <columns>
         <field>FlowOrchestrationLog$Comments</field>
     </columns>
+    <currency>USD</currency>
     <description>What orchestration run logs were created and what happened in their associated orchestration runs?</description>
     <format>Tabular</format>
     <name>Sample Report: Orchestration Run Logs</name>

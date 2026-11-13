@@ -35,16 +35,23 @@
             </div>
         </div>
         <div class="slds-card__body slds-card__body_inner c-board-metric-container">
+            <template lwc:if={showCursorProgress}>
+                <div class="c-board-cursor-progress" role="status" aria-live="polite">
+                    <lightning-progress-bar value={cursorProgress.percent} size="small"></lightning-progress-bar>
+                    <p class="c-board-cursor-progress-label slds-text-body_small">{cursorProgress.label}</p>
+                </div>
+            </template>
             <template lwc:if={showWidgetState}>
                 <c-board-widget-state
                     state={viewState}
+                    waiting-for-board-id={waitingBoardId}
                     widget-type="metric"
                     error={errorPayload}
                     has-active-filters={hasActiveFilters}
                     onretry={handleRetry}
                 ></c-board-widget-state>
             </template>
-            <template lwc:else>
+            <template lwc:elseif={showMetricBody}>
                 <div class={bodyClass} data-scope-key={activeScopeKey} aria-busy={ariaBusy}>
                     <div class="c-board-metric-kpi">
                         <span class={valueClass} title={exactValue}>{displayValue}</span>
@@ -59,14 +66,25 @@
                             ></lightning-icon>
                         </template>
                     </div>
+                    <template lwc:if={gaugeModel}>
+                        <c-board-metric-gauge-view model={gaugeModel}></c-board-metric-gauge-view>
+                    </template>
+                    <template lwc:if={gaugeError}>
+                        <p class="c-board-metric-gauge-error slds-text-body_small" role="alert">{gaugeError}</p>
+                    </template>
                     <template lwc:if={subtitle}>
                         <p class="c-board-metric-subtitle slds-text-body_small">{subtitle}</p>
                     </template>
-                    <div class="c-board-metric-progress-region" aria-live="polite">
-                        <template lwc:if={progressText}>
-                            <p class="c-board-metric-progress slds-text-body_small">{progressText}</p>
-                        </template>
-                    </div>
+                    <template for:each={crossObjectNoticeRows} for:item="notice">
+                        <p key={notice.key} class="c-board-cross-object-notice slds-text-body_small">
+                            <lightning-icon
+                                icon-name="utility:warning"
+                                size="x-small"
+                                alternative-text="Warning"
+                            ></lightning-icon>
+                            <span>{notice.message}</span>
+                        </p>
+                    </template>
                 </div>
             </template>
         </div>

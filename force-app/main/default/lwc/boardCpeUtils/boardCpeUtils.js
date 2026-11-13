@@ -7,13 +7,24 @@
 import getQueryableObjects from '@salesforce/apex/BoardSchemaService.getQueryableObjects';
 import getObjectFields from '@salesforce/apex/BoardSchemaService.getObjectFields';
 import getChildRelationships from '@salesforce/apex/BoardSchemaService.getChildRelationships';
+import { gaugeConfigProblems } from 'c/boardMetricGauge';
+import { CHART_TYPE_OPTIONS, chartTypeIsSingleMeasure, isChartType, maxCategoriesFor } from 'c/boardChartUtils';
 import {
     DATE_PRESETS,
     DATE_RANGE_OPERATORS,
+    EMPTY_FILLED_OPERATORS,
     FILTER_TYPES,
     IGNORE_BINDING,
-    RECORD_CONTEXT_OVERRIDE_TYPES
+    RECORD_CONTEXT_OVERRIDE_TYPES,
+    CHILD_ROWS_REMOVED_MESSAGE,
+    CURRENCY_PICKER_ITEM,
+    isCurrencyPickerItem,
+    metricMeasures
 } from 'c/boardConfigUtils';
+import { bucketFieldErrors, bucketIdOf, findBucketField, unknownBucketFieldMessage } from 'c/boardBucketFields';
+import { fixedColourErrors } from 'c/boardChartColours';
+import { crossObjectMeasureErrors } from 'c/boardCrossObjectMeasure';
+import { MAX_PANEL_CATEGORIES, hasPanelField, smallMultiplesErrors } from 'c/boardChartPanels';
 
 // ---- Enums: one `{ value, label }` list each; value arrays are derived -------------------------------------------
 
@@ -30,6 +41,28 @@ export const AGGREGATE_OPTIONS = [
     { label: 'Maximum', value: 'MAX' }
 ];
 const AGGREGATE_FUNCTIONS = optionValues(AGGREGATE_OPTIONS);
+/**
+ * Aggregates of a Measures list (Chart and Metric widgets): the plain aggregates, Average per record (`AVG_PER`: one
+ * value per record of a per-record lookup) and a Formula measure.
+ */
+export const MEASURE_AGGREGATE_OPTIONS = [
+    ...AGGREGATE_OPTIONS,
+    { label: 'Average per record', value: 'AVG_PER' },
+    { label: 'Formula (over the other Measures)', value: 'FORMULA' }
+];
+const MEASURE_AGGREGATE_FUNCTIONS = optionValues(MEASURE_AGGREGATE_OPTIONS);
+const FORMULA = 'FORMULA';
+export const FORMULA_SLOTS = ['A', 'B', 'C', 'D', 'E', 'F'];
+const FORMULA_SERIES_ERROR =
+    "A Formula measure can't be used with a series field. Remove the Stack by field or the Formula measure.";
+/** String literals (skipped) or identifiers not called as a function. */
+const FORMULA_TOKEN = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(?<![\w$.])([A-Za-z_]\w*)(?!\w|\s*\()/g;
+/** How an Average per record Measure takes each record's value (`inner`). */
+export const PER_RECORD_INNER_OPTIONS = [
+    { label: 'Sum of its rows (e.g. deal size)', value: 'SUM' },
+    { label: 'Same on every row, counted once (e.g. days to close)', value: 'ONCE' }
+];
+const PER_RECORD_INNERS = optionValues(PER_RECORD_INNER_OPTIONS);
 export const ROLLUP_FUNCTIONS = ['COUNT', 'SUM'];
 export const DATE_GRANULARITY_OPTIONS = [
     { label: 'Day (default)', value: 'DAY' },
@@ -79,7 +112,13 @@ export const FILTER_TYPE_LABELS = {
     LOOKUP: 'Lookup',
     USER: 'User',
     DATE_RANGE: 'Date range',
-    TEXT: 'Text search'
+    NUMBER_RANGE: 'Number range',
+    TEXT: 'Text search',
+    EMPTY_FILLED: 'Empty / Filled in',
+    BUCKET: 'Bucket',
+    // Items in the Filter definitions list that are not filter types.
+    section: 'Section',
+    [CURRENCY_PICKER_ITEM]: 'Currency picker'
 };
 export const FILTER_TYPE_OPTIONS = FILTER_TYPES.map((type) => ({ label: FILTER_TYPE_LABELS[type], value: type }));
 export const TEXT_MATCH_MODE_OPTIONS = [
@@ -88,6 +127,12 @@ export const TEXT_MATCH_MODE_OPTIONS = [
     { label: 'Field starts with', value: 'STARTS_WITH' }
 ];
 const TEXT_MATCH_MODES = optionValues(TEXT_MATCH_MODE_OPTIONS);
+/** User filter `matchMode`: the picked users only, or each picked user's Team. */
+export const USER_MATCH_MODE_OPTIONS = [
+    { label: 'Selected users', value: 'users' },
+    { label: 'Selected users and their team', value: 'usersAndTeam' }
+];
+const USER_MATCH_MODES = optionValues(USER_MATCH_MODE_OPTIONS);
 export const RECORD_CONTEXT_MODE_OPTIONS = [
     { label: 'Implicit: the record filters Widgets by convention', value: 'IMPLICIT' },
     { label: 'Locked: the record value is fixed', value: 'LOCKED' },
@@ -126,8 +171,9 @@ export const PICKLIST_FIELD_TYPES = ['PICKLIST', 'MULTIPICKLIST'];
 
 const DATE_PRESET_VALUES = new Set(optionValues(DATE_PRESETS));
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+/** A plain number as the Number range filter reads it (mirrors `filterPersistence` NUMBER_PATTERN). */
+const PLAIN_NUMBER = /^-?\d+(?:\.\d+)?$/;
 const FILTER_ID = /^[A-Za-z][A-Za-z0-9_]*$/;
-const CURRENCY_CODE = /^[A-Za-z]{3}$/;
 /** Mirrors BoardQueryService.MIN_SEARCH_CHARACTERS. */
 export const MIN_SEARCH_CHARACTERS = 2;
 const RECORD_ID = /^[a-zA-Z0-9]{15}(?:[a-zA-Z0-9]{3})?$/;
@@ -218,6 +264,26 @@ export function isValidBindingPath(binding) {
 /** A direct field, 1–5 hop parent path, or `Child(ForeignKey).Path`. */
 export function isValidFieldPath(path) {
     return typeof path === 'string' && SINGLE_PATH.test(path.trim());
+}
+
+const MAX_RELATIONSHIP_HOPS = 5;
+const CHILD_PREFIX = new RegExp(`^${IDENT}\\(${IDENT}\\)\\.`);
+
+/**
+ * Config-time error for an Include team binding (User filter in `usersAndTeam` mode): the Team condition reaches
+ * `<path>.UserRoleId`, one relationship hop past the bound path (counted inside a child semi-join), and SOQL allows
+ * at most 5. Null when the path is within the limit or isn't a single field path.
+ */
+export function teamBindingHopError(filterId, path) {
+    if (!isValidFieldPath(path)) {
+        return null;
+    }
+    const trimmed = path.trim();
+    const hops = trimmed.replace(CHILD_PREFIX, '').split('.').length;
+    if (hops <= MAX_RELATIONSHIP_HOPS) {
+        return null;
+    }
+    return `Filter binding "${filterId}": Include team needs ${trimmed}.UserRoleId, which exceeds the ${MAX_RELATIONSHIP_HOPS}-hop limit. Bind the filter to a shorter user-lookup path.`;
 }
 
 /** A direct field or 1–5 hop parent path (no child semi-join). */
@@ -479,9 +545,6 @@ export function formatErrors(format, key, label) {
     if (isIntegerInRange(min, 0, 20) && isIntegerInRange(max, 0, 20) && min > max) {
         errors.push(error(key, `${label}: minimum fraction digits cannot exceed maximum fraction digits.`));
     }
-    if (hasValue(format.currencyCode) && !CURRENCY_CODE.test(String(format.currencyCode))) {
-        errors.push(error(key, `${label}: currency code must be a 3-letter ISO code such as USD.`));
-    }
     return errors;
 }
 
@@ -510,7 +573,7 @@ function filterLabel(filter, index) {
 /** Effective selection mode, matching `normalizeFilterDefinitions`. */
 export function filterSelectionMode(filter) {
     if (filter.type === 'PICKLIST') {
-        return filter.selectionMode === 'single' ? 'single' : 'multi';
+        return filter.selectionMode === 'single' || filter.display === 'buttons' ? 'single' : 'multi';
     }
     return filter.selectionMode === 'multi' ? 'multi' : 'single';
 }
@@ -541,6 +604,18 @@ function dateDefaultErrors(defaultValue, label) {
         errors.push(`${label}: enter a default start or end date.`);
     }
     return errors;
+}
+
+/** NUMBER_RANGE `defaultValue { from?, to? }`: plain numbers (no grouping separators), min not above max. */
+function numberDefaultErrors(defaultValue, label) {
+    const bounds = [defaultValue.from, defaultValue.to].map((bound) => String(bound ?? '').trim());
+    if (bounds.some((bound) => bound && !PLAIN_NUMBER.test(bound))) {
+        return [`${label}: the default minimum and maximum must be plain numbers such as 5000 or 12.5.`];
+    }
+    const [from, to] = bounds;
+    return from && to && Number(from) > Number(to)
+        ? [`${label}: the default minimum must not be more than the default maximum.`]
+        : [];
 }
 
 /** PICKLIST / LOOKUP / USER `defaultValue { values?, token? }` (spec §5), checked as `buildFilterValue` reads it. */
@@ -589,6 +664,12 @@ function defaultValueErrors(filter, label) {
             return choiceDefaultErrors(filter, defaultValue, label);
         case 'DATE_RANGE':
             return dateDefaultErrors(defaultValue, label);
+        case 'NUMBER_RANGE':
+            return numberDefaultErrors(defaultValue, label);
+        case 'EMPTY_FILLED':
+            return hasValue(defaultValue.operator) && !EMPTY_FILLED_OPERATORS.includes(defaultValue.operator)
+                ? [`${label}: the default must be ${EMPTY_FILLED_OPERATORS.join(' or ')} (or none for All).`]
+                : [];
         case 'TEXT':
             return hasValue(defaultValue.text) && typeof defaultValue.text !== 'string'
                 ? [`${label}: the default search text must be text.`]
@@ -598,7 +679,12 @@ function defaultValueErrors(filter, label) {
     }
 }
 
-function filterDefinitionErrors(filter, index, seenIds) {
+/** A Section item (`{ type: 'section', label, startCollapsed }`) only needs a heading. */
+function sectionHeadingErrors(section, index) {
+    return cleanString(section.label) ? [] : [`Section ${index + 1}: enter a heading.`];
+}
+
+function filterDefinitionErrors(filter, index, seenIds, bucketFields) {
     const label = filterLabel(filter, index);
     if (!isPlainObject(filter)) {
         return [`${label} must be an object.`];
@@ -641,6 +727,11 @@ function filterDefinitionErrors(filter, index, seenIds) {
                 errors.push(`${label}: choose the lookup target object.`);
             }
             break;
+        case 'EMPTY_FILLED':
+            if (!cleanString(filter.fieldApiName)) {
+                errors.push(`${label}: choose the field to check.`);
+            }
+            break;
         case 'TEXT':
             if (hasValue(filter.matchMode) && !TEXT_MATCH_MODES.includes(filter.matchMode)) {
                 errors.push(`${label}: match mode must be SOSL, CONTAINS, or STARTS_WITH.`);
@@ -651,8 +742,28 @@ function filterDefinitionErrors(filter, index, seenIds) {
             }
             break;
         case 'USER':
+            if (hasValue(filter.matchMode) && !USER_MATCH_MODES.includes(filter.matchMode)) {
+                errors.push(`${label}: match mode must be users or usersAndTeam.`);
+            }
+            break;
         case 'DATE_RANGE':
             break;
+        case 'NUMBER_RANGE':
+            if (!cleanString(filter.fieldApiName)) {
+                errors.push(`${label}: choose the number or currency field.`);
+            }
+            break;
+        case 'BUCKET': {
+            const bucketFieldId = cleanString(filter.bucketFieldId);
+            if (!bucketFieldId) {
+                errors.push(`${label}: choose the Bucket field.`);
+            } else if (Array.isArray(bucketFields) && !findBucketField(bucketFields, bucketFieldId)) {
+                errors.push(
+                    `${label}: Bucket field "${bucketFieldId}" is not defined. Choose one of the Bucket fields.`
+                );
+            }
+            break;
+        }
         default:
             errors.push(`${label}: choose a filter type (${FILTER_TYPES.join(', ')}).`);
             return errors;
@@ -667,7 +778,7 @@ function filterDefinitionErrors(filter, index, seenIds) {
 /**
  * Problems of a Filter widget's `recordContext` (`[{ key: 'recordContext', errorString }]`) given the filterId → type
  * map of its valid filters (`validateFilterDefinitions(filters).filterTypes`). Shared by `validateFilterConfig` and
- * the Filter definitions Config dialog's Save check.
+ * the Setup dialog's Filters step.
  */
 export function recordContextErrors(recordContext, filterTypes) {
     if (recordContext === undefined || recordContext === null) {
@@ -703,13 +814,21 @@ export function recordContextErrors(recordContext, filterTypes) {
 /**
  * Problems of each filter definition, in list order (`[[message, …], …]`; an empty list means the filter is valid),
  * plus the filterId → type map of the valid ids. A repeated filterId flags the later filter. The rules behind the
- * Filter widget's `validate()`, its read-only filter list, and the Filter definitions Config dialog.
+ * Filter widget's `validate()` and the Filters step of its Setup dialog (master list error flags). With the
+ * Filter widget's `bucketFields`, a Bucket filter must name one of them.
  */
-export function validateFilterDefinitions(filters) {
+export function validateFilterDefinitions(filters, bucketFields = null) {
     const filterTypes = new Map();
-    const byIndex = (Array.isArray(filters) ? filters : []).map((filter, index) =>
-        filterDefinitionErrors(filter, index, filterTypes)
-    );
+    const byIndex = (Array.isArray(filters) ? filters : []).map((filter, index) => {
+        if (isPlainObject(filter) && filter.type === 'section') {
+            return sectionHeadingErrors(filter, index);
+        }
+        if (isCurrencyPickerItem(filter)) {
+            const isFirst = filters.findIndex(isCurrencyPickerItem) === index;
+            return isFirst ? [] : ['A Filter widget can have only one Currency picker. Remove this one.'];
+        }
+        return filterDefinitionErrors(filter, index, filterTypes, bucketFields);
+    });
     return { byIndex, filterTypes };
 }
 
@@ -735,18 +854,36 @@ export function validateFilterConfig(config) {
     if (hasValue(config.filters) && !Array.isArray(config.filters)) {
         errors.push(error('filters', 'Filters must be a list.'));
     }
-    const { byIndex, filterTypes } = validateFilterDefinitions(config.filters);
+    const { byIndex, filterTypes } = validateFilterDefinitions(
+        config.filters,
+        Array.isArray(config.bucketFields) ? config.bucketFields : []
+    );
     byIndex.forEach((messages) => messages.forEach((message) => errors.push(error('filters', message))));
     errors.push(...recordContextErrors(config.recordContext, filterTypes));
     if (hasValue(config.persistence) && !PERSISTENCE_MODES.includes(config.persistence)) {
         errors.push(error('persistence', `Persistence must be one of ${PERSISTENCE_MODES.join(', ')}.`));
     }
+    // Board-level Bucket fields: the same rules as a Widget's own.
+    errors.push(
+        ...bucketFieldErrors(config.bucketFields, baseFilterError).map((message) => error('bucketFields', message))
+    );
     return errors;
 }
 
-/** Metric widget design-time errors. */
+/** Max Measures of one Metric widget. */
+export const MAX_METRIC_MEASURES = 6;
+
+/**
+ * Metric widget design-time errors. A Measures list needs exactly one visible Measure; a config without one is a
+ * single-aggregate Metric (`aggregateFunction`, `valueFieldApiName`, `format`), checked as before.
+ */
 export function validateMetricConfig(config) {
-    const errors = aggregateErrors(config, 'Metric', false);
+    const errors = hasValue(config.measures)
+        ? metricMeasureErrors(config)
+        : [...aggregateErrors(config, 'Metric', false), ...formatErrors(config.format, 'format', 'Value format')];
+    gaugeConfigProblems(config, metricMeasures(config)).forEach((message) =>
+        errors.push(error(message.startsWith('Display') ? 'display' : 'gauge', message))
+    );
     const thresholds = config.thresholds;
     if (hasValue(thresholds) && !Array.isArray(thresholds)) {
         errors.push(error('thresholds', 'Thresholds must be a list.'));
@@ -765,51 +902,365 @@ export function validateMetricConfig(config) {
             }
         });
     }
-    errors.push(...formatErrors(config.format, 'format', 'Value format'));
     return errors;
 }
 
-/** Bar Chart widget design-time errors. */
-export function validateBarConfig(config) {
+function metricMeasureErrors(config) {
+    const errors = measureListErrors(config, 'Metric', MAX_METRIC_MEASURES);
+    if (!Array.isArray(config.measures) || !config.measures.length) {
+        return errors;
+    }
+    const visible = config.measures.filter((measure) => isPlainObject(measure) && measure.hidden !== true).length;
+    if (visible === 0) {
+        errors.push(
+            error('measures', 'A Metric widget shows exactly one Measure: every Measure is Hidden. Show one of them.')
+        );
+    } else if (visible > 1) {
+        errors.push(
+            error(
+                'measures',
+                `A Metric widget shows exactly one Measure: ${visible} Measures are visible. Mark the others Hidden.`
+            )
+        );
+    }
+    errors.push(...crossObjectMeasureErrors(config, 'metric').map((message) => error('measures', message)));
+    return errors;
+}
+
+/**
+ * Chart widget design-time errors; max categories depends on the chart type. `context.boardBucketFields`: the
+ * Board-level Bucket fields (of the Board's Filter widget) a `bucket:<id>` reference may also name.
+ */
+export function validateChartConfig(config, context = {}) {
     const errors = [];
+    if (hasValue(config.chartType) && !isChartType(config.chartType)) {
+        const types = CHART_TYPE_OPTIONS.map((option) => option.value).join(', ');
+        errors.push(error('chartType', `Chart type must be one of ${types}.`));
+    }
     if (hasValue(config.orientation) && !ORIENTATIONS.includes(config.orientation)) {
         errors.push(error('orientation', 'Orientation must be vertical or horizontal.'));
     }
     const groupByField = cleanString(config.groupByField);
     if (!groupByField) {
         errors.push(error('groupByField', 'Choose a Group by field.'));
+    } else if (bucketIdOf(groupByField) !== null) {
+        errors.push(...bucketReferenceErrors(config, 'groupByField', 'Group by', context));
     } else if (!isParentFieldPath(groupByField)) {
         errors.push(error('groupByField', `Group by field "${groupByField}" must be a field or 1–5 hop parent path.`));
     }
     if (hasValue(config.dateGranularity) && !DATE_GRANULARITIES.includes(config.dateGranularity)) {
         errors.push(error('dateGranularity', `Date granularity must be one of ${DATE_GRANULARITIES.join(', ')}.`));
     }
+    const measures = chartMeasures(config);
     const stackByField = cleanString(config.stackByField);
-    if (stackByField && !isParentFieldPath(stackByField)) {
+    const stackByBucket = stackByField && bucketIdOf(stackByField) !== null;
+    if (stackByBucket && bucketReferenceErrors(config, 'stackByField', 'Stack by', context).length) {
+        errors.push(...bucketReferenceErrors(config, 'stackByField', 'Stack by', context));
+    } else if (stackByField && !stackByBucket && !isParentFieldPath(stackByField)) {
         errors.push(error('stackByField', `Stack by field "${stackByField}" must be a field or 1–5 hop parent path.`));
     } else if (stackByField && groupByField && stackByField.toLowerCase() === groupByField.toLowerCase()) {
         errors.push(error('stackByField', 'Stack by field must differ from the Group by field.'));
+    } else if (stackByField && measures.length > 1) {
+        errors.push(error('stackByField', 'Use several Measures or a Stack by field, not both.'));
     }
-    errors.push(...aggregateErrors(config, 'Bar Chart', true));
+    errors.push(...measureListErrors(config));
+    errors.push(...crossObjectMeasureErrors(config, 'chart').map((message) => error('measures', message)));
+    if (chartTypeIsSingleMeasure(config.chartType)) {
+        const type = config.chartType;
+        if (measures.length > 1) {
+            errors.push(error('measures', `A ${type} chart shows exactly one Measure.`));
+        }
+        if (stackByField) {
+            errors.push(error('stackByField', `A ${type} chart has no Stack by field.`));
+        }
+    }
+    if (hasValue(config.labelMode) && !['value', 'percent', 'both', 'none'].includes(config.labelMode)) {
+        errors.push(error('labelMode', 'Label mode must be one of value, percent, both, none.'));
+    }
+    errors.push(
+        ...bucketFieldErrors(config.bucketFields, baseFilterError).map((message) => error('bucketFields', message))
+    );
+    errors.push(...fixedColourErrors(config.fixedColours).map((message) => error('fixedColours', message)));
     if (hasValue(config.sortBy) && !BAR_SORTS.includes(config.sortBy)) {
         errors.push(error('sortBy', `Sort must be one of ${BAR_SORTS.join(', ')}.`));
     }
-    if (hasValue(config.maxBars) && !isIntegerInRange(config.maxBars, 3, 50)) {
-        errors.push(error('maxBars', 'Maximum bars must be a whole number from 3 to 50.'));
+    // Small multiples show at most 50 categories per Panel.
+    const maxCategories = hasPanelField(config)
+        ? Math.min(MAX_PANEL_CATEGORIES, maxCategoriesFor(config.chartType))
+        : maxCategoriesFor(config.chartType);
+    const panelErrors = smallMultiplesErrors(config).map((entry) => error(entry.key, entry.message));
+    if (
+        bucketIdOf(cleanString(config.panelField)) !== null &&
+        !panelErrors.some((entry) => entry.key === 'panelField')
+    ) {
+        panelErrors.unshift(...bucketReferenceErrors(config, 'panelField', 'Panel field', context));
+    }
+    errors.push(...panelErrors);
+    if (hasValue(config.maxBars) && !isIntegerInRange(config.maxBars, 3, maxCategories)) {
+        const noun = (config.chartType || 'bar') === 'bar' ? 'bars' : 'categories';
+        errors.push(error('maxBars', `Maximum ${noun} must be a whole number from 3 to ${maxCategories}.`));
     }
     // One series slot is always the "Other" series, so fewer than 2 would hide every named series.
-    if (hasValue(config.maxSeries) && !isIntegerInRange(config.maxSeries, 2, 6)) {
-        errors.push(error('maxSeries', 'Maximum series must be a whole number from 2 to 6.'));
+    if (hasValue(config.maxSeries) && !isIntegerInRange(config.maxSeries, 2, 12)) {
+        errors.push(error('maxSeries', 'Maximum series must be a whole number from 2 to 12.'));
     }
-    const fn = config.aggregateFunction || 'COUNT';
-    if (config.overflowMode === 'OTHER' && !ROLLUP_FUNCTIONS.includes(fn)) {
-        errors.push(error('overflowMode', `An "Other" bar is only available for COUNT and SUM, not ${fn}.`));
+    // "Other" merges the rolled-up rows (AVG, MIN, MAX, Average per record and Formula measures included), except
+    // distinct counts, which never merge; Small multiples panels can only sum their "Other".
+    const functions = measures.map((measure) => measure.aggregateFunction);
+    const nonAdditive = functions.find((fn) => !ROLLUP_FUNCTIONS.includes(fn));
+    if (config.overflowMode === 'OTHER' && functions.includes('COUNT_DISTINCT')) {
+        errors.push(error('overflowMode', 'An "Other" bar is not available with COUNT_DISTINCT Measures.'));
+    } else if (config.overflowMode === 'OTHER' && nonAdditive && hasPanelField(config)) {
+        errors.push(
+            error(
+                'overflowMode',
+                `With Small multiples, an "Other" bar is only available for COUNT and SUM Measures, not ${nonAdditive}.`
+            )
+        );
     }
-    errors.push(...formatErrors(config.format, 'format', 'Value format'));
     return errors;
 }
 
-function columnErrors(rawColumns, key, prefix, messages) {
+/** A group or series field `bucket:<id>` must name one of the Widget's Bucket fields or the Board's. */
+function bucketReferenceErrors(config, key, label, context = {}) {
+    const id = bucketIdOf(config[key]);
+    return findBucketField(config.bucketFields, id) || findBucketField(context.boardBucketFields, id)
+        ? []
+        : [error(key, unknownBucketFieldMessage(label, id))];
+}
+
+/** Max Measures of one Chart widget. */
+export const MAX_CHART_MEASURES = 6;
+/**
+ * Share of total modes of a Chart widget Measure (`showAs`; unset = its plain value). Only COUNT and SUM Measures add
+ * up to a total; percent of category needs a series (Stack by) field or several Measures.
+ */
+export const SHOW_AS_OPTIONS = [
+    { label: 'Value', value: 'value' },
+    { label: 'Percent of total', value: 'percentOfTotal' },
+    { label: 'Percent of category', value: 'percentOfCategory' }
+];
+const SHOW_AS_MODES = SHOW_AS_OPTIONS.map((option) => option.value);
+const HEX_COLOUR = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+/** A Chart widget's Measures list; a config without one counts records (`[{ aggregateFunction: 'COUNT' }]`). */
+export function chartMeasures(config) {
+    const measures = Array.isArray(config.measures) ? config.measures : [];
+    return measures.length ? measures : [{ aggregateFunction: 'COUNT' }];
+}
+
+function measureListErrors(config, widgetLabel = 'Chart', maxMeasures = MAX_CHART_MEASURES) {
+    const errors = [];
+    if (hasValue(config.aggregateFunction) || hasValue(config.valueFieldApiName)) {
+        errors.push(error('measures', 'aggregateFunction and valueFieldApiName were replaced by the Measures list.'));
+    }
+    if (!hasValue(config.measures)) {
+        return errors;
+    }
+    if (!Array.isArray(config.measures)) {
+        return [...errors, error('measures', 'Measures must be a list.')];
+    }
+    if (!config.measures.length) {
+        errors.push(error('measures', 'Add at least one Measure.'));
+    }
+    if (config.measures.length > maxMeasures) {
+        errors.push(error('measures', `A ${widgetLabel} widget shows at most ${maxMeasures} Measures.`));
+    }
+    config.measures.forEach((measure, index) => {
+        const label = `Measure ${index + 1}`;
+        if (!isPlainObject(measure)) {
+            errors.push(error('measures', `${label}: must be an object.`));
+            return;
+        }
+        const fn = measure.aggregateFunction || 'COUNT';
+        if (!MEASURE_AGGREGATE_FUNCTIONS.includes(fn)) {
+            errors.push(
+                error(
+                    'measures',
+                    `${label}: aggregate function must be one of ${MEASURE_AGGREGATE_FUNCTIONS.join(', ')}.`
+                )
+            );
+            return;
+        }
+        const valueField = cleanString(measure.valueFieldApiName);
+        if (fn === FORMULA) {
+            errors.push(...formulaMeasureErrors(config.measures, index).map((message) => error('measures', message)));
+        } else if (fn !== 'COUNT' && !valueField) {
+            const kind = fn === 'COUNT_DISTINCT' ? 'a field' : 'a numeric field';
+            errors.push(error('measures', `${label}: choose ${kind} to aggregate with ${fn}.`));
+        } else if (valueField && !isParentFieldPath(valueField)) {
+            errors.push(error('measures', `${label}: value field "${valueField}" is not a valid field path.`));
+        }
+        if (hasValue(measure.color) && !HEX_COLOUR.test(String(measure.color))) {
+            errors.push(error('measures', `${label}: colour must be a hex colour such as #0176d3.`));
+        }
+        errors.push(...averagePerRecordErrors(measure, fn, label));
+        errors.push(...shareOfTotalErrors(measure, fn, label, config, widgetLabel));
+        errors.push(...formatErrors(measure.format, 'measures', `${label} format`));
+        if (hasValue(measure.condition)) {
+            const conditionProblem = baseFilterError(measure.condition);
+            if (conditionProblem) {
+                errors.push(error('measures', `${label} condition: ${conditionProblem}`));
+            }
+        }
+        errors.push(...measureDisplayErrors(measure, label));
+    });
+    if (cleanString(config.stackByField) && config.measures.some(isFormulaMeasure)) {
+        errors.push(error('measures', FORMULA_SERIES_ERROR));
+    }
+    return errors;
+}
+
+/** An Average per record Measure needs a per-record lookup path and takes each record's value as SUM or ONCE. */
+function averagePerRecordErrors(measure, fn, label) {
+    if (fn !== 'AVG_PER') {
+        return [];
+    }
+    const errors = [];
+    const perField = cleanString(measure.perField);
+    if (!perField) {
+        errors.push(error('measures', `${label}: choose the per-record field (a lookup) to average per record.`));
+    } else if (!isParentFieldPath(perField)) {
+        errors.push(error('measures', `${label}: per-record field "${perField}" is not a valid field path.`));
+    }
+    if (hasValue(measure.inner) && !PER_RECORD_INNERS.includes(measure.inner)) {
+        errors.push(error('measures', `${label}: take each record's value as SUM or ONCE.`));
+    }
+    return errors;
+}
+
+// ---- Formula measures ------------------------------------------------------------------------------------------
+// A Formula measure is Salesforce formula syntax over the Widget's other Measures by slot: Measure 1 is A, Measure 2
+// is B … Measure 6 is F (case-insensitive). The server builds it with FormulaEval (`BoardFormulaMeasures`); these
+// rules mirror its Measure-reference checks word for word.
+
+export function isFormulaMeasure(measure) {
+    return isPlainObject(measure) && String(measure.aggregateFunction || '').toUpperCase() === FORMULA;
+}
+
+/** Slot letter of Measure `index` (0 → A). */
+export function formulaSlot(index) {
+    return FORMULA_SLOTS[index] || '';
+}
+
+/** `Measure 2 (B)`: a Measure's title with its formula slot. */
+export function measureTitle(index) {
+    const slot = formulaSlot(index);
+    return slot ? `Measure ${index + 1} (${slot})` : `Measure ${index + 1}`;
+}
+
+/** Rewrites each slot reference of `text` through `rename(slotIndex)` (returns a slot index); strings untouched. */
+function mapFormulaSlots(text, rename) {
+    return String(text).replace(FORMULA_TOKEN, (match, literal, name) => {
+        const slot = name && name.length === 1 ? FORMULA_SLOTS.indexOf(name.toUpperCase()) : -1;
+        if (slot < 0) {
+            return match;
+        }
+        const target = formulaSlot(rename(slot));
+        return target ? target : match;
+    });
+}
+
+/** Slot indexes (0 = A) a formula references, ascending. */
+export function formulaReferences(text) {
+    const slots = new Set();
+    mapFormulaSlots(text || '', (slot) => {
+        slots.add(slot);
+        return slot;
+    });
+    return [...slots].sort((a, b) => a - b);
+}
+
+/**
+ * Keeps Formula measures pointing at the same Measures after the list is reordered or a Measure removed:
+ * `newIndexOf(oldIndex)` is a Measure's new position (or -1 when removed; references to it are left as typed).
+ */
+export function remapFormulaMeasures(measures, newIndexOf) {
+    return measures.map((measure) => {
+        if (!isFormulaMeasure(measure) || typeof measure.formula !== 'string') {
+            return measure;
+        }
+        const formula = mapFormulaSlots(measure.formula, (slot) => {
+            const next = newIndexOf(slot);
+            return next < 0 ? slot : next;
+        });
+        return { ...measure, formula };
+    });
+}
+
+/** The Measure-reference errors of Formula measure `index` (the formula text itself is checked by the server). */
+export function formulaMeasureErrors(measures, index) {
+    const prefix = `${measureTitle(index)} formula`;
+    const text = cleanString(measures[index].formula);
+    if (!text) {
+        return [`${prefix}: Enter a formula, e.g. A / B or 15000.`];
+    }
+    return formulaReferences(text)
+        .map((slot) => {
+            const letter = formulaSlot(slot);
+            if (slot === index) {
+                return `${prefix} can't use itself (${letter}).`;
+            }
+            if (slot >= measures.length) {
+                return `${prefix} uses ${letter}, but there is no Measure ${slot + 1}.`;
+            }
+            if (isFormulaMeasure(measures[slot])) {
+                return `${prefix} can't use ${letter}: a Formula measure can't reference another Formula measure.`;
+            }
+            return null;
+        })
+        .filter(Boolean);
+}
+
+function shareOfTotalErrors(measure, fn, label, config, widgetLabel) {
+    if (!hasValue(measure.showAs) || measure.showAs === 'value') {
+        return [];
+    }
+    if (widgetLabel !== 'Chart') {
+        return [error('measures', `${label}: Share of total is only available on the Chart widget.`)];
+    }
+    if (!SHOW_AS_MODES.includes(measure.showAs)) {
+        return [error('measures', `${label}: show as must be one of ${SHOW_AS_MODES.join(', ')}.`)];
+    }
+    if (!ROLLUP_FUNCTIONS.includes(fn)) {
+        return [error('measures', `${label}: a percentage is only available for COUNT and SUM Measures, not ${fn}.`)];
+    }
+    // A Reference line is the Measure's overall value: as a share of the whole scope it would always be 100%.
+    if (measure.render === 'referenceLine') {
+        return [error('measures', `${label}: a Reference line shows the overall value, not a percentage.`)];
+    }
+    if (measure.showAs !== 'percentOfCategory') {
+        return [];
+    }
+    // A pie, donut or polar area has one Measure and no series: every slice would be 100% of its own category.
+    if (chartTypeIsSingleMeasure(config.chartType)) {
+        return [
+            error('measures', `${label}: a pie, donut or polar area chart offers percent of total, not of category.`)
+        ];
+    }
+    if (!cleanString(config.stackByField) && config.measures.length < 2) {
+        return [error('measures', `${label}: percent of category needs a Stack by field or several Measures.`)];
+    }
+    return [];
+}
+
+/** A Measure's combo chart settings: `render` (bar | line | referenceLine) and value `axis` (primary | secondary), both optional. */
+function measureDisplayErrors(measure, label) {
+    const errors = [];
+    if (hasValue(measure.render) && !['bar', 'line', 'referenceLine'].includes(measure.render)) {
+        errors.push(error('measures', `${label}: draw as must be bar, line or referenceLine.`));
+    }
+    if (hasValue(measure.axis) && !['primary', 'secondary'].includes(measure.axis)) {
+        errors.push(error('measures', `${label}: axis must be primary or secondary.`));
+    }
+    return errors;
+}
+
+/**
+ * `bucketFields`: the Widget's Bucket fields when its columns may show one (`fieldPath: 'bucket:<id>'`); a column
+ * then must name one of them. Without it every column is a field path.
+ */
+function columnErrors(rawColumns, key, prefix, messages, bucketFields) {
     if (hasValue(rawColumns) && !Array.isArray(rawColumns)) {
         return [error(key, messages.notList)];
     }
@@ -825,7 +1276,12 @@ function columnErrors(rawColumns, key, prefix, messages) {
             errors.push(error(key, `${label}: choose a field.`));
             return;
         }
-        if (!isParentFieldPath(column.fieldPath)) {
+        const bucketId = bucketFields ? bucketIdOf(column.fieldPath) : null;
+        if (bucketId !== null) {
+            if (!findBucketField(bucketFields, bucketId)) {
+                errors.push(error(key, `${label} uses an unknown Bucket field "${bucketId}".`));
+            }
+        } else if (!isParentFieldPath(column.fieldPath)) {
             errors.push(error(key, `${label}: "${column.fieldPath}" must be a field or 1–5 hop parent path.`));
         }
         const id = cleanString(column.id) || column.fieldPath;
@@ -838,47 +1294,299 @@ function columnErrors(rawColumns, key, prefix, messages) {
     return errors;
 }
 
-/** Table widget design-time errors: columns, page size, and the optional childRelationship. */
+/** Table widget design-time errors: columns, page size, and the and a leftover childRelationship (removed). */
 export function validateTableConfig(config) {
-    const errors = columnErrors(config.columns, 'columns', 'Column', {
-        notList: 'Columns must be a list.',
-        empty: 'Add at least one column.'
-    });
+    const errors = columnErrors(
+        config.columns,
+        'columns',
+        'Column',
+        { notList: 'Columns must be a list.', empty: 'Add at least one column.' },
+        Array.isArray(config.bucketFields) ? config.bucketFields : []
+    );
+    errors.push(
+        ...bucketFieldErrors(config.bucketFields, baseFilterError).map((message) => error('bucketFields', message))
+    );
     if (cleanString(config.sortBy) && !isParentFieldPath(config.sortBy)) {
         errors.push(error('sortBy', `Default sort "${config.sortBy}" must be a field or 1–5 hop parent path.`));
     }
     if (hasValue(config.pageSize) && !isIntegerInRange(config.pageSize, 10, 100)) {
         errors.push(error('pageSize', 'Page size must be a whole number from 10 to 100.'));
     }
-    const child = config.childRelationship;
-    if (hasValue(child)) {
-        if (!isPlainObject(child)) {
-            errors.push(error('childRelationship', 'Child records must be an object.'));
-            return errors;
+    errors.push(...rowLimitErrors(config));
+    errors.push(...columnSummaryErrors(config.columns));
+    errors.push(...detailRowsErrors(config));
+    if (hasValue(config.childRelationship)) {
+        errors.push(error('childRelationship', CHILD_ROWS_REMOVED_MESSAGE));
+    }
+    errors.push(...rowActionErrors(config.rowActions));
+    errors.push(...rowGroupingErrors(config.groupBy));
+    errors.push(...bucketGroupErrors(config));
+    return errors;
+}
+
+/** A Bucket field as group field (`bucket:<id>`): Detail rows off only, as the only group field, and defined. */
+function bucketGroupErrors(config) {
+    const entries = Array.isArray(config.groupBy) ? config.groupBy.filter(isPlainObject) : [];
+    const entry = entries.find((candidate) => bucketIdOf(candidate.fieldPath) !== null);
+    if (!entry) {
+        return [];
+    }
+    const errors = [];
+    if (config.detailRows !== false) {
+        errors.push(error('groupBy', 'A Table can group by a Bucket field with Detail rows off only.'));
+    } else if (entries.length > 1) {
+        errors.push(error('groupBy', 'With Detail rows off a Table groups by one field.'));
+    }
+    const id = bucketIdOf(entry.fieldPath);
+    if (!findBucketField(config.bucketFields, id)) {
+        errors.push(error('groupBy', unknownBucketFieldMessage('Group by', id)));
+    }
+    return errors;
+}
+
+/**
+ * Row grouping (Detail rows on): up to two group field paths, each with an optional ASC / DESC group order, a date
+ * granularity (the Chart widget's options) and an order field constant per group (`orderBy`, e.g. `Opportunity.Amount`).
+ */
+function rowGroupingErrors(groupBy) {
+    if (!hasValue(groupBy)) {
+        return [];
+    }
+    if (!Array.isArray(groupBy)) {
+        return [error('groupBy', 'Group fields must be a list.')];
+    }
+    const errors = groupBy.length > 2 ? [error('groupBy', 'A Table groups by up to two fields.')] : [];
+    groupBy.forEach((entry, index) => {
+        const fieldPath = isPlainObject(entry) ? cleanString(entry.fieldPath) : '';
+        if (!fieldPath) {
+            errors.push(error('groupBy', `Group ${index + 1}: choose a field.`));
+            return;
         }
-        if (!cleanString(child.childObjectApiName) || !cleanString(child.foreignKeyField)) {
-            errors.push(error('childRelationship', 'Child records: choose a child relationship.'));
+        if (bucketIdOf(fieldPath) === null && !isParentFieldPath(fieldPath)) {
+            errors.push(error('groupBy', `Group field "${entry.fieldPath}" must be a field or 1–5 hop parent path.`));
         }
-        errors.push(
-            ...columnErrors(child.columns, 'childRelationship', 'Child column', {
-                notList: 'Child records: columns must be a list.',
-                empty: 'Child records: add at least one child column.'
-            })
-        );
-        if (cleanString(child.sortBy) && !isParentFieldPath(child.sortBy)) {
+        if (hasValue(entry.sortDirection) && !['ASC', 'DESC'].includes(entry.sortDirection)) {
+            errors.push(error('groupBy', `Group ${index + 1}: sort direction must be ASC or DESC.`));
+        }
+        if (hasValue(entry.orderBy) && !isParentFieldPath(entry.orderBy)) {
             errors.push(
-                error('childRelationship', `Child records: sort "${child.sortBy}" must be a field or parent path.`)
+                error('groupBy', `Group ${index + 1}: order field "${entry.orderBy}" must be a 1–5 hop parent path.`)
             );
         }
-        if (hasValue(child.limit) && !isIntegerInRange(child.limit, 1, 50)) {
-            errors.push(error('childRelationship', 'Child records: limit must be a whole number from 1 to 50.'));
+        if (hasValue(entry.dateGranularity) && !DATE_GRANULARITIES.includes(entry.dateGranularity)) {
+            errors.push(
+                error(
+                    'groupBy',
+                    `Group ${index + 1}: date granularity must be one of ${DATE_GRANULARITIES.join(', ')}.`
+                )
+            );
+        }
+    });
+    return errors;
+}
+
+/** A Create action needs an object; each default maps a field of that object from a row field. */
+function createActionErrors(action, label) {
+    const errors = [];
+    if (!cleanString(action.object)) {
+        errors.push(error('rowActions', `${label}: choose an object to create.`));
+    }
+    const defaults = hasValue(action.defaults) ? action.defaults : [];
+    const incomplete = (entry) => !isPlainObject(entry) || !cleanString(entry.field) || !cleanString(entry.rowField);
+    if (!Array.isArray(defaults) || defaults.some(incomplete)) {
+        errors.push(error('rowActions', `${label}: every default needs a field and a row field.`));
+    }
+    return errors;
+}
+
+/** A Screen Flow action needs a flow API name; each input maps a flow variable from a row field. */
+function flowActionErrors(action, label) {
+    const errors = [];
+    if (!cleanString(action.flowApiName)) {
+        errors.push(error('rowActions', `${label}: choose a flow.`));
+    }
+    const inputs = hasValue(action.inputs) ? action.inputs : [];
+    const incomplete = (entry) => !isPlainObject(entry) || !cleanString(entry.name) || !cleanString(entry.rowField);
+    if (!Array.isArray(inputs) || inputs.some(incomplete)) {
+        errors.push(error('rowActions', `${label}: every input needs a variable name and a row field.`));
+    }
+    return errors;
+}
+
+/** Stacked summaries a numeric Table column can show, in the order they are offered. */
+export const TABLE_SUMMARY_FUNCTIONS = ['SUM', 'AVG', 'MIN', 'MAX'];
+
+/** Column `summaries`: when set, a list of 1–4 distinct Sum/Average/Min/Max. */
+function columnSummaryErrors(rawColumns) {
+    if (!Array.isArray(rawColumns)) {
+        return [];
+    }
+    const errors = [];
+    rawColumns.forEach((column, index) => {
+        const summaries = isPlainObject(column) ? column.summaries : undefined;
+        if (!hasValue(summaries)) {
+            return;
+        }
+        const valid =
+            Array.isArray(summaries) &&
+            summaries.length <= 4 &&
+            new Set(summaries).size === summaries.length &&
+            summaries.every((name) => TABLE_SUMMARY_FUNCTIONS.includes(name));
+        if (!valid) {
+            errors.push(
+                error('summaries', `Column ${index + 1} summaries: pick 1–4 of Sum, Average, Min and Max, each once.`)
+            );
+        }
+    });
+    return errors;
+}
+
+const SUMMARY_FUNCTION_LABELS = { SUM: 'Sum', AVG: 'Average', MIN: 'Min', MAX: 'Max' };
+
+/**
+ * Lower-cased path prefix of fields reached through a lookup group field (`AccountId` -> `account.`,
+ * `Parent__c` -> `parent__r.`), or null when the path does not name a lookup.
+ */
+function lookupPrefix(groupPath) {
+    const path = cleanString(groupPath).toLowerCase();
+    if (path.endsWith('__c')) {
+        return `${path.slice(0, -3)}__r.`;
+    }
+    return path.length > 2 && path.endsWith('id') ? `${path.slice(0, -2)}.` : null;
+}
+
+/**
+ * Detail rows (Row grouping): off makes the Table an aggregated table, so it needs a group field and every column
+ * must have one value per group (the group field, a field through the lookup group field, or a column with
+ * summaries). Ordering groups by a summary (`orderBySummary`) needs Detail rows off and a summary the Table shows.
+ */
+function detailRowsErrors(config) {
+    const errors = [];
+    if (hasValue(config.detailRows) && typeof config.detailRows !== 'boolean') {
+        return [error('groupBy', 'Detail rows must be on or off.')];
+    }
+    const detailRowsOff = config.detailRows === false;
+    const [first] = Array.isArray(config.groupBy) ? config.groupBy.filter(isPlainObject) : [];
+    const groupPath = cleanString(first?.fieldPath);
+    if (detailRowsOff && !groupPath) {
+        return [error('groupBy', 'Detail rows off needs a group field.')];
+    }
+    const columns = Array.isArray(config.columns) ? config.columns : [];
+    if (detailRowsOff) {
+        const prefix = lookupPrefix(groupPath);
+        columns.forEach((column, index) => {
+            const path = isPlainObject(column) ? cleanString(column.fieldPath) : '';
+            const hasSummaries = Array.isArray(column?.summaries) && column.summaries.length > 0;
+            const lowerPath = path.toLowerCase();
+            const constant = lowerPath === groupPath.toLowerCase() || (prefix && lowerPath.startsWith(prefix));
+            if (path && !hasSummaries && !constant) {
+                errors.push(
+                    error(
+                        'columns',
+                        `Column ${index + 1} "${path}": with Detail rows off, show the group field, a field through the group lookup, or a column with summaries.`
+                    )
+                );
+            }
+        });
+    }
+    const summaryOrder = first?.orderBySummary;
+    if (hasValue(summaryOrder)) {
+        if (!detailRowsOff) {
+            errors.push(error('groupBy', 'Order groups by a summary only with Detail rows off.'));
+        } else {
+            const columnId = summaryOrder?.columnId;
+            const summaryFunction = summaryOrder?.summaryFunction;
+            const column = columns.find((candidate) => (candidate?.id || candidate?.fieldPath) === columnId);
+            const shown = Array.isArray(column?.summaries) && column.summaries.includes(summaryFunction);
+            if (!shown) {
+                const label = SUMMARY_FUNCTION_LABELS[summaryFunction] || summaryFunction;
+                errors.push(error('groupBy', `Group order: column "${columnId}" has no ${label} summary.`));
+            }
         }
     }
     return errors;
 }
 
+/** Most first-level groups a Row limit keeps with Detail rows on (the record stream is filtered by an IN-list). */
+export const GROUPED_DETAIL_ROW_LIMIT_MAX = 200;
+/** Most rows (ungrouped) or Group rows (Detail rows off) a Row limit keeps. */
+export const ROW_LIMIT_MAX = 2000;
+
+/** True when the Table has Row grouping (a first group field). */
+export function isGroupedTable(config) {
+    const [first] = Array.isArray(config?.groupBy) ? config.groupBy.filter(isPlainObject) : [];
+    return Boolean(cleanString(first?.fieldPath));
+}
+
+/** Largest Row limit the config allows: 200 groups with Row grouping and Detail rows on, else 2,000. */
+export function rowLimitMax(config) {
+    return isGroupedTable(config) && config.detailRows !== false ? GROUPED_DETAIL_ROW_LIMIT_MAX : ROW_LIMIT_MAX;
+}
+
+/**
+ * Row limit on a grouped Table: counts first-level groups ("Top N groups"), ranked by the group order, so it needs
+ * no default sort; 1-200 groups with Detail rows on, 1-2,000 with Detail rows off.
+ */
+function groupedRowLimitErrors(config) {
+    const max = rowLimitMax(config);
+    if (isIntegerInRange(config.rowLimit, 1, max)) {
+        return [];
+    }
+    const message =
+        max === GROUPED_DETAIL_ROW_LIMIT_MAX
+            ? 'With Detail rows on, Row limit must be a whole number from 1 to 200 groups.'
+            : 'Row limit must be a whole number from 1 to 2,000.';
+    return [error('rowLimit', message)];
+}
+
+/** Row limit (Top N): a whole number from 1 to 2,000 that needs a default sort to mean anything. */
+function rowLimitErrors(config) {
+    if (!hasValue(config.rowLimit)) {
+        return [];
+    }
+    if (isGroupedTable(config)) {
+        return groupedRowLimitErrors(config);
+    }
+    if (!isIntegerInRange(config.rowLimit, 1, ROW_LIMIT_MAX)) {
+        return [error('rowLimit', 'Row limit must be a whole number from 1 to 2,000.')];
+    }
+    return cleanString(config.sortBy) ? [] : [error('rowLimit', 'A Row limit needs a default sort.')];
+}
+
+/** Row actions: a list of `view` / `edit` / `create` / `flow` actions, each with a label and (when set) a lookup path target. */
+function rowActionErrors(rawActions) {
+    if (!hasValue(rawActions)) {
+        return [];
+    }
+    if (!Array.isArray(rawActions)) {
+        return [error('rowActions', 'Row actions must be a list.')];
+    }
+    const errors = [];
+    rawActions.forEach((action, index) => {
+        const label = `Row action ${index + 1}`;
+        if (!isPlainObject(action) || !cleanString(action.label)) {
+            errors.push(error('rowActions', `${label} needs a label.`));
+            return;
+        }
+        if (!['view', 'edit', 'create', 'flow'].includes(action.type)) {
+            errors.push(error('rowActions', `${label}: type must be view, edit, create, or flow.`));
+        }
+        if (action.type === 'create') {
+            errors.push(...createActionErrors(action, label));
+        }
+        if (action.type === 'flow') {
+            errors.push(...flowActionErrors(action, label));
+        }
+        if (cleanString(action.target) && !isParentFieldPath(action.target)) {
+            errors.push(error('rowActions', `${label}: target "${action.target}" must be a lookup field or path.`));
+        }
+    });
+    return errors;
+}
+
 // ---- Widget specs and the config envelope --------------------------------------------------------------------------
 
+const DEFAULT_CHART_TYPE = 'bar';
 const BASE_KEYS = ['boardId', 'title'];
 const DATA_KEYS = [...BASE_KEYS, 'objectApiName'];
 
@@ -886,7 +1594,7 @@ const DATA_KEYS = [...BASE_KEYS, 'objectApiName'];
 const WIDGET_SPECS = {
     filter: { dataWidget: false, topLevelKeys: BASE_KEYS, validate: validateFilterConfig },
     metric: { dataWidget: true, topLevelKeys: DATA_KEYS, validate: validateMetricConfig },
-    bar: { dataWidget: true, topLevelKeys: [...DATA_KEYS, 'orientation'], validate: validateBarConfig },
+    chart: { dataWidget: true, topLevelKeys: DATA_KEYS, validate: validateChartConfig },
     table: { dataWidget: true, topLevelKeys: DATA_KEYS, validate: validateTableConfig }
 };
 export const WIDGET_TYPES = Object.keys(WIDGET_SPECS);
@@ -908,6 +1616,9 @@ export function topLevelKeysFor(widgetType) {
 export function orderConfig(widgetType, raw) {
     const source = isPlainObject(raw) ? raw : {};
     const ordered = { version: 1, widgetType };
+    if (widgetType === 'chart') {
+        ordered.chartType = cleanString(source.chartType) || DEFAULT_CHART_TYPE;
+    }
     const topLevelKeys = topLevelKeysFor(widgetType);
     topLevelKeys.forEach((key) => {
         if (hasValue(source[key])) {
@@ -976,10 +1687,121 @@ export function readCpeState(widgetType, inputVariables) {
     return { config: orderConfig(widgetType, config), storedJsonError, references };
 }
 
-/** First problem with a Base filter condition, or null when it compiles. */
+export const CONDITION_LOGIC_OPTIONS = [
+    { label: 'All conditions (AND)', value: 'AND' },
+    { label: 'Any condition (OR)', value: 'OR' }
+];
+
+/** Whether a condition tree entry is an AND / OR group (`{ id, logic, conditions[] }`) rather than a condition. */
+export function isConditionGroup(entry) {
+    return isPlainObject(entry) && Object.prototype.hasOwnProperty.call(entry, 'conditions');
+}
+
+/** Every entry of a list of condition tree entries (groups and their conditions), depth first. */
+export function flattenConditions(entries) {
+    return (Array.isArray(entries) ? entries : []).flatMap((entry) => {
+        return isConditionGroup(entry) ? [entry, ...flattenConditions(entry.conditions)] : [entry];
+    });
+}
+
+/** Number of conditions in a list of condition tree entries, counting the conditions inside groups. */
+export function countConditions(entries) {
+    return (Array.isArray(entries) ? entries : []).reduce(
+        (total, entry) => total + (isConditionGroup(entry) ? countConditions(entry.conditions) : 1),
+        0
+    );
+}
+
+const BASE_FILTER_ID_PREFIX = 'bf';
+
+/**
+ * Gives entries without an id, or with an id already used elsewhere in the tree (e.g. hand-edited JSON), a fresh
+ * `bfN` id; group conditions get the same treatment.
+ */
+function withBaseFilterIds(entries) {
+    const all = flattenConditions(entries);
+    const seen = new Set();
+    const assigned = [];
+    const visit = (list) =>
+        list.map((entry) => {
+            const id = cleanString(entry.id);
+            let next = entry;
+            if (!id || seen.has(id)) {
+                // Fresh ids count every id in the tree plus the ones already handed out, so they never repeat.
+                next = { ...entry, id: nextSequentialId([...all, ...assigned], BASE_FILTER_ID_PREFIX) };
+                assigned.push(next);
+            }
+            seen.add(next.id);
+            if (isConditionGroup(next) && Array.isArray(next.conditions)) {
+                next = { ...next, conditions: visit(next.conditions.map((c) => (isPlainObject(c) ? c : {}))) };
+            }
+            return next;
+        });
+    return visit(entries);
+}
+
+/**
+ * A Widget's `baseFilters` as the condition tree the condition editor edits: `{ tree: { logic, conditions },
+ * rootGroupId }`. The entries of `baseFilters` combine with AND, so a flat list loads as the AND top level; a single
+ * stored OR group loads as the OR top level (`rootGroupId` is its id). Missing or duplicate ids get fresh `bfN` ids.
+ */
+export function baseFiltersToTree(baseFilters) {
+    const entries = withBaseFilterIds(
+        (Array.isArray(baseFilters) ? baseFilters : []).map((entry) => (isPlainObject(entry) ? entry : {}))
+    );
+    const only = entries.length === 1 ? entries[0] : null;
+    if (isConditionGroup(only) && only.logic === 'OR' && Array.isArray(only.conditions)) {
+        return { tree: { logic: 'OR', conditions: only.conditions }, rootGroupId: only.id };
+    }
+    return { tree: { logic: 'AND', conditions: entries }, rootGroupId: null };
+}
+
+/**
+ * The `baseFilters` list of a condition tree (`baseFiltersToTree`'s inverse): an AND top level is the list itself;
+ * OR at the top level is stored as one OR group entry `{ id, logic: 'OR', conditions }`, keeping `rootGroupId`.
+ */
+export function baseFiltersFromTree(tree, rootGroupId = null) {
+    const { logic, conditions } = tree;
+    if (logic !== 'OR' || conditions.length === 0) {
+        return conditions;
+    }
+    const entries = flattenConditions(conditions);
+    const taken = entries.some((entry) => entry.id === rootGroupId);
+    const id = rootGroupId && !taken ? rootGroupId : nextSequentialId(entries, BASE_FILTER_ID_PREFIX);
+    return [{ id, logic: 'OR', conditions }];
+}
+
+/** First problem with an AND / OR group itself (not its conditions), or null. */
+export function conditionGroupError(entry) {
+    if (entry.logic !== 'AND' && entry.logic !== 'OR') {
+        return 'Choose AND or OR.';
+    }
+    if (!Array.isArray(entry.conditions) || entry.conditions.length === 0) {
+        return 'Add at least one condition.';
+    }
+    return null;
+}
+
+/**
+ * First problem with a condition tree entry (a Base filter condition, or an AND / OR group and its conditions), or
+ * null when it compiles. Shared by Base filters and every other condition tree.
+ */
 export function baseFilterError(condition) {
     if (!isPlainObject(condition)) {
         return 'Each base filter must be an object.';
+    }
+    if (isConditionGroup(condition)) {
+        const problem = conditionGroupError(condition);
+        if (problem) {
+            return problem;
+        }
+        for (let index = 0; index < condition.conditions.length; index++) {
+            const childProblem = baseFilterError(condition.conditions[index]);
+            if (childProblem) {
+                return `Condition ${index + 1}: ${childProblem}`;
+            }
+        }
+        return null;
     }
     if (!cleanString(condition.fieldPath)) {
         return 'Choose a field.';
@@ -1023,7 +1845,7 @@ function bindingErrors(bindings) {
 
 /**
  * Messages per Base filter condition (`string[][]`, parallel to `baseFilters`): the condition's own problem
- * (`baseFilterError`) plus a missing or duplicate `id`. Shared by `configErrors` and the Base filters Config dialog.
+ * (`baseFilterError`) plus a missing or duplicate `id`. Shared by `configErrors` and the Base filters of the Setup dialog's Data step.
  */
 export function baseFilterErrorsByIndex(baseFilters) {
     const ids = new Set();
@@ -1033,15 +1855,28 @@ export function baseFilterErrorsByIndex(baseFilters) {
         if (problem) {
             messages.push(problem);
         }
-        const id = isPlainObject(condition) ? cleanString(condition.id) : null;
-        if (isPlainObject(condition) && !id) {
-            messages.push('id is required.');
-        } else if (id && ids.has(id)) {
-            messages.push(`duplicate id "${id}".`);
-        }
-        ids.add(id);
+        messages.push(...conditionIdErrors(condition, ids));
         return messages;
     });
+}
+
+/** Missing or duplicate `id`s of a condition tree entry and the conditions of a group (ids are unique per tree). */
+function conditionIdErrors(condition, ids) {
+    if (!isPlainObject(condition)) {
+        return [];
+    }
+    const messages = [];
+    const id = cleanString(condition.id);
+    if (!id) {
+        messages.push('id is required.');
+    } else if (ids.has(id)) {
+        messages.push(`duplicate id "${id}".`);
+    }
+    ids.add(id);
+    if (isConditionGroup(condition) && Array.isArray(condition.conditions)) {
+        condition.conditions.forEach((child) => messages.push(...conditionIdErrors(child, ids)));
+    }
+    return messages;
 }
 
 const BASE_FILTER_OPERATOR_LABELS = Object.fromEntries(
@@ -1053,6 +1888,9 @@ const BASE_FILTER_OPERATOR_LABELS = Object.fromEntries(
  * `Status` · `Not in list` · `Closed, Duplicate`. `label` falls back to `Condition N` without a field.
  */
 export function baseFilterSummary(condition, index) {
+    if (isConditionGroup(condition)) {
+        return conditionGroupSummary(condition);
+    }
     const safe = isPlainObject(condition) ? condition : {};
     const operator = safe.operator;
     const value = safe.value;
@@ -1068,6 +1906,28 @@ export function baseFilterSummary(condition, index) {
         label: cleanString(safe.fieldPath) || `Condition ${index + 1}`,
         operatorLabel: operator === 'IS_NULL' ? 'Null check' : BASE_FILTER_OPERATOR_LABELS[operator] || 'No operator',
         valueText
+    };
+}
+
+/**
+ * Read-only description of an AND / OR group, e.g. `Any of 2 conditions` · `OR group` ·
+ * `Status: New or (Priority: High and Origin: Web)`.
+ */
+function conditionGroupSummary(group) {
+    const conditions = Array.isArray(group.conditions) ? group.conditions : [];
+    const logic = group.logic === 'OR' ? 'OR' : 'AND';
+    const parts = conditions.map((child, index) => {
+        if (isConditionGroup(child)) {
+            const nested = conditionGroupSummary(child).valueText;
+            return nested ? `(${nested})` : '()';
+        }
+        const { label, valueText } = baseFilterSummary(child, index);
+        return valueText ? `${label}: ${valueText}` : label;
+    });
+    return {
+        label: `${logic === 'OR' ? 'Any' : 'All'} of ${countLabel(conditions.length, 'condition')}`,
+        operatorLabel: `${logic} group`,
+        valueText: parts.join(logic === 'OR' ? ' or ' : ' and ')
     };
 }
 
@@ -1089,7 +1949,7 @@ function baseFilterErrors(baseFilters) {
  * Design-time errors of a config envelope (`[{ key, errorString }]`): the rules behind both `validate()` and pasted
  * Config JSON. `references` holds top-level keys bound to Flow resources (they satisfy required values).
  */
-export function configErrors(widgetType, config, references = {}) {
+export function configErrors(widgetType, config, references = {}, context = {}) {
     const spec = specFor(widgetType);
     const errors = [];
     STRING_KEYS.forEach((key) => {
@@ -1103,7 +1963,7 @@ export function configErrors(widgetType, config, references = {}) {
         }
         errors.push(...bindingErrors(config.filterBindings), ...baseFilterErrors(config.baseFilters));
     }
-    errors.push(...spec.validate(config));
+    errors.push(...spec.validate(config, context));
     return errors;
 }
 
@@ -1251,7 +2111,11 @@ export function widgetSectionStates(widgetType, sections, cpe) {
     });
 }
 
-const AGGREGATE_LABELS = new Map(AGGREGATE_OPTIONS.map((option) => [option.value, option.label]));
+const AGGREGATE_LABELS = new Map([
+    ...AGGREGATE_OPTIONS.map((option) => [option.value, option.label]),
+    ['AVG_PER', 'Average per record'],
+    [FORMULA, 'Formula']
+]);
 
 /** The notation a Widget formats values with when `format.notation` is unset: Metric is compact, the rest standard. */
 export function defaultNotationFor(widgetType) {
@@ -1259,140 +2123,60 @@ export function defaultNotationFor(widgetType) {
 }
 
 /**
- * Measure section summary of the Metric and Bar Config editors: the aggregate and the value notation, e.g.
+ * Measure section summary of the Metric and Chart Config editors: the aggregate and the value notation, e.g.
  * `Count of records · compact` or `Sum of Amount · standard`.
  */
 export function measureSummary(widgetType, config) {
     const fn = config.aggregateFunction || 'COUNT';
     const label = AGGREGATE_LABELS.get(fn) || fn;
     let measure = label;
-    if (fn !== 'COUNT') {
+    if (fn === FORMULA) {
+        measure = cleanString(config.formula) ? `Formula ${cleanString(config.formula)}` : 'Formula (no formula)';
+    } else if (fn !== 'COUNT') {
         measure = config.valueFieldApiName ? `${label} of ${config.valueFieldApiName}` : `${label} (no value field)`;
     }
     const format = isPlainObject(config.format) ? config.format : {};
     return joinSummary([measure, format.notation || defaultNotationFor(widgetType)]);
 }
 
-// ---- Config dialog ---------------------------------------------------------------------------------------------
+/**
+ * Measures section summary of the Chart Config editor: one Measure reads like `measureSummary`
+ * (`Sum of Amount · compact`); several list their labels (`2 Measures: Pipeline, Count of records`).
+ */
+export function chartMeasuresSummary(config) {
+    const measures = chartMeasures(config).filter(isPlainObject);
+    if (measures.length === 1) {
+        return measureSummary('chart', measures[0]);
+    }
+    const labels = measures.map((measure) => {
+        const custom = cleanString(measure.label);
+        if (custom) {
+            return custom;
+        }
+        const fn = measure.aggregateFunction || 'COUNT';
+        const label = AGGREGATE_LABELS.get(fn) || fn;
+        return fn === 'COUNT' || !measure.valueFieldApiName ? label : `${label} of ${measure.valueFieldApiName}`;
+    });
+    return `${measures.length} Measures: ${labels.join(', ')}`;
+}
 
+/**
+ * Measure section summary of the Metric Config editor: the visible Measure like `measureSummary`, plus the Measure
+ * count when there are several (`Sum of Amount · compact · 3 Measures (2 hidden)`).
+ */
+export function metricMeasuresSummary(config) {
+    const measures = metricMeasures(config).filter(isPlainObject);
+    const visible = measures.find((measure) => measure.hidden !== true) || measures[0] || {};
+    const summary = measureSummary('metric', visible);
+    if (measures.length < 2) {
+        return summary;
+    }
+    const hidden = measures.filter((measure) => measure.hidden === true).length;
+    return joinSummary([summary, `${measures.length} Measures (${hidden} hidden)`]);
+}
+
+// ---- Setup dialog ----------------------------------------------------------------------------------------------
+
+/** How the Setup dialog (`c/boardSetupDialog`) closes: Save with the whole draft, or dismiss (Cancel, X, Escape). */
 export const DIALOG_SAVE = 'save';
 export const DIALOG_DISMISS = 'dismiss';
-
-/**
- * Opens a Config dialog (a `LightningModal` subclass such as `c/boardFilterDialog`) at size large with a deep copy of
- * `value`, and resolves with `{ action: 'save', draft }` or `{ action: 'dismiss' }` (Cancel, header X, Escape).
- * The caller applies a saved draft as exactly one config change and does nothing on dismiss.
- */
-export async function openConfigDialog(Dialog, { value, ...props } = {}) {
-    const result = await Dialog.open({ ...props, size: 'large', value: deepCopy(value) });
-    return result && result.action === DIALOG_SAVE
-        ? { action: DIALOG_SAVE, draft: result.draft }
-        : { action: DIALOG_DISMISS };
-}
-
-/**
- * Keyed draft list shared by the Config dialogs: `class MyDialog extends ConfigDialogMixin(LightningModal)`.
- *
- * Owns the stable row keys parallel to the draft items (`_rowKeys`, `nextRowKey()`), the selection (`selectedKey`,
- * `selectedIndex`), one-time draft initialization in `connectedCallback`, the master-detail event handlers
- * (`handleItemSelect`, `handleItemMove`, `handleItemRemove`, plus `addDraftItem(item)`), focus after a remove, and
- * the Cancel / Save footer handlers (`handleCancel`, `handleSave`).
- *
- * The dialog provides:
- * - `rowKeyPrefix`: prefix of the row keys (e.g. `filter`)
- * - `initDraft(value)`: sets up its draft from the deep copy of `@api value`
- * - `draftItems` / `setDraftItems(items, change)`: the master list and its replacement; `change` is
- *   `{ removed, removedKey }` after a remove, so dependent draft state can follow
- * - `errorsByIndex`: messages per draft item; Save stays disabled while any item has one (override `isSaveDisabled`
- *   to add draft-level checks)
- * - `draft`: what Save resolves with (deep-copied)
- */
-export function ConfigDialogMixin(Base) {
-    return class extends Base {
-        selectedKey = null;
-        rowKeyPrefix = 'item';
-        /** Stable keys parallel to `draftItems` (labels and ids change while the Admin types). */
-        _rowKeys = [];
-        _keySeq = 0;
-        _draftInitialized = false;
-        _focusSelected = false;
-
-        connectedCallback() {
-            if (this._draftInitialized) {
-                return;
-            }
-            this._draftInitialized = true;
-            this.initDraft(deepCopy(this.value));
-            this._rowKeys = this.draftItems.map(() => this.nextRowKey());
-            this.selectedKey = this._rowKeys[0] || null;
-        }
-
-        renderedCallback() {
-            if (this._focusSelected) {
-                this._focusSelected = false;
-                const masterDetail = this.template.querySelector('c-board-cpe-master-detail');
-                if (masterDetail) {
-                    masterDetail.focusSelected();
-                }
-            }
-        }
-
-        nextRowKey() {
-            this._keySeq += 1;
-            return `${this.rowKeyPrefix}-${this._keySeq}`;
-        }
-
-        get selectedIndex() {
-            return this._rowKeys.indexOf(this.selectedKey);
-        }
-
-        get isSaveDisabled() {
-            return this.errorsByIndex.some((messages) => messages.length > 0);
-        }
-
-        /** Appends `item` to the draft and selects it. */
-        addDraftItem(item) {
-            const key = this.nextRowKey();
-            this._rowKeys = [...this._rowKeys, key];
-            this.selectedKey = key;
-            this.setDraftItems([...this.draftItems, item]);
-        }
-
-        handleItemSelect(event) {
-            this.selectedKey = event.detail.key;
-        }
-
-        handleItemMove(event) {
-            const { index, offset } = event.detail;
-            this._rowKeys = moveItem(this._rowKeys, index, offset);
-            this.setDraftItems(moveItem(this.draftItems, index, offset));
-        }
-
-        handleItemRemove(event) {
-            const index = event.detail.index;
-            const removed = this.draftItems[index];
-            const removedKey = this._rowKeys[index];
-            this._rowKeys = this._rowKeys.filter((key, position) => position !== index);
-            if (removedKey === this.selectedKey) {
-                this.selectedKey = this._rowKeys[Math.min(index, this._rowKeys.length - 1)] || null;
-            }
-            this.setDraftItems(
-                this.draftItems.filter((item, position) => position !== index),
-                { removed, removedKey }
-            );
-            // The removed item's button had focus; move it to the newly selected item once the list re-renders.
-            this._focusSelected = true;
-        }
-
-        handleCancel() {
-            this.close({ action: DIALOG_DISMISS });
-        }
-
-        handleSave() {
-            if (this.isSaveDisabled) {
-                return;
-            }
-            this.close({ action: DIALOG_SAVE, draft: deepCopy(this.draft) });
-        }
-    };
-}

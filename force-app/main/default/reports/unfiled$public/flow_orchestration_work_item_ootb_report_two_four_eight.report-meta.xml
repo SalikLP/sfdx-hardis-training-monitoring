@@ -36,6 +36,7 @@
     <columns>
         <field>FlowOrchestrationStepInstance$Status</field>
     </columns>
+    <currency>USD</currency>
     <description>What orchestration work items were created and what&apos;s the current status of each work item?</description>
     <format>Tabular</format>
     <name>Sample Report: Orchestration Work Items</name>

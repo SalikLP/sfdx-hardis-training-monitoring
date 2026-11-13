@@ -1,0 +1,52 @@
+.c-gauge-track {
+    position: relative;
+    height: var(--slds-g-sizing-4, 0.75rem);
+    border-radius: var(--slds-g-radius-border-2, 0.25rem);
+    background-color: var(--slds-g-color-surface-container-3, #e5e5e5);
+}
+
+.c-gauge-band {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+.c-gauge-band_neutral {
+    background-color: var(--slds-g-color-surface-container-3, #e5e5e5);
+}
+
+.c-gauge-band_success {
+    background-color: var(--slds-g-color-success-1, #2e844a);
+}
+
+.c-gauge-band_warning {
+    background-color: var(--slds-g-color-warning-1, #8c4b02);
+}
+
+.c-gauge-band_error {
+    background-color: var(--slds-g-color-error-1, #b60554);
+}
+
+.c-gauge-value {
+    position: absolute;
+    top: calc(-1 * var(--slds-g-spacing-1, 0.25rem));
+    bottom: calc(-1 * var(--slds-g-spacing-1, 0.25rem));
+    width: var(--slds-g-spacing-1, 0.25rem);
+    margin-left: calc(-0.5 * var(--slds-g-spacing-1, 0.25rem));
+    border-radius: var(--slds-g-radius-border-1, 0.125rem);
+    background-color: var(--slds-g-color-on-surface-3, #03234d);
+}
+
+.c-gauge-target {
+    position: absolute;
+    top: calc(-1 * var(--slds-g-spacing-2, 0.5rem));
+    bottom: calc(-1 * var(--slds-g-spacing-2, 0.5rem));
+    border-left: var(--slds-g-sizing-border-2, 2px) dashed var(--slds-g-color-on-surface-2, #2e2e2e);
+}
+
+.c-gauge-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--slds-g-spacing-2, 0.5rem);
+    color: var(--slds-g-color-on-surface-1, #5c5c5c);
+}

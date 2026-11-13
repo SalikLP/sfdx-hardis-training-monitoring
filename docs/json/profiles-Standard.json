@@ -849,7 +849,7 @@
     ]
   },
   {
-    "text": "Field Permissions (728)",
+    "text": "Field Permissions (736)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -9868,7 +9868,7 @@
         ]
       },
       {
-        "text": "CreditMemo (6)",
+        "text": "CreditMemo (8)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -9943,6 +9943,36 @@
             "children": [
               {
                 "text": "Field: CreditMemo.CorporateCurrencyCvsnRate",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
+            "text": "CreditMemo.CorporateCurrencyIsoCode",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: CreditMemo.CorporateCurrencyIsoCode",
                 "icon": "",
                 "a_attr": {
                   "href": null
@@ -10053,11 +10083,41 @@
                 }
               }
             ]
+          },
+          {
+            "text": "CreditMemo.FunctionalCurrencyIsoCode",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: CreditMemo.FunctionalCurrencyIsoCode",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
           }
         ]
       },
       {
-        "text": "CreditMemoLine (8)",
+        "text": "CreditMemoLine (10)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -10184,6 +10244,36 @@
             ]
           },
           {
+            "text": "CreditMemoLine.CorporateCurrencyIsoCode",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: CreditMemoLine.CorporateCurrencyIsoCode",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
             "text": "CreditMemoLine.FuncCrcyCnvTotalTaxAmt",
             "icon": "fa-solid fa-square-pen icon-success",
             "a_attr": {
@@ -10282,6 +10372,36 @@
             "children": [
               {
                 "text": "Field: CreditMemoLine.FunctionalCurrencyCvsnRate",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
+            "text": "CreditMemoLine.FunctionalCurrencyIsoCode",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: CreditMemoLine.FunctionalCurrencyIsoCode",
                 "icon": "",
                 "a_attr": {
                   "href": null
@@ -12886,7 +13006,7 @@
         ]
       },
       {
-        "text": "Invoice (6)",
+        "text": "Invoice (8)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -12961,6 +13081,36 @@
             "children": [
               {
                 "text": "Field: Invoice.CorporateCurrencyCvsnRate",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
+            "text": "Invoice.CorporateCurrencyIsoCode",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: Invoice.CorporateCurrencyIsoCode",
                 "icon": "",
                 "a_attr": {
                   "href": null
@@ -13071,11 +13221,41 @@
                 }
               }
             ]
+          },
+          {
+            "text": "Invoice.FunctionalCurrencyIsoCode",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: Invoice.FunctionalCurrencyIsoCode",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
           }
         ]
       },
       {
-        "text": "InvoiceLine (8)",
+        "text": "InvoiceLine (10)",
         "icon": "fa-solid fa-folder icon-blue",
         "a_attr": {
           "href": null
@@ -13202,6 +13382,36 @@
             ]
           },
           {
+            "text": "InvoiceLine.CorporateCurrencyIsoCode",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: InvoiceLine.CorporateCurrencyIsoCode",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
             "text": "InvoiceLine.FuncCrcyCnvTotalTaxAmt",
             "icon": "fa-solid fa-square-pen icon-success",
             "a_attr": {
@@ -13300,6 +13510,36 @@
             "children": [
               {
                 "text": "Field: InvoiceLine.FunctionalCurrencyCvsnRate",
+                "icon": "",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Editable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              },
+              {
+                "text": "Readable: true",
+                "icon": "fa-solid fa-circle-check icon-success",
+                "a_attr": {
+                  "href": null
+                }
+              }
+            ]
+          },
+          {
+            "text": "InvoiceLine.FunctionalCurrencyIsoCode",
+            "icon": "fa-solid fa-square-pen icon-success",
+            "a_attr": {
+              "href": null
+            },
+            "children": [
+              {
+                "text": "Field: InvoiceLine.FunctionalCurrencyIsoCode",
                 "icon": "",
                 "a_attr": {
                   "href": null

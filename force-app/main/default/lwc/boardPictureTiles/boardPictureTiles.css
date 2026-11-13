@@ -1,0 +1,109 @@
+/* Tiles wrap in rows at a fixed width, so pictures line up whatever the label length. */
+.c-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-tile {
+    display: block;
+    width: 6.5rem;
+    cursor: pointer;
+}
+
+.c-tile-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    padding: var(--slds-g-spacing-2, 0.5rem);
+    border: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #c9c9c9);
+    border-radius: var(--slds-g-radius-border-2, 0.25rem);
+    background: var(--slds-g-color-surface-container-1, #ffffff);
+    color: var(--slds-g-color-on-surface-2, #2e2e2e);
+}
+
+.c-tile:hover .c-tile-body {
+    background: var(--slds-g-color-surface-container-2, #f3f3f3);
+}
+
+/* Selected: brand border, two pixels so it doesn't rely on colour alone. */
+.c-tile_selected .c-tile-body {
+    border-color: var(--slds-g-color-accent-2, #0176d3);
+    box-shadow: inset 0 0 0 var(--slds-g-sizing-border-1, 1px) var(--slds-g-color-accent-2, #0176d3);
+    color: var(--slds-g-color-on-surface-1, #181818);
+    font-weight: var(--slds-g-font-weight-7, 700);
+}
+
+/* The radio itself is visually hidden; its keyboard focus shows on the tile. */
+.c-tile-input:focus-visible + .c-tile-body {
+    box-shadow: var(--slds-g-shadow-outline-focus-1, 0 0 3px #0176d3);
+}
+
+.c-tile-input:disabled + .c-tile-body {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.c-tile-picture {
+    width: 4.5rem;
+    height: 3rem;
+    margin-bottom: var(--slds-g-spacing-1, 0.25rem);
+}
+
+.c-tile-label {
+    font-size: var(--slds-g-font-scale-neg-1, 0.75rem);
+    text-align: center;
+    line-height: 1.25;
+}
+
+/* Illustration tones (see illustrations.js). */
+.c-tone-axis {
+    fill: none;
+    stroke: var(--slds-g-color-border-1, #c9c9c9);
+    stroke-width: 1;
+}
+
+.c-tone-series1 {
+    fill: var(--slds-g-color-accent-2, #0176d3);
+}
+
+.c-tone-series2 {
+    fill: var(--slds-g-color-palette-teal-50, #0b827c);
+}
+
+.c-tone-series3 {
+    fill: var(--slds-g-color-warning-1, #dd7a01);
+}
+
+.c-tone-line1 {
+    fill: none;
+    stroke: var(--slds-g-color-accent-2, #0176d3);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.c-tone-area1 {
+    fill: var(--slds-g-color-accent-2, #0176d3);
+    fill-opacity: 0.25;
+}
+
+.c-tone-reference {
+    fill: none;
+    stroke: var(--slds-g-color-error-1, #ea001e);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 2;
+}
+
+.c-tone-muted {
+    fill: var(--slds-g-color-on-surface-3, #747474);
+}
+
+.c-tone-increase {
+    fill: var(--slds-g-color-success-1, #2e844a);
+}
+
+.c-tone-decrease {
+    fill: var(--slds-g-color-error-1, #ea001e);
+}

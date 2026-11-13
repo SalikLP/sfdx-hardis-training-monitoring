@@ -1,0 +1,226 @@
+<template>
+    <div class="c-condition-editor">
+        <lightning-combobox
+            class="c-condition-logic c-condition-root-logic"
+            label="Match"
+            options={logicOptions}
+            value={logic}
+            data-id={rootId}
+            onchange={handleLogic}
+        ></lightning-combobox>
+        <template lwc:if={hasEntries}>
+            <ul class="c-condition-entries slds-m-top_small">
+                <template for:each={entries} for:item="entry">
+                    <li
+                        key={entry.key}
+                        class={entry.rowClass}
+                        data-scope={rootId}
+                        data-index={entry.index}
+                        ondragover={handleDragOver}
+                        ondrop={handleDrop}
+                    >
+                        <div class="slds-grid slds-grid_vertical-align-start">
+                            <span
+                                class="c-condition-handle c-drag-handle"
+                                draggable="true"
+                                title="Drag to reorder"
+                                data-scope={rootId}
+                                data-index={entry.index}
+                                ondragstart={handleDragStart}
+                                ondragend={handleDragEnd}
+                            >
+                                <lightning-icon
+                                    icon-name="utility:drag_and_drop"
+                                    size="x-small"
+                                    alternative-text=""
+                                ></lightning-icon>
+                            </span>
+                            <div class="slds-col slds-grow">
+                                <template lwc:if={entry.isGroup}>
+                                    <fieldset class="c-condition-group slds-box slds-box_small" data-id={entry.id}>
+                                        <div class="slds-grid slds-grid_vertical-align-end">
+                                            <lightning-combobox
+                                                class="c-condition-logic slds-col slds-grow"
+                                                label="Group: match"
+                                                options={logicOptions}
+                                                value={entry.logic}
+                                                data-id={entry.id}
+                                                onchange={handleLogic}
+                                            ></lightning-combobox>
+                                            <lightning-button-icon
+                                                class="c-condition-remove-group slds-m-left_x-small slds-shrink-none"
+                                                icon-name="utility:delete"
+                                                variant="bare"
+                                                alternative-text="Remove group"
+                                                title="Remove group"
+                                                data-id={entry.id}
+                                                onclick={handleRemoveGroup}
+                                            ></lightning-button-icon>
+                                        </div>
+                                        <template lwc:if={entry.groupError}>
+                                            <p
+                                                class="c-condition-group-error slds-text-color_error slds-text-body_small"
+                                            >
+                                                {entry.groupError}
+                                            </p>
+                                        </template>
+                                        <ul class="slds-m-top_x-small">
+                                            <template for:each={entry.children} for:item="child">
+                                                <li
+                                                    key={child.key}
+                                                    class={child.rowClass}
+                                                    data-scope={entry.id}
+                                                    data-index={child.index}
+                                                    ondragover={handleDragOver}
+                                                    ondrop={handleDrop}
+                                                >
+                                                    <div class="slds-grid slds-grid_vertical-align-start">
+                                                        <span
+                                                            class="c-condition-handle c-drag-handle"
+                                                            draggable="true"
+                                                            title="Drag to reorder"
+                                                            data-scope={entry.id}
+                                                            data-index={child.index}
+                                                            ondragstart={handleDragStart}
+                                                            ondragend={handleDragEnd}
+                                                        >
+                                                            <lightning-icon
+                                                                icon-name="utility:drag_and_drop"
+                                                                size="x-small"
+                                                                alternative-text=""
+                                                            ></lightning-icon>
+                                                        </span>
+                                                        <div class="slds-col slds-grow">
+                                                            <template lwc:if={child.isNested}>
+                                                                <div
+                                                                    class="c-condition-nested slds-grid slds-grid_vertical-align-center"
+                                                                >
+                                                                    <span
+                                                                        class="slds-col slds-grow slds-text-body_small"
+                                                                        >{child.nestedText}</span
+                                                                    >
+                                                                    <lightning-button-icon
+                                                                        class="c-condition-remove-group slds-shrink-none"
+                                                                        icon-name="utility:delete"
+                                                                        variant="bare"
+                                                                        alternative-text="Remove group"
+                                                                        title="Remove group"
+                                                                        data-id={child.id}
+                                                                        onclick={handleRemoveGroup}
+                                                                    ></lightning-button-icon>
+                                                                </div>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <c-board-condition-row
+                                                                    condition={child.condition}
+                                                                    errors={child.errors}
+                                                                    object-api-name={objectApiName}
+                                                                    data-id={child.id}
+                                                                    onrowchange={handleRowChange}
+                                                                    onrowremove={handleRowRemove}
+                                                                ></c-board-condition-row>
+                                                            </template>
+                                                        </div>
+                                                        <div class="c-condition-move slds-shrink-none">
+                                                            <lightning-button-icon
+                                                                class="c-condition-up"
+                                                                icon-name="utility:arrowup"
+                                                                size="small"
+                                                                variant="bare"
+                                                                alternative-text="Move up"
+                                                                title="Move up"
+                                                                disabled={child.isFirst}
+                                                                data-scope={entry.id}
+                                                                data-index={child.index}
+                                                                onclick={handleMoveUp}
+                                                            ></lightning-button-icon>
+                                                            <lightning-button-icon
+                                                                class="c-condition-down"
+                                                                icon-name="utility:arrowdown"
+                                                                size="small"
+                                                                variant="bare"
+                                                                alternative-text="Move down"
+                                                                title="Move down"
+                                                                disabled={child.isLast}
+                                                                data-scope={entry.id}
+                                                                data-index={child.index}
+                                                                onclick={handleMoveDown}
+                                                            ></lightning-button-icon>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                        <lightning-button
+                                            class="c-condition-add"
+                                            label="Add condition to group"
+                                            icon-name="utility:add"
+                                            data-id={entry.id}
+                                            onclick={handleAddCondition}
+                                        ></lightning-button>
+                                    </fieldset>
+                                </template>
+                                <template lwc:else>
+                                    <c-board-condition-row
+                                        condition={entry.condition}
+                                        errors={entry.errors}
+                                        object-api-name={objectApiName}
+                                        data-id={entry.id}
+                                        onrowchange={handleRowChange}
+                                        onrowremove={handleRowRemove}
+                                    ></c-board-condition-row>
+                                </template>
+                            </div>
+                            <div class="c-condition-move slds-shrink-none">
+                                <lightning-button-icon
+                                    class="c-condition-up"
+                                    icon-name="utility:arrowup"
+                                    size="small"
+                                    variant="bare"
+                                    alternative-text="Move up"
+                                    title="Move up"
+                                    disabled={entry.isFirst}
+                                    data-scope={rootId}
+                                    data-index={entry.index}
+                                    onclick={handleMoveUp}
+                                ></lightning-button-icon>
+                                <lightning-button-icon
+                                    class="c-condition-down"
+                                    icon-name="utility:arrowdown"
+                                    size="small"
+                                    variant="bare"
+                                    alternative-text="Move down"
+                                    title="Move down"
+                                    disabled={entry.isLast}
+                                    data-scope={rootId}
+                                    data-index={entry.index}
+                                    onclick={handleMoveDown}
+                                ></lightning-button-icon>
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template lwc:else>
+            <p class="c-condition-empty slds-text-body_regular slds-text-color_weak slds-p-vertical_small">
+                No conditions yet. Add one below.
+            </p>
+        </template>
+        <div class="slds-m-top_x-small">
+            <lightning-button
+                class="c-condition-add-root"
+                label="Add condition"
+                icon-name="utility:add"
+                data-id={rootId}
+                onclick={handleAddCondition}
+            ></lightning-button>
+            <lightning-button
+                class="c-condition-add-group slds-m-left_x-small"
+                label="Add group"
+                icon-name="utility:add"
+                onclick={handleAddGroup}
+            ></lightning-button>
+        </div>
+    </div>
+</template>

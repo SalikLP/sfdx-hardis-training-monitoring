@@ -1,0 +1,63 @@
+<template>
+    <lightning-modal-header label="Setup dialog (PROTOTYPE: live preview)"></lightning-modal-header>
+    <lightning-modal-body>
+        <div class="slds-grid slds-gutters c-body">
+            <div class={editorClass}>
+                <h3 class="slds-text-heading_small slds-m-bottom_x-small">Draft (stands in for the steps)</h3>
+                <div class="slds-m-bottom_x-small">
+                    <template for:each={presets} for:item="preset">
+                        <lightning-button
+                            key={preset.key}
+                            data-key={preset.key}
+                            label={preset.label}
+                            class="slds-m-right_xx-small slds-m-bottom_xx-small"
+                            onclick={handlePreset}
+                        ></lightning-button>
+                    </template>
+                </div>
+                <lightning-input
+                    type="number"
+                    label="Debounce (ms)"
+                    value={debounceMs}
+                    onchange={handleDebounce}
+                    class="slds-m-bottom_x-small"
+                ></lightning-input>
+                <template lwc:if={parseError}>
+                    <p class="slds-text-color_error slds-m-bottom_x-small">{parseError}</p>
+                </template>
+                <label class="slds-form-element__label" for="draft">Draft config JSON</label>
+                <textarea
+                    id="draft"
+                    class="slds-textarea c-draft"
+                    rows="18"
+                    oninput={handleDraftInput}
+                    lwc:ref="draft"
+                ></textarea>
+                <lightning-button label="Apply now" onclick={handleApplyNow} class="slds-m-top_x-small"></lightning-button>
+                <h3 class="slds-text-heading_small slds-m-top_small">State log (newest first)</h3>
+                <pre class="c-log">{logText}</pre>
+            </div>
+            <template lwc:if={previewOpen}>
+                <div class="slds-col slds-size_2-of-3 c-pane c-preview">
+                    <div class="slds-grid slds-grid_align-spread slds-m-bottom_x-small">
+                        <h3 class="slds-text-heading_small">Live preview (real data, Base filters, no Filter context)</h3>
+                        <span class="slds-text-body_small slds-text-color_weak">boardId {previewBoardId}</span>
+                    </div>
+                    <template lwc:if={hasPreview}>
+                        <c-board-bar-widget
+                            board-id={previewBoardId}
+                            object-api-name={previewObjectApiName}
+                            orientation={previewOrientation}
+                            config-json={previewConfigJson}
+                        ></c-board-bar-widget>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button label={previewToggleLabel} onclick={handleTogglePreview} class="slds-float_left"></lightning-button>
+        <lightning-button label="Cancel" onclick={handleCancel} class="slds-m-right_x-small"></lightning-button>
+        <lightning-button variant="brand" label="Save" onclick={handleSave}></lightning-button>
+    </lightning-modal-footer>
+</template>

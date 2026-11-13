@@ -1,0 +1,236 @@
+<template>
+    <template lwc:if={hasActions}>
+        <ol class="c-row-actions">
+            <template for:each={rows} for:item="row">
+                <li
+                    key={row.key}
+                    class={row.rowClass}
+                    data-index={row.index}
+                    ondragover={handleDragOver}
+                    ondrop={handleDrop}
+                >
+                    <div class="slds-grid slds-grid_vertical-align-center">
+                        <span
+                            class="c-row-action-handle c-drag-handle"
+                            draggable="true"
+                            title="Drag to reorder"
+                            data-index={row.index}
+                            ondragstart={handleDragStart}
+                            ondragend={handleDragEnd}
+                        >
+                            <lightning-icon
+                                icon-name="utility:drag_and_drop"
+                                size="x-small"
+                                alternative-text=""
+                            ></lightning-icon>
+                        </span>
+                        <span class="slds-text-title slds-truncate slds-col">{row.title}: {row.label}</span>
+                        <div class="slds-shrink-none">
+                            <lightning-button-icon
+                                class="c-row-action-up"
+                                icon-name="utility:arrowup"
+                                size="small"
+                                variant="bare"
+                                alternative-text="Move action up"
+                                disabled={row.isFirst}
+                                data-index={row.index}
+                                onclick={handleMoveUp}
+                            ></lightning-button-icon>
+                            <lightning-button-icon
+                                class="c-row-action-down"
+                                icon-name="utility:arrowdown"
+                                size="small"
+                                variant="bare"
+                                alternative-text="Move action down"
+                                disabled={row.isLast}
+                                data-index={row.index}
+                                onclick={handleMoveDown}
+                            ></lightning-button-icon>
+                            <lightning-button-icon
+                                class="c-row-action-remove"
+                                icon-name="utility:delete"
+                                size="small"
+                                variant="bare"
+                                alternative-text="Remove action"
+                                data-index={row.index}
+                                onclick={handleRemove}
+                            ></lightning-button-icon>
+                        </div>
+                    </div>
+                    <lightning-combobox
+                        class="c-row-action-type slds-m-top_xx-small"
+                        label="Type"
+                        options={typeOptions}
+                        value={row.type}
+                        data-index={row.index}
+                        data-name="type"
+                        onchange={handleType}
+                    ></lightning-combobox>
+                    <lightning-input
+                        class="c-row-action-label slds-m-top_xx-small"
+                        label="Label"
+                        value={row.label}
+                        data-index={row.index}
+                        data-name="label"
+                        onchange={handleText}
+                    ></lightning-input>
+                    <lightning-input
+                        class="c-row-action-icon slds-m-top_xx-small"
+                        label="Icon"
+                        placeholder="utility:preview"
+                        value={row.icon}
+                        data-index={row.index}
+                        data-name="icon"
+                        onchange={handleText}
+                    ></lightning-input>
+                    <template lwc:if={row.isLookupTarget}>
+                        <c-board-cpe-object-field-picker
+                            class="c-row-action-target slds-m-top_xx-small"
+                            mode="field"
+                            label="Target lookup (blank = the row's record)"
+                            object-api-name={objectApiName}
+                            capability="lookup"
+                            value={row.target}
+                            data-index={row.index}
+                            onchange={handleTarget}
+                        ></c-board-cpe-object-field-picker>
+                    </template>
+                    <template lwc:if={row.isCreate}>
+                        <c-board-cpe-object-field-picker
+                            class="c-row-action-object slds-m-top_xx-small"
+                            mode="object"
+                            label="Object to create"
+                            value={row.object}
+                            data-index={row.index}
+                            onchange={handleObject}
+                        ></c-board-cpe-object-field-picker>
+                        <lightning-input
+                            class="c-row-action-record-type slds-m-top_xx-small"
+                            label="Record type Id (optional)"
+                            value={row.recordTypeId}
+                            data-index={row.index}
+                            data-name="recordTypeId"
+                            onchange={handleText}
+                        ></lightning-input>
+                        <template for:each={row.defaults} for:item="entry">
+                            <div key={entry.key} class="slds-m-top_xx-small">
+                                <c-board-cpe-object-field-picker
+                                    class="c-row-action-default-field"
+                                    mode="field"
+                                    label="Default for field"
+                                    object-api-name={row.object}
+                                    value={entry.field}
+                                    data-index={row.index}
+                                    data-position={entry.position}
+                                    onchange={handleDefaultField}
+                                ></c-board-cpe-object-field-picker>
+                                <c-board-cpe-object-field-picker
+                                    class="c-row-action-default-row-field"
+                                    mode="field"
+                                    label="Taken from row field"
+                                    object-api-name={objectApiName}
+                                    value={entry.rowField}
+                                    data-index={row.index}
+                                    data-position={entry.position}
+                                    onchange={handleDefaultRowField}
+                                ></c-board-cpe-object-field-picker>
+                                <lightning-button-icon
+                                    class="c-row-action-remove-default"
+                                    icon-name="utility:delete"
+                                    size="small"
+                                    variant="bare"
+                                    alternative-text="Remove default"
+                                    data-index={row.index}
+                                    data-position={entry.position}
+                                    onclick={handleRemoveDefault}
+                                ></lightning-button-icon>
+                            </div>
+                        </template>
+                        <lightning-button
+                            class="c-row-action-add-default slds-m-top_xx-small"
+                            label="Add default value"
+                            icon-name="utility:add"
+                            data-index={row.index}
+                            onclick={handleAddDefault}
+                        ></lightning-button>
+                    </template>
+                    <template lwc:if={row.isFlow}>
+                        <lightning-input
+                            class="c-row-action-flow slds-m-top_xx-small"
+                            label="Flow API name"
+                            value={row.flowApiName}
+                            data-index={row.index}
+                            data-name="flowApiName"
+                            onchange={handleText}
+                        ></lightning-input>
+                        <template for:each={row.inputs} for:item="entry">
+                            <div key={entry.key} class="slds-m-top_xx-small">
+                                <lightning-input
+                                    class="c-row-action-input-name"
+                                    label="Flow input variable"
+                                    value={entry.name}
+                                    data-index={row.index}
+                                    data-position={entry.position}
+                                    onchange={handleInputName}
+                                ></lightning-input>
+                                <c-board-cpe-object-field-picker
+                                    class="c-row-action-input-row-field"
+                                    mode="field"
+                                    label="Taken from row field"
+                                    object-api-name={objectApiName}
+                                    value={entry.rowField}
+                                    data-index={row.index}
+                                    data-position={entry.position}
+                                    onchange={handleInputRowField}
+                                ></c-board-cpe-object-field-picker>
+                                <lightning-button-icon
+                                    class="c-row-action-remove-input"
+                                    icon-name="utility:delete"
+                                    size="small"
+                                    variant="bare"
+                                    alternative-text="Remove input"
+                                    data-index={row.index}
+                                    data-position={entry.position}
+                                    onclick={handleRemoveInput}
+                                ></lightning-button-icon>
+                            </div>
+                        </template>
+                        <lightning-button
+                            class="c-row-action-add-input slds-m-top_xx-small"
+                            label="Add input variable"
+                            icon-name="utility:add"
+                            data-index={row.index}
+                            onclick={handleAddInput}
+                        ></lightning-button>
+                    </template>
+                    <lightning-combobox
+                        class="c-row-action-placement slds-m-top_xx-small"
+                        label="Placement"
+                        options={placementOptions}
+                        value={row.placement}
+                        data-index={row.index}
+                        data-name="placement"
+                        onchange={handleChoice}
+                    ></lightning-combobox>
+                    <template lwc:if={row.showColumnLabel}>
+                        <lightning-input
+                            class="c-row-action-column-label slds-m-top_xx-small"
+                            label="Column header"
+                            placeholder="Defaults to the label"
+                            value={row.columnLabel}
+                            data-index={row.index}
+                            data-name="columnLabel"
+                            onchange={handleText}
+                        ></lightning-input>
+                    </template>
+                </li>
+            </template>
+        </ol>
+    </template>
+    <lightning-button
+        class="c-row-action-add slds-m-top_x-small"
+        label="Add row action"
+        icon-name="utility:add"
+        onclick={handleAdd}
+    ></lightning-button>
+</template>

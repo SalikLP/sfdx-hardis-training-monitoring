@@ -12,7 +12,7 @@ function isSet(value) {
 /** Explicit values equal to the default (`formatStyle: 'number'`, the Widget's own notation) don't count as custom. */
 function isCustomized(format, defaultNotation) {
     return Object.entries(format).some(([key, value]) => {
-        if (!isSet(value)) {
+        if (!isSet(value) || key === 'currencyCode') {
             return false;
         }
         if (key === 'formatStyle') {
@@ -26,8 +26,9 @@ function isCustomized(format, defaultNotation) {
 }
 
 /**
- * ValueFormatConfig editor (`formatStyle`, `notation`, fraction digits, `currencyCode`, `prefix`, `suffix`) shared by
- * the Metric, Bar Chart, and Table column CPEs. Collapsed, it shows one summary line (`Number format: Default (compact)`)
+ * ValueFormatConfig editor (`formatStyle`, `notation`, fraction digits, `prefix`, `suffix`) shared by the Metric,
+ * Chart, and Table column CPEs. There is no currency code: currency amounts are shown in the Board's Display currency
+ * (a `currencyCode` saved by an older version is kept; Widgets format with the ISO code Apex returns instead). Collapsed, it shows one summary line (`Number format: Default (compact)`)
  * with a "Customize" link that reveals the controls; it starts expanded when any setting differs from the default
  * (an explicit default such as the Widget's own notation does not count).
  * Fires a non-bubbling `change` event with `detail.value`: the edited format, or null once every setting is back to its
@@ -61,9 +62,8 @@ export default class BoardCpeFormatEditor extends LightningElement {
 
     get summaryLine() {
         const style = STYLE_LABELS[this._value.formatStyle] || 'Default';
-        const currency = this.isCurrency && this._value.currencyCode ? ` ${this._value.currencyCode}` : '';
         const notation = this._value.notation || this.fallbackNotation;
-        return `${this.label}: ${style}${currency} (${notation})`;
+        return `${this.label}: ${style} (${notation})`;
     }
 
     get toggleLabel() {
@@ -90,20 +90,12 @@ export default class BoardCpeFormatEditor extends LightningElement {
         return this._value.notation || DEFAULT;
     }
 
-    get isCurrency() {
-        return this._value.formatStyle === 'currency';
-    }
-
     get minimumFractionDigits() {
         return this.numberText(this._value.minimumFractionDigits);
     }
 
     get maximumFractionDigits() {
         return this.numberText(this._value.maximumFractionDigits);
-    }
-
-    get currencyCode() {
-        return this._value.currencyCode || '';
     }
 
     get prefix() {
@@ -124,7 +116,7 @@ export default class BoardCpeFormatEditor extends LightningElement {
 
     handleStyle(event) {
         const formatStyle = event.detail.value || null;
-        this.update({ formatStyle, currencyCode: formatStyle === 'currency' ? this._value.currencyCode : null });
+        this.update({ formatStyle });
     }
 
     handleNotation(event) {
@@ -133,13 +125,6 @@ export default class BoardCpeFormatEditor extends LightningElement {
 
     handleDigits(event) {
         this.update({ [event.target.dataset.name]: parseNumber(event.detail.value) });
-    }
-
-    handleCurrency(event) {
-        const code = String(event.detail.value || '')
-            .trim()
-            .toUpperCase();
-        this.update({ currencyCode: code || null });
     }
 
     handleAffix(event) {

@@ -7,6 +7,42 @@
 
 ## JS Documentation
 
+### MEASURE_AGGREGATE_OPTIONS
+
+Aggregates of a Measures list (Chart and Metric widgets): the plain aggregates, Average per record (`AVG_PER`: one
+value per record of a per-record lookup) and a Formula measure.
+
+**Kind**: global constant  
+**Default**: <code>[...]</code>  
+
+### FORMULA_TOKEN
+
+String literals (skipped) or identifiers not called as a function.
+
+**Kind**: global constant  
+**Default**: <code>/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(?&lt;![\w$.])([A-Za-z_]\w*)(?!\w|\s*\()/g</code>  
+
+### PER_RECORD_INNER_OPTIONS
+
+How an Average per record Measure takes each record's value (`inner`).
+
+**Kind**: global constant  
+**Default**: <code>[...]</code>  
+
+### USER_MATCH_MODE_OPTIONS
+
+User filter `matchMode`: the picked users only, or each picked user's Team.
+
+**Kind**: global constant  
+**Default**: <code>[...]</code>  
+
+### PLAIN_NUMBER
+
+A plain number as the Number range filter reads it (mirrors `filterPersistence` NUMBER_PATTERN).
+
+**Kind**: global constant  
+**Default**: <code>/^-?\d+(?:\.\d+)?$/</code>  
+
 ### MIN_SEARCH_CHARACTERS
 
 Mirrors BoardQueryService.MIN_SEARCH_CHARACTERS.
@@ -53,6 +89,14 @@ True for `IGNORE`, `null`, a direct/parent/child path, or a TEXT multi-field / S
 ### isValidFieldPath(path)
 
 A direct field, 1–5 hop parent path, or `Child(ForeignKey).Path`.
+
+**Kind**: global function  
+
+### teamBindingHopError(filterId, path)
+
+Config-time error for an Include team binding (User filter in `usersAndTeam` mode): the Team condition reaches
+`<path>.UserRoleId`, one relationship hop past the bound path (counted inside a child semi-join), and SOQL allows
+at most 5. Null when the path is within the limit or isn't a single field path.
 
 **Kind**: global function  
 
@@ -178,9 +222,21 @@ Effective PICKLIST options source, matching `normalizeFilterDefinitions` (option
 
 **Kind**: global function  
 
+### numberDefaultErrors(defaultValue, label)
+
+NUMBER_RANGE `defaultValue { from?, to? }`: plain numbers (no grouping separators), min not above max.
+
+**Kind**: global function  
+
 ### choiceDefaultErrors(filter, defaultValue, label)
 
 PICKLIST / LOOKUP / USER `defaultValue { values?, token? }` (spec §5), checked as `buildFilterValue` reads it.
+
+**Kind**: global function  
+
+### sectionHeadingErrors(section, index)
+
+A Section item (`{ type: 'section', label, startCollapsed }`) only needs a heading.
 
 **Kind**: global function  
 
@@ -188,15 +244,16 @@ PICKLIST / LOOKUP / USER `defaultValue { values?, token? }` (spec §5), checked 
 
 Problems of a Filter widget's `recordContext` (`[{ key: 'recordContext', errorString }]`) given the filterId → type
 map of its valid filters (`validateFilterDefinitions(filters).filterTypes`). Shared by `validateFilterConfig` and
-the Filter definitions Config dialog's Save check.
+the Setup dialog's Filters step.
 
 **Kind**: global function  
 
-### validateFilterDefinitions(filters)
+### validateFilterDefinitions(filters, [bucketFields])
 
 Problems of each filter definition, in list order (`[[message, …], …]`; an empty list means the filter is valid),
 plus the filterId → type map of the valid ids. A repeated filterId flags the later filter. The rules behind the
-Filter widget's `validate()`, its read-only filter list, and the Filter definitions Config dialog.
+Filter widget's `validate()` and the Filters step of its Setup dialog (master list error flags). With the
+Filter widget's `bucketFields`, a Bucket filter must name one of them.
 
 **Kind**: global function  
 
@@ -213,21 +270,211 @@ Filter widget design-time errors: filter definitions, the recordContext override
 
 **Kind**: global function  
 
+### MAX_METRIC_MEASURES
+
+Max Measures of one Metric widget.
+
+**Kind**: global constant  
+**Default**: <code>6</code>  
+
 ### validateMetricConfig(config)
 
-Metric widget design-time errors.
+Metric widget design-time errors. A Measures list needs exactly one visible Measure; a config without one is a
+single-aggregate Metric (`aggregateFunction`, `valueFieldApiName`, `format`), checked as before.
 
 **Kind**: global function  
 
-### validateBarConfig(config)
+### validateChartConfig(config, [context])
 
-Bar Chart widget design-time errors.
+Chart widget design-time errors; max categories depends on the chart type. `context.boardBucketFields`: the
+Board-level Bucket fields (of the Board's Filter widget) a `bucket:<id>` reference may also name.
+
+**Kind**: global function  
+
+### bucketReferenceErrors(config, key, label, [context])
+
+A group or series field `bucket:<id>` must name one of the Widget's Bucket fields or the Board's.
+
+**Kind**: global function  
+
+### MAX_CHART_MEASURES
+
+Max Measures of one Chart widget.
+
+**Kind**: global constant  
+**Default**: <code>6</code>  
+
+### SHOW_AS_OPTIONS
+
+Share of total modes of a Chart widget Measure (`showAs`; unset = its plain value). Only COUNT and SUM Measures add
+up to a total; percent of category needs a series (Stack by) field or several Measures.
+
+**Kind**: global constant  
+**Default**: <code>[...]</code>  
+
+### chartMeasures(config)
+
+A Chart widget's Measures list; a config without one counts records (`[{ aggregateFunction: 'COUNT' }]`).
+
+**Kind**: global function  
+
+### averagePerRecordErrors(measure, fn, label)
+
+An Average per record Measure needs a per-record lookup path and takes each record's value as SUM or ONCE.
+
+**Kind**: global function  
+
+### formulaSlot(index)
+
+Slot letter of Measure `index` (0 → A).
+
+**Kind**: global function  
+
+### measureTitle(index)
+
+`Measure 2 (B)`: a Measure's title with its formula slot.
+
+**Kind**: global function  
+
+### mapFormulaSlots(text, rename)
+
+Rewrites each slot reference of `text` through `rename(slotIndex)` (returns a slot index); strings untouched.
+
+**Kind**: global function  
+
+### formulaReferences(text)
+
+Slot indexes (0 = A) a formula references, ascending.
+
+**Kind**: global function  
+
+### remapFormulaMeasures(measures, newIndexOf)
+
+Keeps Formula measures pointing at the same Measures after the list is reordered or a Measure removed:
+`newIndexOf(oldIndex)` is a Measure's new position (or -1 when removed; references to it are left as typed).
+
+**Kind**: global function  
+
+### formulaMeasureErrors(measures, index)
+
+The Measure-reference errors of Formula measure `index` (the formula text itself is checked by the server).
+
+**Kind**: global function  
+
+### measureDisplayErrors(measure, label)
+
+A Measure's combo chart settings: `render` (bar | line | referenceLine) and value `axis` (primary | secondary), both optional.
+
+**Kind**: global function  
+
+### columnErrors(rawColumns, key, prefix, messages, bucketFields)
+
+`bucketFields`: the Widget's Bucket fields when its columns may show one (`fieldPath: 'bucket:<id>'`); a column
+then must name one of them. Without it every column is a field path.
 
 **Kind**: global function  
 
 ### validateTableConfig(config)
 
-Table widget design-time errors: columns, page size, and the optional childRelationship.
+Table widget design-time errors: columns, page size, and the and a leftover childRelationship (removed).
+
+**Kind**: global function  
+
+### bucketGroupErrors(config)
+
+A Bucket field as group field (`bucket:<id>`): Detail rows off only, as the only group field, and defined.
+
+**Kind**: global function  
+
+### rowGroupingErrors(groupBy)
+
+Row grouping (Detail rows on): up to two group field paths, each with an optional ASC / DESC group order, a date
+granularity (the Chart widget's options) and an order field constant per group (`orderBy`, e.g. `Opportunity.Amount`).
+
+**Kind**: global function  
+
+### createActionErrors(action, label)
+
+A Create action needs an object; each default maps a field of that object from a row field.
+
+**Kind**: global function  
+
+### flowActionErrors(action, label)
+
+A Screen Flow action needs a flow API name; each input maps a flow variable from a row field.
+
+**Kind**: global function  
+
+### TABLE_SUMMARY_FUNCTIONS
+
+Stacked summaries a numeric Table column can show, in the order they are offered.
+
+**Kind**: global constant  
+**Default**: <code>['SUM', 'AVG', 'MIN', 'MAX']</code>  
+
+### columnSummaryErrors(rawColumns)
+
+Column `summaries`: when set, a list of 1–4 distinct Sum/Average/Min/Max.
+
+**Kind**: global function  
+
+### lookupPrefix(groupPath)
+
+Lower-cased path prefix of fields reached through a lookup group field (`AccountId` -> `account.`,
+`Parent__c` -> `parent__r.`), or null when the path does not name a lookup.
+
+**Kind**: global function  
+
+### detailRowsErrors(config)
+
+Detail rows (Row grouping): off makes the Table an aggregated table, so it needs a group field and every column
+must have one value per group (the group field, a field through the lookup group field, or a column with
+summaries). Ordering groups by a summary (`orderBySummary`) needs Detail rows off and a summary the Table shows.
+
+**Kind**: global function  
+
+### GROUPED_DETAIL_ROW_LIMIT_MAX
+
+Most first-level groups a Row limit keeps with Detail rows on (the record stream is filtered by an IN-list).
+
+**Kind**: global constant  
+**Default**: <code>200</code>  
+
+### ROW_LIMIT_MAX
+
+Most rows (ungrouped) or Group rows (Detail rows off) a Row limit keeps.
+
+**Kind**: global constant  
+**Default**: <code>2000</code>  
+
+### isGroupedTable(config)
+
+True when the Table has Row grouping (a first group field).
+
+**Kind**: global function  
+
+### rowLimitMax(config)
+
+Largest Row limit the config allows: 200 groups with Row grouping and Detail rows on, else 2,000.
+
+**Kind**: global function  
+
+### groupedRowLimitErrors(config)
+
+Row limit on a grouped Table: counts first-level groups ("Top N groups"), ranked by the group order, so it needs
+no default sort; 1-200 groups with Detail rows on, 1-2,000 with Detail rows off.
+
+**Kind**: global function  
+
+### rowLimitErrors(config)
+
+Row limit (Top N): a whole number from 1 to 2,000 that needs a default sort to mean anything.
+
+**Kind**: global function  
+
+### rowActionErrors(rawActions)
+
+Row actions: a list of `view` / `edit` / `create` / `flow` actions, each with a label and (when set) a lookup path target.
 
 **Kind**: global function  
 
@@ -258,16 +505,69 @@ returned in `references` and never copied into `configJson`.
 
 **Kind**: global function  
 
+### isConditionGroup(entry)
+
+Whether a condition tree entry is an AND / OR group (`{ id, logic, conditions[] }`) rather than a condition.
+
+**Kind**: global function  
+
+### flattenConditions(entries)
+
+Every entry of a list of condition tree entries (groups and their conditions), depth first.
+
+**Kind**: global function  
+
+### countConditions(entries)
+
+Number of conditions in a list of condition tree entries, counting the conditions inside groups.
+
+**Kind**: global function  
+
+### withBaseFilterIds(entries)
+
+Gives entries without an id, or with an id already used elsewhere in the tree (e.g. hand-edited JSON), a fresh
+`bfN` id; group conditions get the same treatment.
+
+**Kind**: global function  
+
+### baseFiltersToTree(baseFilters)
+
+A Widget's `baseFilters` as the condition tree the condition editor edits: `{ tree: { logic, conditions },
+rootGroupId }`. The entries of `baseFilters` combine with AND, so a flat list loads as the AND top level; a single
+stored OR group loads as the OR top level (`rootGroupId` is its id). Missing or duplicate ids get fresh `bfN` ids.
+
+**Kind**: global function  
+
+### baseFiltersFromTree(tree, [rootGroupId])
+
+The `baseFilters` list of a condition tree (`baseFiltersToTree`'s inverse): an AND top level is the list itself;
+OR at the top level is stored as one OR group entry `{ id, logic: 'OR', conditions }`, keeping `rootGroupId`.
+
+**Kind**: global function  
+
+### conditionGroupError(entry)
+
+First problem with an AND / OR group itself (not its conditions), or null.
+
+**Kind**: global function  
+
 ### baseFilterError(condition)
 
-First problem with a Base filter condition, or null when it compiles.
+First problem with a condition tree entry (a Base filter condition, or an AND / OR group and its conditions), or
+null when it compiles. Shared by Base filters and every other condition tree.
 
 **Kind**: global function  
 
 ### baseFilterErrorsByIndex(baseFilters)
 
 Messages per Base filter condition (`string[][]`, parallel to `baseFilters`): the condition's own problem
-(`baseFilterError`) plus a missing or duplicate `id`. Shared by `configErrors` and the Base filters Config dialog.
+(`baseFilterError`) plus a missing or duplicate `id`. Shared by `configErrors` and the Base filters of the Setup dialog's Data step.
+
+**Kind**: global function  
+
+### conditionIdErrors(condition, ids)
+
+Missing or duplicate `id`s of a condition tree entry and the conditions of a group (ids are unique per tree).
 
 **Kind**: global function  
 
@@ -278,7 +578,14 @@ Read-only description of a Base filter condition: `{ label, operatorLabel, value
 
 **Kind**: global function  
 
-### configErrors(widgetType, config, [references])
+### conditionGroupSummary(group)
+
+Read-only description of an AND / OR group, e.g. `Any of 2 conditions` · `OR group` ·
+`Status: New or (Priority: High and Origin: Web)`.
+
+**Kind**: global function  
+
+### configErrors(widgetType, config, [references], [context])
 
 Design-time errors of a config envelope (`[{ key, errorString }]`): the rules behind both `validate()` and pasted
 Config JSON. `references` holds top-level keys bound to Flow resources (they satisfy required values).
@@ -367,51 +674,31 @@ The notation a Widget formats values with when `format.notation` is unset: Metri
 
 ### measureSummary(widgetType, config)
 
-Measure section summary of the Metric and Bar Config editors: the aggregate and the value notation, e.g.
+Measure section summary of the Metric and Chart Config editors: the aggregate and the value notation, e.g.
 `Count of records · compact` or `Sum of Amount · standard`.
 
 **Kind**: global function  
 
-### openConfigDialog(Dialog, { value, ...props } = {})
+### chartMeasuresSummary(config)
 
-Opens a Config dialog (a `LightningModal` subclass such as `c/boardFilterDialog`) at size large with a deep copy of
-`value`, and resolves with `{ action: 'save', draft }` or `{ action: 'dismiss' }` (Cancel, header X, Escape).
-The caller applies a saved draft as exactly one config change and does nothing on dismiss.
-
-**Kind**: global function  
-
-### ConfigDialogMixin(Base)
-
-Keyed draft list shared by the Config dialogs: `class MyDialog extends ConfigDialogMixin(LightningModal)`.
-
-Owns the stable row keys parallel to the draft items (`_rowKeys`, `nextRowKey()`), the selection (`selectedKey`,
-`selectedIndex`), one-time draft initialization in `connectedCallback`, the master-detail event handlers
-(`handleItemSelect`, `handleItemMove`, `handleItemRemove`, plus `addDraftItem(item)`), focus after a remove, and
-the Cancel / Save footer handlers (`handleCancel`, `handleSave`).
-
-The dialog provides:
-- `rowKeyPrefix`: prefix of the row keys (e.g. `filter`)
-- `initDraft(value)`: sets up its draft from the deep copy of `@api value`
-- `draftItems` / `setDraftItems(items, change)`: the master list and its replacement; `change` is
-  `{ removed, removedKey }` after a remove, so dependent draft state can follow
-- `errorsByIndex`: messages per draft item; Save stays disabled while any item has one (override `isSaveDisabled`
-  to add draft-level checks)
-- `draft`: what Save resolves with (deep-copied)
+Measures section summary of the Chart Config editor: one Measure reads like `measureSummary`
+(`Sum of Amount · compact`); several list their labels (`2 Measures: Pipeline, Count of records`).
 
 **Kind**: global function  
 
-#### _rowKeys
+### metricMeasuresSummary(config)
 
-Stable keys parallel to `draftItems` (labels and ids change while the Admin types).
+Measure section summary of the Metric Config editor: the visible Measure like `measureSummary`, plus the Measure
+count when there are several (`Sum of Amount · compact · 3 Measures (2 hidden)`).
 
-**Kind**: global property  
-**Default**: <code>[]</code>  
+**Kind**: global function  
 
-#### addDraftItem(item)
+### DIALOG_SAVE
 
-Appends `item` to the draft and selects it.
+How the Setup dialog (`c/boardSetupDialog`) closes: Save with the whole draft, or dismiss (Cancel, X, Escape).
 
-**Kind**: global function
+**Kind**: global constant  
+**Default**: <code>'save'</code>
 
 ## Files
 

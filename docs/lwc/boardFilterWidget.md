@@ -7,11 +7,52 @@
 
 ## JS Documentation
 
+### PICKLIST_BUTTONS_CAP
+
+Buttons display falls back to the dropdown above this many values.
+
+**Kind**: global constant  
+**Default**: <code>5</code>  
+
+### isPicklistStyle(def)
+
+Picklist and Bucket filters share the picklist controls (a Bucket filter's options are its bucket labels).
+
+**Kind**: global function  
+
 ### describeDateLiteral(literal)
 
 Preset label, or a readable label for any other relative literal (`NEXT_WEEK`, `LAST_N_DAYS:14`).
 
 **Kind**: global function  
+
+#### _layout
+
+Bar Filter sections (`normalizeFilterLayout`); Section items live only here, never in `_defs` or the Filter context.
+
+**Kind**: instance property of <code>BoardFilterWidget</code>  
+**Default**: <code>[]</code>  
+
+#### _sectionExpanded
+
+Section key -> user-toggled expanded state; never persisted, so a reload restores the configured state.
+
+**Kind**: instance property of <code>BoardFilterWidget</code>  
+**Default**: <code>{}</code>  
+
+#### _multiCurrency
+
+Whether the org has more than one currency (null until known); a single-currency org shows no Currency picker.
+
+**Kind**: instance property of <code>BoardFilterWidget</code>  
+**Default**: <code>null</code>  
+
+#### _userHasNoRole
+
+Picked user Id -> true when the user has no role, false when they have one (Team match mode only).
+
+**Kind**: instance property of <code>BoardFilterWidget</code>  
+**Default**: <code>{}</code>  
 
 #### _textInput
 
@@ -60,6 +101,12 @@ republished, and re-persisted.
 
 **Kind**: instance method of <code>BoardFilterWidget</code>  
 
+#### resolveUsersWithoutRole()
+
+Asks Apex which users picked on Team match mode filters have no role (their Team is only themselves).
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
+
 #### bodyError
 
 Configuration or Record context error; the same payload is the scope error every Widget renders.
@@ -72,11 +119,77 @@ Non-error setup hint for a Filter widget without (valid) filter definitions (spe
 
 **Kind**: instance property (getter) of <code>BoardFilterWidget</code>  
 
+#### hasCurrencyPickerItem
+
+Whether the Admin placed a Currency picker item in the bar.
+
+**Kind**: instance property (getter) of <code>BoardFilterWidget</code>  
+
+#### hasCurrencyPicker
+
+Whether the bar shows a Currency picker: placed by the Admin, and not known to be a single-currency org.
+
+**Kind**: instance property (getter) of <code>BoardFilterWidget</code>  
+
+#### loadCurrencyAvailability()
+
+Asks once whether the org has several currencies, when the bar has a Currency picker item.
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
+
+#### filterSections
+
+Bar Filter sections with their filter views; a collapsed Section shows its heading and active-filter count only.
+
+**Kind**: instance property (getter) of <code>BoardFilterWidget</code>  
+
+#### showsAsButtons(def)
+
+Buttons display, unless the picklist has more values than the cap (then the dropdown).
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
+
+#### teamNoticesFor(def, value)
+
+"<name> has no role; showing only their records." per picked user without a role (never names a role).
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
+
+#### buildNumberRangeView(def, value)
+
+Min / max inputs; a currency field names the Display currency its bounds are read in.
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
+
+#### displayCurrency
+
+The Board's Display currency, which currency Number range bounds are typed in.
+
+**Kind**: instance property (getter) of <code>BoardFilterWidget</code>  
+
+#### userLabelFor(def, entry, value)
+
+A picked user's pill text: their name, or "<name>'s team" in Team match mode (never a role).
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
+
+#### describeNumberRange(def, entry)
+
+Pill text of a Number range: `5,000 – 10,000`, `≥ 5,000` or `≤ 10,000`, plus the Display currency code.
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
+
 #### recordContextBadgeInfo
 
 `🔒 <Label>: <Value>` badge, shown only while a LOCKED Record context override is applied (story 32).
 
 **Kind**: instance property (getter) of <code>BoardFilterWidget</code>  
+
+#### handleNumberInputChange(event)
+
+Typing a min or max: `GTE` / `LTE` with one bound, `BETWEEN` with both; debounced like a search.
+
+**Kind**: instance method of <code>BoardFilterWidget</code>  
 
 #### effectiveSearchText(def, raw)
 

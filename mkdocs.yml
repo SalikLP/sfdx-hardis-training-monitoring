@@ -217,6 +217,7 @@ nav:
           - force__SubscriptionManagementTaxAdmin: permissionsetgroups/force__SubscriptionManagementTaxAdmin.md
       - Permission Sets:
           - All Permission Sets: permissionsets/index.md
+          - Board_Quota_Viewer: permissionsets/Board_Quota_Viewer.md
           - Experience_Profile_Manager: permissionsets/Experience_Profile_Manager.md
           - Helios_Delivery_Crew: permissionsets/Helios_Delivery_Crew.md
           - Helios_Delivery_Manager: permissionsets/Helios_Delivery_Manager.md
@@ -249,30 +250,70 @@ nav:
           - boardBarCpe: lwc/boardBarCpe.md
           - boardBarWidget: lwc/boardBarWidget.md
           - boardBaseFilterDialog: lwc/boardBaseFilterDialog.md
+          - boardBucketFieldEditor: lwc/boardBucketFieldEditor.md
+          - boardBucketFields: lwc/boardBucketFields.md
+          - boardChartColours: lwc/boardChartColours.md
+          - boardChartCpe: lwc/boardChartCpe.md
+          - boardChartPanelGrid: lwc/boardChartPanelGrid.md
+          - boardChartPanels: lwc/boardChartPanels.md
+          - boardChartPanelSettings: lwc/boardChartPanelSettings.md
+          - boardChartReferenceLines: lwc/boardChartReferenceLines.md
+          - boardChartSetupSteps: lwc/boardChartSetupSteps.md
           - boardChartUtils: lwc/boardChartUtils.md
+          - boardChartWidget: lwc/boardChartWidget.md
+          - boardConditionEditor: lwc/boardConditionEditor.md
+          - boardConditionRow: lwc/boardConditionRow.md
+          - boardConfigCurrency: lwc/boardConfigCurrency.md
           - boardConfigUtils: lwc/boardConfigUtils.md
           - boardContextStore: lwc/boardContextStore.md
+          - boardCpeBindings: lwc/boardCpeBindings.md
           - boardCpeColumnList: lwc/boardCpeColumnList.md
           - boardCpeCommon: lwc/boardCpeCommon.md
           - boardCpeConfigDialog: lwc/boardCpeConfigDialog.md
+          - boardCpeCrossObjectMeasure: lwc/boardCpeCrossObjectMeasure.md
           - boardCpeDragStyles: lwc/boardCpeDragStyles.md
+          - boardCpeFilterBindings: lwc/boardCpeFilterBindings.md
           - boardCpeFormatEditor: lwc/boardCpeFormatEditor.md
           - boardCpeMasterDetail: lwc/boardCpeMasterDetail.md
+          - boardCpeMeasureList: lwc/boardCpeMeasureList.md
           - boardCpeObjectFieldPicker: lwc/boardCpeObjectFieldPicker.md
+          - boardCpeRowActionList: lwc/boardCpeRowActionList.md
           - boardCpeSection: lwc/boardCpeSection.md
+          - boardCpeTotalRow: lwc/boardCpeTotalRow.md
           - boardCpeUtils: lwc/boardCpeUtils.md
+          - boardCrossObjectMeasure: lwc/boardCrossObjectMeasure.md
+          - boardCurrencyPicker: lwc/boardCurrencyPicker.md
+          - boardCursorProgress: lwc/boardCursorProgress.md
+          - boardDisplayCurrency: lwc/boardDisplayCurrency.md
           - boardFilterCpe: lwc/boardFilterCpe.md
           - boardFilterDialog: lwc/boardFilterDialog.md
+          - boardFilterSetupSteps: lwc/boardFilterSetupSteps.md
           - boardFilterWidget: lwc/boardFilterWidget.md
+          - boardFixedColourEditor: lwc/boardFixedColourEditor.md
           - boardMetricCpe: lwc/boardMetricCpe.md
+          - boardMetricGauge: lwc/boardMetricGauge.md
+          - boardMetricGaugeView: lwc/boardMetricGaugeView.md
+          - boardMetricSetupSteps: lwc/boardMetricSetupSteps.md
           - boardMetricWidget: lwc/boardMetricWidget.md
+          - boardPictureTiles: lwc/boardPictureTiles.md
+          - boardSegmentedButtons: lwc/boardSegmentedButtons.md
+          - boardSetupBaseFilters: lwc/boardSetupBaseFilters.md
+          - boardSetupDialog: lwc/boardSetupDialog.md
+          - boardSetupFilterDefinitions: lwc/boardSetupFilterDefinitions.md
+          - boardSetupGuide: lwc/boardSetupGuide.md
+          - boardSetupPreview: lwc/boardSetupPreview.md
+          - boardSetupSteps: lwc/boardSetupSteps.md
           - boardTableCpe: lwc/boardTableCpe.md
+          - boardTableFlowModal: lwc/boardTableFlowModal.md
+          - boardTableSetupSteps: lwc/boardTableSetupSteps.md
           - boardTableWidget: lwc/boardTableWidget.md
+          - boardVisibilityWatcher: lwc/boardVisibilityWatcher.md
           - boardWidgetState: lwc/boardWidgetState.md
           - installationTimeline: lwc/installationTimeline.md
           - protoBoardStore: lwc/protoBoardStore.md
           - protoBoardWidget: lwc/protoBoardWidget.md
           - protoFilterWidget: lwc/protoFilterWidget.md
+          - protoSetupPreviewDialog: lwc/protoSetupPreviewDialog.md
           - protoTableHarness: lwc/protoTableHarness.md
           - protoTabProbe: lwc/protoTabProbe.md
           - protoWidgetCpe: lwc/protoWidgetCpe.md

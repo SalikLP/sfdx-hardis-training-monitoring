@@ -1,0 +1,323 @@
+<template>
+    <template lwc:if={isData}>
+        <c-board-cpe-object-field-picker
+            class="c-chart-object"
+            mode="object"
+            label="Object"
+            field-level-help="The object whose records the chart counts and adds up. Changing it flags the steps whose fields aren't on the new object."
+            value={objectPickerValue}
+            onchange={handleObject}
+        ></c-board-cpe-object-field-picker>
+        <c-board-setup-base-filters
+            class="c-chart-base-filters"
+            value={baseFilters}
+            object-api-name={objectApiName}
+            onchange={handleBaseFilters}
+        ></c-board-setup-base-filters>
+    </template>
+
+    <template lwc:if={isChartType}>
+        <c-board-picture-tiles
+            class="c-chart-type"
+            label="Chart type"
+            field-level-help="How the values are drawn. Settings of other chart types are kept, so switching back restores them."
+            options={chartTypeOptions}
+            value={chartType}
+            onchange={handleChartType}
+        ></c-board-picture-tiles>
+        <template lwc:if={showOrientation}>
+            <c-board-picture-tiles
+                class="c-chart-orientation slds-m-top_x-small"
+                label="Orientation"
+                field-level-help="Vertical bars stand on the category axis; horizontal bars suit long category labels."
+                options={orientationOptions}
+                value={orientation}
+                onchange={handleOrientation}
+            ></c-board-picture-tiles>
+        </template>
+    </template>
+
+    <template lwc:if={isMeasures}>
+        <c-board-cpe-measure-list
+            class="c-chart-measure-list"
+            object-api-name={objectApiName}
+            measures={measures}
+            max-measures={maxMeasures}
+            add-blocked-reason={addMeasureBlockedReason}
+            show-color
+            show-hidden
+            show-share-of-total
+            can-share-category={canShareCategory}
+            chart-type={chartType}
+            show-category-mapping
+            panel-field={panelField}
+            onchange={handleMeasuresChange}
+            onformulacheck={handleFormulaCheck}
+        ></c-board-cpe-measure-list>
+    </template>
+
+    <template lwc:if={isGrouping}>
+        <c-board-cpe-object-field-picker
+            class="c-chart-group-by"
+            mode="field"
+            label="Group by"
+            field-level-help="The field whose values become the categories on the axis, one bar or point per value."
+            object-api-name={objectApiName}
+            capability="groupable"
+            value={groupByPickerValue}
+            onchange={handleGroupBy}
+        ></c-board-cpe-object-field-picker>
+        <template lwc:if={hasBucketFields}>
+            <lightning-combobox
+                class="c-chart-group-by-bucket slds-m-top_x-small"
+                label="Or group by a Bucket field"
+                field-level-help="Group by the buckets of a Bucket field (e.g. Amount ranges) instead of a field."
+                options={bucketOptions}
+                value={groupByBucket}
+                onchange={handleGroupByBucket}
+            ></lightning-combobox>
+        </template>
+        <template lwc:if={showGranularity}>
+            <lightning-combobox
+                class="c-chart-granularity slds-m-top_x-small"
+                label="Date granularity"
+                field-level-help="How dates are grouped: one category per day, week, month, quarter or year."
+                options={granularityOptions}
+                value={dateGranularity}
+                onchange={handleGranularity}
+            ></lightning-combobox>
+        </template>
+        <lightning-input
+            class="c-chart-include-null slds-m-top_x-small"
+            type="checkbox"
+            label='Include a "(Blank)" bar for empty values'
+            field-level-help="Records with no value in the Group by field are counted in a '(Blank)' category."
+            checked={includeNullBucket}
+            onchange={handleIncludeNull}
+        ></lightning-input>
+        <template lwc:if={showStackBy}>
+            <c-board-cpe-object-field-picker
+                class="c-chart-stack-by slds-m-top_x-small"
+                mode="field"
+                label="Stack by (optional)"
+                field-level-help="Splits each category into series, one per value of this field. Must differ from the Group by field."
+                object-api-name={objectApiName}
+                capability="groupable"
+                value={stackByPickerValue}
+                disabled={stackByDisabled}
+                onchange={handleStackBy}
+            ></c-board-cpe-object-field-picker>
+            <template lwc:if={hasBucketFields}>
+                <lightning-combobox
+                    class="c-chart-stack-by-bucket slds-m-top_x-small"
+                    label="Or stack by a Bucket field"
+                    field-level-help="Split each category into series by the buckets of a Bucket field."
+                    options={bucketOptions}
+                    value={stackByBucket}
+                    disabled={stackByDisabled}
+                    onchange={handleStackByBucket}
+                ></lightning-combobox>
+            </template>
+        </template>
+        <template lwc:if={hasStack}>
+            <template lwc:if={showStackMode}>
+                <c-board-picture-tiles
+                    class="c-chart-stack-mode slds-m-top_x-small"
+                    label="Series layout"
+                    field-level-help="Stacked piles the series of a category into one bar; grouped puts them side by side."
+                    options={stackModeOptions}
+                    value={stackMode}
+                    onchange={handleStackMode}
+                ></c-board-picture-tiles>
+            </template>
+            <lightning-input
+                class="c-chart-max-series slds-m-top_x-small"
+                type="number"
+                label="Maximum series"
+                field-level-help="The series with the largest totals are shown; the rest are combined into 'Other'."
+                min="2"
+                max="12"
+                step="1"
+                placeholder="6"
+                value={maxSeries}
+                onchange={handleMaxSeries}
+            ></lightning-input>
+        </template>
+        <template lwc:elseif={showColorByCategory}>
+            <lightning-input
+                class="c-chart-color-by-category slds-m-top_x-small"
+                type="checkbox"
+                label="Colour by category"
+                field-level-help="Each category gets its own colour instead of one colour for the Measure."
+                checked={colorByCategory}
+                onchange={handleColorByCategory}
+            ></lightning-input>
+        </template>
+        <template lwc:if={stackByDisabled}>
+            <p class="c-chart-stack-by-help slds-text-body_small slds-text-color_weak">
+                Stack by is off while the chart shows several Measures side by side.
+            </p>
+        </template>
+        <h3 class="slds-text-title_caps slds-m-top_medium">Bucket fields</h3>
+        <c-board-bucket-field-editor
+            class="c-chart-bucket-fields slds-m-top_xx-small"
+            object-api-name={objectApiName}
+            value={bucketFields}
+            onchange={handleBucketFields}
+        ></c-board-bucket-field-editor>
+        <h3 class="slds-text-title_caps slds-m-top_medium">Small multiples</h3>
+        <c-board-chart-panel-settings
+            object-api-name={objectApiName}
+            config={config}
+            measure-labels={measureLabels}
+            bucket-options={bucketOptions}
+            onchange={handlePanelSettings}
+        ></c-board-chart-panel-settings>
+    </template>
+
+    <template lwc:if={isDisplay}>
+        <lightning-input
+            class="c-chart-subtitle"
+            label="Subtitle"
+            field-level-help="A line of text under the Widget title, e.g. the period or the filters that apply."
+            value={subtitle}
+            onchange={handleSubtitle}
+        ></lightning-input>
+        <lightning-combobox
+            class="c-chart-sort slds-m-top_x-small"
+            label="Sort bars by"
+            field-level-help="The order of the categories along the axis."
+            options={sortOptions}
+            value={sortBy}
+            onchange={handleSortBy}
+        ></lightning-combobox>
+        <lightning-input
+            class="c-chart-max-bars slds-m-top_x-small"
+            type="number"
+            label={maxBarsLabel}
+            field-level-help="At most this many categories are shown, after sorting."
+            min="3"
+            max={maxCategories}
+            step="1"
+            placeholder="10"
+            value={maxBars}
+            onchange={handleMaxBars}
+        ></lightning-input>
+        <c-board-picture-tiles
+            class="c-chart-overflow slds-m-top_x-small"
+            label="Bars beyond the maximum"
+            field-level-help="What happens to the categories beyond the maximum."
+            options={overflowOptions}
+            value={overflowMode}
+            onchange={handleOverflow}
+        ></c-board-picture-tiles>
+        <p class="c-chart-overflow-help slds-text-body_small slds-text-color_weak">{overflowHelp}</p>
+        <lightning-combobox
+            class="c-chart-legend slds-m-top_x-small"
+            label="Legend"
+            field-level-help="Where the series names are listed. Auto shows the legend only when the chart has several series."
+            options={legendOptions}
+            value={legendPosition}
+            onchange={handleLegend}
+        ></lightning-combobox>
+        <template lwc:if={showDataLabelsSetting}>
+            <lightning-input
+                class="c-chart-data-labels slds-m-top_x-small"
+                type="checkbox"
+                label="Show data labels"
+                field-level-help="Each bar or point shows its value."
+                checked={showDataLabels}
+                onchange={handleDataLabels}
+            ></lightning-input>
+        </template>
+        <template lwc:if={showLabelMode}>
+            <lightning-combobox
+                class="c-chart-label-mode slds-m-top_x-small"
+                label="Slice labels"
+                field-level-help="What each slice shows: its share of the total, its value, both or nothing."
+                options={labelModeOptions}
+                value={labelMode}
+                onchange={handleLabelMode}
+            ></lightning-combobox>
+        </template>
+        <template lwc:if={showCentreTotal}>
+            <lightning-input
+                class="c-chart-centre-total slds-m-top_x-small"
+                type="checkbox"
+                label="Show total in the centre"
+                field-level-help="The total of all slices is shown in the hole of the donut."
+                checked={centreTotal}
+                onchange={handleCentreTotal}
+            ></lightning-input>
+        </template>
+        <template lwc:if={showTotalSetting}>
+            <lightning-input
+                class="c-chart-show-total slds-m-top_x-small"
+                type="checkbox"
+                label="Show a Total bar"
+                field-level-help="A last bar shows the running total after all steps."
+                checked={showTotal}
+                onchange={handleShowTotal}
+            ></lightning-input>
+        </template>
+        <template lwc:if={showWaterfallColors}>
+            <lightning-input
+                class="c-chart-waterfall-color slds-m-top_x-small"
+                type="color"
+                label="Increase colour"
+                field-level-help="Waterfall steps are coloured by direction: up, down, and the Total bar."
+                data-key="waterfallIncreaseColor"
+                data-kind="increase"
+                value={waterfallIncreaseColor}
+                onchange={handleWaterfallColor}
+            ></lightning-input>
+            <lightning-input
+                class="c-chart-waterfall-color slds-m-top_x-small"
+                type="color"
+                label="Decrease colour"
+                field-level-help="Waterfall steps are coloured by direction: up, down, and the Total bar."
+                data-key="waterfallDecreaseColor"
+                data-kind="decrease"
+                value={waterfallDecreaseColor}
+                onchange={handleWaterfallColor}
+            ></lightning-input>
+            <lightning-input
+                class="c-chart-waterfall-color slds-m-top_x-small"
+                type="color"
+                label="Total colour"
+                field-level-help="Waterfall steps are coloured by direction: up, down, and the Total bar."
+                data-key="waterfallTotalColor"
+                data-kind="total"
+                value={waterfallTotalColor}
+                onchange={handleWaterfallColor}
+            ></lightning-input>
+        </template>
+        <template lwc:if={showPointsSetting}>
+            <lightning-input
+                class="c-chart-show-points slds-m-top_x-small"
+                type="checkbox"
+                label="Show points"
+                field-level-help="A dot marks each value on the line."
+                checked={showPoints}
+                onchange={handleShowPoints}
+            ></lightning-input>
+        </template>
+        <h3 class="slds-text-title_caps slds-m-top_medium">Fixed colours</h3>
+        <c-board-fixed-colour-editor
+            class="c-chart-fixed-colours slds-m-top_xx-small"
+            value={fixedColours}
+            onchange={handleFixedColours}
+        ></c-board-fixed-colour-editor>
+    </template>
+
+    <template lwc:if={isFilterBindings}>
+        <c-board-cpe-filter-bindings
+            class="c-chart-filter-bindings"
+            config={config}
+            builder-context={builderContext}
+            element-info={elementInfo}
+            onchange={handleBindingsChange}
+            onbindingstate={handleBindingState}
+        ></c-board-cpe-filter-bindings>
+    </template>
+</template>

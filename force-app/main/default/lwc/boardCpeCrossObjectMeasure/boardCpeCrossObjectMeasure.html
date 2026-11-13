@@ -1,0 +1,107 @@
+<template>
+    <lightning-input
+        class="c-cross-object-toggle slds-m-top_xx-small"
+        type="checkbox"
+        label="Rows from another object (Cross-object measure)"
+        field-level-help="Aggregate another object's records (e.g. quotas) and line them up with this Widget's categories."
+        checked={isEnabled}
+        onchange={handleToggle}
+    ></lightning-input>
+    <template lwc:if={isEnabled}>
+        <div class="c-cross-object slds-m-left_medium">
+            <c-board-cpe-object-field-picker
+                class="c-cross-object-source slds-m-top_xx-small"
+                mode="object"
+                label="Source object"
+                value={sourceObject}
+                onchange={handleSource}
+            ></c-board-cpe-object-field-picker>
+            <template lwc:if={sourceObject}>
+                <template lwc:if={showQuotaNote}>
+                    <p class="c-cross-object-quota-note slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+                        Viewers see only their own quotas, plus their team's if they're a forecast manager. Use the
+                        Quota provider for full totals. Filter on ForecastingType.DeveloperName (e.g.
+                        OpportunityRevenue); the forecast hierarchy is separate from the role hierarchy.
+                    </p>
+                </template>
+                <template lwc:if={showCategoryMapping}>
+                    <c-board-cpe-object-field-picker
+                        class="c-cross-object-category slds-m-top_xx-small"
+                        mode="field"
+                        label="Category mapping"
+                        placeholder="The field matching the Group by field"
+                        object-api-name={sourceObject}
+                        capability="groupable"
+                        value={categoryMapping}
+                        onchange={handleCategory}
+                    ></c-board-cpe-object-field-picker>
+                    <p class="slds-text-body_small slds-text-color_weak">
+                        Its rows join the chart on this field's value; a date field groups at the chart's date
+                        granularity. A category with only {sourceLabel} rows still shows.
+                    </p>
+                </template>
+                <template lwc:if={showPanelMapping}>
+                    <c-board-cpe-object-field-picker
+                        class="c-cross-object-panel slds-m-top_xx-small"
+                        mode="field"
+                        label="Panel mapping"
+                        placeholder="The field matching the Panel field"
+                        object-api-name={sourceObject}
+                        capability="groupable"
+                        value={panelMapping}
+                        onchange={handlePanel}
+                    ></c-board-cpe-object-field-picker>
+                </template>
+                <lightning-input
+                    class="c-cross-object-provider slds-m-top_xx-small"
+                    label="Data provider (optional)"
+                    placeholder="Apex class name"
+                    field-level-help="An Apex class implementing BoardDataProvider that supplies this Measure's values (e.g. quotas) instead of querying the source object. It receives this Measure's request after Filter bindings."
+                    value={dataProvider}
+                    onchange={handleProvider}
+                ></lightning-input>
+                <p class="slds-text-title slds-m-top_x-small">Filter bindings of this Measure</p>
+                <p class="c-cross-object-binding-help slds-text-body_small slds-text-color_weak">
+                    Filters without a binding here apply by convention only where their field exists on {sourceLabel};
+                    the Widget lists the filters this Measure ignores.
+                </p>
+                <template for:each={bindingRows} for:item="binding">
+                    <div key={binding.key} class="slds-grid slds-grid_vertical-align-end slds-m-top_xx-small">
+                        <lightning-input
+                            class="c-cross-object-binding-path slds-col"
+                            label={binding.filterId}
+                            placeholder="Field path on the source object, or IGNORE"
+                            value={binding.path}
+                            data-filter-id={binding.filterId}
+                            onchange={handleBindingPath}
+                        ></lightning-input>
+                        <lightning-button-icon
+                            class="c-cross-object-binding-remove slds-shrink-none"
+                            icon-name="utility:delete"
+                            variant="bare"
+                            alternative-text="Remove binding"
+                            data-filter-id={binding.filterId}
+                            onclick={handleRemoveBinding}
+                        ></lightning-button-icon>
+                    </div>
+                </template>
+                <div class="slds-grid slds-grid_vertical-align-end slds-m-top_xx-small">
+                    <lightning-input
+                        class="c-cross-object-new-binding slds-col"
+                        label="Filter id"
+                        placeholder="e.g. closeDate"
+                        value={newBindingId}
+                        onchange={handleNewBindingId}
+                    ></lightning-input>
+                    <lightning-button
+                        class="c-cross-object-binding-add slds-shrink-none"
+                        label="Bind filter"
+                        icon-name="utility:add"
+                        disabled={addBindingDisabled}
+                        onclick={handleAddBinding}
+                    ></lightning-button>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

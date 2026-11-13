@@ -7,20 +7,20 @@
 
 ## JS Documentation
 
-### convertValue(operator, value)
-
-Carries a condition's value over to a new operator (list ↔ scalar, null check, relative date).
-
-**Kind**: global function  
-
 ### BoardBaseFilterDialog
 
-Base filters Config dialog: a large `LightningModal` that edits a draft of a data Widget's `baseFilters`
-(master-detail: ordered conditions on the left, the selected condition's field, operator, and value on the right).
-Open it with `openConfigDialog(BoardBaseFilterDialog, { label, description, value: baseFilters, objectApiName })`.
+Base filters Config dialog: a large `LightningModal` that edits a draft of a data Widget's `baseFilters` with the
+shared condition editor (`c-board-condition-editor`): conditions and AND / OR groups of conditions, matched with
+AND or OR at the top level. Open it with
+`openConfigDialog(BoardBaseFilterDialog, { label, description, value: baseFilters, objectApiName })`.
+Widgets with a Setup dialog edit their Base filters in its Data step instead (`c-board-setup-base-filters`).
+
+`baseFilters` stays a list whose entries combine with AND (so existing flat lists load as one AND group); OR at the
+top level is stored as a single OR group entry `{ id, logic: 'OR', conditions }` (`baseFiltersToTree` /
+`baseFiltersFromTree`).
 
 Closes with `{ action: 'save', draft: baseFilters }` or `{ action: 'dismiss' }`. Save stays disabled while any
-draft condition breaks the Base filter validation rules (`baseFilterErrorsByIndex`).
+draft entry breaks the Base filter validation rules (`baseFilterErrorsByIndex`).
 
 **Kind**: global class  
 **Extends**: <code>ConfigDialogMixin</code>  
@@ -34,27 +34,28 @@ The Widget's `baseFilters`, already deep-copied by `openConfigDialog`.
 
 #### objectApiName
 
-Object the field picker starts from.
+Object the field pickers start from.
 
 **Kind**: global property  
 **Decorators**: <code>@api</code>  
 
-#### _customLiteralKeys
+#### tree
 
-Row keys whose relative date is being typed as a custom literal.
+The condition tree being edited: `{ logic, conditions }`.
 
 **Kind**: global property  
-**Default**: <code>[]</code>  
+**Default**: <code>{ logic: 'AND', conditions: [] }</code>  
 
-#### withIds(conditions)
+#### rootGroupId
 
-Gives conditions without an id (or with a duplicate one, e.g. hand-edited JSON) a fresh `bfN` id.
+Id of the stored top-level OR group, kept when it is saved again.
 
-**Kind**: global function  
+**Kind**: global property  
+**Default**: <code>null</code>  
 
-#### errorsByIndex
+#### draftItems
 
-Messages per draft condition, from the shared Base filter validation rules.
+The dialog has no master list: the condition editor edits the whole tree.
 
 **Kind**: instance property (getter)
 

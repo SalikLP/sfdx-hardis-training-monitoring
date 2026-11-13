@@ -1,0 +1,35 @@
+<template>
+    <fieldset class="slds-form-element">
+        <legend class="slds-form-element__legend slds-form-element__label">
+            {label}
+            <template lwc:if={fieldLevelHelp}>
+                <lightning-helptext class="slds-m-left_xx-small" content={fieldLevelHelp}></lightning-helptext>
+            </template>
+        </legend>
+        <div class="c-tiles slds-form-element__control">
+            <template for:each={tiles} for:item="tile">
+                <label key={tile.key} class={tile.className}>
+                    <input
+                        class="c-tile-input slds-assistive-text"
+                        type="radio"
+                        name={name}
+                        value={tile.value}
+                        checked={tile.checked}
+                        disabled={tile.disabled}
+                        onchange={handleChange}
+                    />
+                    <span class="c-tile-body">
+                        <template lwc:if={tile.hasPicture}>
+                            <svg class="c-tile-picture" viewBox="0 0 48 32" aria-hidden="true" focusable="false">
+                                <template for:each={tile.paths} for:item="path">
+                                    <path key={path.key} class={path.className} d={path.d}></path>
+                                </template>
+                            </svg>
+                        </template>
+                        <span class="c-tile-label">{tile.label}</span>
+                    </span>
+                </label>
+            </template>
+        </div>
+    </fieldset>
+</template>

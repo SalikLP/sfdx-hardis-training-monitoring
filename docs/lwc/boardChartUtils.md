@@ -17,11 +17,33 @@ media query listeners, the SLDS Color-Safe categorical palette, and an inline ba
 
 ### SLDS_COLOR_SAFE_PALETTE
 
-6-color categorical palette: SLDS 2 mid-scale palette hooks `blue/teal/orange/pink/indigo/hot-orange-50`, constant in
-light and dark mode (≥3:1 on both surfaces). Same values as the `--board-chart-palette-1..6` CSS fallbacks.
+12-color categorical palette, constant in light and dark mode (each ≥3:1 on a white and a #181818 surface). The
+first 6 are the SLDS 2 mid-scale palette hooks `blue/teal/orange/pink/indigo/hot-orange-50` and match the
+`--board-chart-palette-1..6` CSS fallbacks; 7..12 can be overridden with `--board-chart-palette-7..12`.
 
 **Kind**: global constant  
-**Default**: <code>['#0176d3', '#0b827c', '#a96404', '#e3066a', '#5867e8', '#d83a00']</code>  
+**Default**: <code>[...]</code>  
+
+### OTHER_COLOR
+
+Neutral greys for the "Other" roll-up and the "(Blank)" value; never taken from the palette.
+
+**Kind**: global constant  
+**Default**: <code>'#747474'</code>  
+
+### assignColors(items, theme)
+
+Colour for each item (series or category) in order: "Other" and "(Blank)" items get their grey, every other item
+takes the next palette colour (wrapping), so the greys never use up a palette colour.
+
+**Kind**: global function  
+
+### seriesItemColors(model, theme)
+
+Colour of each series of a model: series field values honour their fixed colours (the palette skips colours they
+take, see `c/boardChartColours`); Measures take palette colours by position, a Measure's own colour applied on top.
+
+**Kind**: global function  
 
 ### loadChartJs(component)
 
@@ -70,11 +92,256 @@ In-place update animation: `300ms easeOutQuart`, or `0ms` when `prefers-reduced-
 
 **Kind**: global function  
 
+### labelFitsOnBar(chart, element, horizontal)
+
+A bar's data label is skipped when the bar is outside the plot (scrolled away) or too thin to hold it.
+
+**Kind**: global function  
+
 ### createBarDataLabelsPlugin(formatValue)
 
 Inline Chart.js plugin drawing formatted values at the end of each bar (or each stack total when
-`options.stacked`). Enabled via `options.plugins.boardBarDataLabels.display`; `formatValue` stays in the closure
-because Chart.js resolves plugin option functions as scriptable values.
+`options.stacked`). Enabled via `options.plugins.boardBarDataLabels.display`; `formatValue(value, measureIndex)`
+stays in the closure because Chart.js resolves plugin option functions as scriptable values. Each label uses the
+format of its dataset's Measure (`boardMeasureIndex`); a stack total uses the stack's.
+
+**Kind**: global function  
+
+### computeScrollLayout({ categoryCount, seriesCount, stacked, viewportPx })
+
+Scroll sizing for a bar chart: every category slot is a fixed `BAR_THICKNESS_PX` per bar (grouped bars side by
+side, stacked bars as one) plus a gap. `viewportPx` is the plot's extent along the category axis (0 = unknown,
+never scrolls). `contentPx` is what the scroll container must span.
+
+**Kind**: global function  
+
+### visibleCategoryWindow(layout, scrollOffset)
+
+The first/last category index (inclusive) shown for a scroll offset along the category axis.
+
+**Kind**: global function  
+
+### truncateLabel(label)
+
+Category tick label shortened with an ellipsis; the tooltip keeps the full label.
+
+**Kind**: global function  
+
+### dataLabelFits(thicknessPx)
+
+False when a bar is too thin (px across the category axis) to hold its data label.
+
+**Kind**: global function  
+
+### CHART_TYPES
+
+Chart types of the Chart widget, in picker order. Each descriptor says which type-specific Widget config settings
+apply (the Config editor shows only these; the others are kept for a switch back), the max categories the Admin
+may ask for, whether the plot scrolls along the category axis (fixed-thickness bars) or compresses and skips labels
+(lines), and the pure Chart.js config builder. A new chart type is one more entry here.
+
+**Kind**: global constant  
+**Default**: <code>[...]</code>  
+
+### CHART_TYPE_OPTIONS
+
+`{ label, value }` options of the chart type picker.
+
+**Kind**: global constant  
+**Default**: <code>CHART_TYPES.map(({ label, value }) =&gt; ({ label, value }))</code>  
+
+### chartTypeDescriptor(chartType)
+
+The chart type's descriptor; an unknown or missing type is `bar`.
+
+**Kind**: global function  
+
+### isChartType(chartType)
+
+Whether `chartType` is one the Chart widget can draw.
+
+**Kind**: global function  
+
+### chartTypeHasSetting(chartType, setting)
+
+Whether a type-specific setting (e.g. `orientation`, `showPoints`) applies to `chartType` (missing means bar).
+
+**Kind**: global function  
+
+### maxCategoriesFor(chartType)
+
+The largest max categories `chartType` accepts (the smallest is always 3).
+
+**Kind**: global function  
+
+### chartTypeScrolls(chartType)
+
+Whether `chartType` scrolls along the category axis when its categories don't fit (bars), instead of compressing.
+
+**Kind**: global function  
+
+### chartTypeIsSingleMeasure(chartType)
+
+Whether `chartType` draws exactly one Measure and no series field (pie, donut, polarArea).
+
+**Kind**: global function  
+
+### normalizeMeasureDisplay(measure, chartType)
+
+A Measure's `render` (bar | line | referenceLine) and value `axis` (primary | secondary) in a chart type that draws combo charts
+(bar, line). Unset, a Measure is drawn as the chart type draws it, on the primary axis. Other chart types ignore
+both (the config keeps them for a switch back): `render` is null and `axis` primary.
+
+**Kind**: global function  
+
+### MEASURE_RENDER_OPTIONS
+
+`{ label, value }` options of a Measure's `render` and `axis` in the Config editor.
+
+**Kind**: global constant  
+**Default**: <code>[...]</code>  
+
+### buildChartConfig(chartType, model, options)
+
+Chart.js v4 config for a chart model, dispatched on the Widget config's `chartType`. Pure: no canvas, so it is
+unit tested directly.
+
+**Kind**: global function  
+
+### legendOptions(settings, multiSeries, theme, font)
+
+Legend shown on `auto` only for several series; `bottom` or else `top`.
+
+**Kind**: global function  
+
+### tooltipOptions(theme, font, multiSeries, formatValue)
+
+Tooltip shared by every chart type: `Category — Series: formatted value` in that series' Measure format.
+
+**Kind**: global function  
+
+### withAlpha(color, alpha)
+
+`#rrggbb` at `alpha` opacity (`#rrggbbaa`); any other colour syntax is returned unchanged.
+
+**Kind**: global function  
+
+### valueAxisBinding(series, horizontal)
+
+Dataset property binding a series to its value axis: `y` (`x` for horizontal bars), or the secondary `y1`/`x1`.
+
+**Kind**: global function  
+
+### firstMeasureOnAxis(model, axis)
+
+The Measure whose format an axis' ticks use: the first one drawn on it (`primary` or `secondary`), else -1.
+
+**Kind**: global function  
+
+### primaryTickFormatter(model, formatTick)
+
+Primary value axis tick formatter: the format of its first Measure (the first Measure when none is on it).
+
+**Kind**: global function  
+
+### valueScales(model, primaryAxis, horizontal, formatTick)
+
+Value scales keyed by axis id: the primary axis, plus the secondary axis only when a Measure uses it. The
+secondary axis sits opposite the primary, draws no grid lines across the plot, and its ticks use the format of the
+first Measure on it.
+
+**Kind**: global function  
+
+### lineDatasetStyle(color, pointRadius)
+
+Dataset style of a series drawn as a line: straight segments, no fill, points of `pointRadius`.
+
+**Kind**: global function  
+
+### barDatasetStyle(color)
+
+Dataset style of a series drawn as bars.
+
+**Kind**: global function  
+
+### buildLineConfig(model, { settings, theme, animation, formatValue, formatTick, dataLabelsPlugin }, area)
+
+Chart.js v4 `line` config for a line or area chart: one line per series value or per Measure, straight segments (no
+smoothing), points shown unless `showPoints` is off. An area chart fills each line to the axis, and stacks the
+areas when a series field splits its one Measure. The category axis never scrolls: it compresses and skips labels.
+
+**Kind**: global function  
+
+### buildBarConfig(model, { settings, theme, animation, formatValue, formatTick, dataLabelsPlugin, scroll, scrollWindow })
+
+Chart.js v4 `bar` config for a model. Datasets carry `boardKey` so in-place updates keep each series' dataset (and
+its bar elements) alive for morph animations, and `boardMeasureIndex` so tooltips and data labels format each value
+with its Measure's format (`formatValue(value, measureIndex)`). A Measure's own `color` wins over the palette.
+
+**Kind**: global function  
+
+### sliceLabelText(value, total, mode, formatValue)
+
+A pie/donut/polarArea slice label: the formatted value, its share of `total`, both, or nothing.
+
+**Kind**: global function  
+
+### visibleSlices(chart)
+
+The visible slices of a pie-like chart's first dataset as `{ value, element }`, and their sum.
+
+**Kind**: global function  
+
+### createSliceLabelsPlugin(formatValue)
+
+Inline plugin writing each slice's label at the middle of its arc, in white on the slice. Slices too thin to hold a
+label are skipped. `options.mode` is value | percent | both | none.
+
+**Kind**: global function  
+
+### createCentreTotalPlugin(formatValue)
+
+Inline plugin writing the sum of the visible slices in the hole of a donut (`options.display`).
+
+**Kind**: global function  
+
+### buildSliceConfig(model, { settings, theme, animation, formatValue }, type)
+
+Chart.js v4 `pie` / `doughnut` / `polarArea` config: one dataset (the single Measure) with one coloured slice per
+category, labelled by `settings.labelMode`; a donut may show its total in the hole.
+
+**Kind**: global function  
+
+### buildRadarConfig(model, { settings, theme, animation, formatValue, formatTick })
+
+Chart.js v4 `radar` config: categories are the spokes, each series value or Measure is a polygon (translucent fill,
+outline in its palette colour or fixed colour). Points shown unless `showPoints` is off.
+
+**Kind**: global function  
+
+### WATERFALL_DEFAULT_COLORS
+
+Default waterfall colours: increase green, decrease red, Total neutral; each can be overridden per Widget.
+
+**Kind**: global constant  
+**Default**: <code>{ increase: '#2e844a', decrease: '#ba0517', total: '#747474' }</code>  
+
+### buildWaterfallSteps(values, showTotal)
+
+Floating steps of a waterfall: each value moves the running total from `start` to `end` (`increase` or `decrease`);
+`showTotal` appends a `total` step from zero to the final running total. Missing values count as zero.
+
+**Kind**: global function  
+
+### buildWaterfallConfig(model, { settings, theme, animation, formatValue, formatTick, dataLabelsPlugin })
+
+Chart.js v4 `bar` config of floating `[start, end]` bars, coloured increase / decrease / total.
+
+**Kind**: global function  
+
+### applyChartConfig(chart, config)
+
+Mutates a live chart to a new config in place (labels, matching datasets, options) without recreating it.
 
 **Kind**: global function
 

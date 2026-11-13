@@ -15,6 +15,9 @@ public with sharing class BoardSchemaService {
     /** Max distinct object types `resolveRecordLabels` queries (one SOQL each). */
     @TestVisible
     private static final Integer MAX_LABEL_OBJECT_TYPES = 20;
+    /** Max picked users `findUsersWithoutRole` checks per call. */
+    @TestVisible
+    private static final Integer MAX_TEAM_NOTICE_USERS = 200;
     private static final String ENTITY_TYPE_USER = 'User';
     private static final String ENTITY_TYPE_QUEUE = 'Queue';
     private static final Set<Schema.DisplayType> PICKLIST_TYPES = new Set<Schema.DisplayType>{
@@ -239,6 +242,49 @@ public with sharing class BoardSchemaService {
             }
             options.sort();
             return options;
+        } catch (Exception failure) {
+            throw BoardErrors.toAuraException(failure);
+        }
+    }
+
+    /**
+     * The picked users of a User filter in Team match mode (`usersAndTeam`) who have no role, so their Team is only
+     * themselves; the Filter widget names each in an inline notice. Returns those Ids exactly as supplied, in input
+     * order; users with a role, queues, malformed Ids, and users the viewer can't see are left out. At most
+     * `MAX_TEAM_NOTICE_USERS` Ids per call. Roles are read by `BoardTeamResolver` in system mode and never returned.
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<String> findUsersWithoutRole(List<String> userIds, Integer refreshToken) {
+        try {
+            List<String> withoutRole = new List<String>();
+            if (userIds == null || userIds.isEmpty()) {
+                return withoutRole;
+            }
+            if (userIds.size() > MAX_TEAM_NOTICE_USERS) {
+                throw BoardErrors.error(
+                    BoardErrors.CONFIG_ERROR,
+                    'Too many users picked: at most ' + MAX_TEAM_NOTICE_USERS + '.',
+                    null,
+                    null
+                );
+            }
+            Set<Id> pickedUserIds = new Set<Id>();
+            for (String rawId : userIds) {
+                Id userId = BoardDescribe.toId(rawId);
+                if (userId != null && userId.getSObjectType() == User.SObjectType) {
+                    pickedUserIds.add(userId);
+                }
+            }
+            Set<Id> roleless = BoardTeamResolver.usersWithoutRole(pickedUserIds);
+            // Only users the viewer can see: the notice must not reveal that hidden users exist.
+            roleless = new Map<Id, User>([SELECT Id FROM User WHERE Id IN :roleless WITH USER_MODE]).keySet();
+            for (String rawId : userIds) {
+                Id userId = BoardDescribe.toId(rawId);
+                if (userId != null && roleless.contains(userId)) {
+                    withoutRole.add(rawId);
+                }
+            }
+            return withoutRole;
         } catch (Exception failure) {
             throw BoardErrors.toAuraException(failure);
         }

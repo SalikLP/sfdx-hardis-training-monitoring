@@ -49,6 +49,10 @@
                 <field>Type</field>
             </layoutItems>
             <layoutItems>
+                <behavior>Required</behavior>
+                <field>CurrencyIsoCode</field>
+            </layoutItems>
+            <layoutItems>
                 <behavior>Edit</behavior>
                 <field>PaymentMethodId</field>
             </layoutItems>

@@ -24,6 +24,7 @@
     <columns>
         <field>FlowOrchestrationInstance$Id</field>
     </columns>
+    <currency>USD</currency>
     <description>What orchestration runs have been created and what&apos;s the current status of each run?</description>
     <format>Tabular</format>
     <name>Sample Report: Orchestration Runs</name>

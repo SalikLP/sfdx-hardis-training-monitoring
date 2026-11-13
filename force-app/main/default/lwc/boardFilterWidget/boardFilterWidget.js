@@ -2,11 +2,20 @@ import { LightningElement, api, wire } from 'lwc';
 import { FlowAttributeChangeEvent } from 'lightning/flowSupport';
 import { RefreshEvent, registerRefreshHandler, unregisterRefreshHandler } from 'lightning/refresh';
 import { getRecord, getFieldValue, notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
+import LOCALE from '@salesforce/i18n/locale';
 import USER_ID from '@salesforce/user/Id';
 import FORM_FACTOR from '@salesforce/client/formFactor';
+import LABEL_ALL from '@salesforce/label/c.BoardEmptyFilledAll';
+import LABEL_EMPTY from '@salesforce/label/c.BoardEmptyFilledEmpty';
+import LABEL_FILLED from '@salesforce/label/c.BoardEmptyFilledFilled';
 import getPicklistOptions from '@salesforce/apex/BoardSchemaService.getPicklistOptions';
 import resolveRecordLabels from '@salesforce/apex/BoardSchemaService.resolveRecordLabels';
 import searchUsersAndQueues from '@salesforce/apex/BoardSchemaService.searchUsersAndQueues';
+import findUsersWithoutRole from '@salesforce/apex/BoardSchemaService.findUsersWithoutRole';
+import getCurrencyOptions from '@salesforce/apex/BoardCurrencyConverter.getCurrencyOptions';
+import TEAM_NO_ROLE_NOTICE from '@salesforce/label/c.BoardTeamNoRoleNotice';
+import TEAM_MINE from '@salesforce/label/c.BoardTeamMine';
+import TEAM_OF_USER from '@salesforce/label/c.BoardTeamOfUser';
 import {
     parseAndMergeConfig,
     normalizeBoardError,
@@ -16,6 +25,10 @@ import {
 } from 'c/boardConfigUtils';
 import {
     registerFilterWidget,
+    getDisplayCurrency,
+    setConfigCurrency,
+    setDisplayCurrency,
+    setBoardBucketFields,
     publishFilterContext,
     subscribeFilterContext,
     acceptExternalFilterContext,
@@ -26,19 +39,30 @@ import {
     writeStoredFilterState,
     clearStoredFilterState,
     normalizeFilterDefinitions,
+    normalizeFilterLayout,
     sanitizeStoredFilters,
     resolveInitialFilters,
     buildFilterValue,
     buildFilterEntry,
     clearedFilterValue,
     dateRangeOperator,
+    cleanNumberBound,
     toStoredFilterEntry
 } from 'c/boardContextStore';
 
 const SELECTION_DEBOUNCE_MS = 150;
 const USER_SEARCH_DEBOUNCE_MS = 300;
 const TEXT_SEARCH_DEBOUNCE_MS = 300;
+const NUMBER_INPUT_DEBOUNCE_MS = 300;
 const PICKLIST_SEARCH_THRESHOLD = 7;
+/** Buttons display falls back to the dropdown above this many values. */
+const PICKLIST_BUTTONS_CAP = 5;
+const EMPTY_FILLED_ALL = 'ALL';
+
+/** Picklist and Bucket filters share the picklist controls (a Bucket filter's options are its bucket labels). */
+function isPicklistStyle(def) {
+    return def.type === 'PICKLIST' || def.type === 'BUCKET';
+}
 const NARROW_CONTAINER_PX = 768;
 const PERSISTENCE_MODES = ['SESSION', 'LOCAL', 'NONE'];
 const RECORD_CONTEXT_MODES = ['IMPLICIT', 'LOCKED', 'DEFAULT'];
@@ -96,12 +120,22 @@ export default class BoardFilterWidget extends LightningElement {
     _initEpoch = 0;
 
     _defs = [];
+    /** Bar Filter sections (`normalizeFilterLayout`); Section items live only here, never in `_defs` or the Filter context. */
+    _layout = [];
+    /** Section key -> user-toggled expanded state; never persisted, so a reload restores the configured state. */
+    _sectionExpanded = {};
+    /** Whether the org has more than one currency (null until known); a single-currency org shows no Currency picker. */
+    _multiCurrency = null;
+    _currencyRequested = false;
     _persistence = 'SESSION';
     _storageKey = null;
     _storedFilters = {};
     _labelCache = {};
     _unresolvedLabelIds = {};
     _labelRequests = new Set();
+    /** Picked user Id -> true when the user has no role, false when they have one (Team match mode only). */
+    _userHasNoRole = {};
+    _roleRequests = new Set();
     _picklistOptions = {};
     _picklistErrors = {};
     _drafts = {};
@@ -271,7 +305,17 @@ export default class BoardFilterWidget extends LightningElement {
         const cfg = parsedConfig.config;
         const definitionErrors = [];
 
-        this._defs = normalizeFilterDefinitions(cfg?.filters, definitionErrors);
+        this._defs = normalizeFilterDefinitions(
+            cfg?.filters,
+            definitionErrors,
+            Array.isArray(cfg?.bucketFields) ? cfg.bucketFields : []
+        );
+        this._layout = normalizeFilterLayout(
+            cfg?.filters,
+            this._defs.map((def) => def.filterId)
+        );
+        this.loadCurrencyAvailability();
+        this._sectionExpanded = {};
         this._persistence = PERSISTENCE_MODES.includes(cfg?.persistence) ? cfg.persistence : 'SESSION';
         this._dateCustomMode = {};
         this._openPicklistId = null;
@@ -297,6 +341,13 @@ export default class BoardFilterWidget extends LightningElement {
             overrideApplies: false
         };
         recordContext.overrideApplies = Boolean(recordContextOverrideDefinition(this._defs, recordContext));
+
+        // The Board's Config currency (Admin amounts), published before Widgets can query under this Filter widget.
+        setConfigCurrency(effectiveBoardId, cfg?.configCurrency);
+        // The Display currency is never persisted: each load starts from the viewer's currency.
+        setDisplayCurrency(effectiveBoardId, null);
+        // The Board-level Bucket fields every Widget on the Board can use by id, published the same way.
+        setBoardBucketFields(effectiveBoardId, cfg?.bucketFields);
 
         // 1. Synchronously set the INITIALIZING barrier
         const initializingCtx = registerFilterWidget(
@@ -537,9 +588,9 @@ export default class BoardFilterWidget extends LightningElement {
         const options = {};
         this._picklistErrors = {};
         this._defs
-            .filter((def) => def.type === 'PICKLIST')
+            .filter((def) => isPicklistStyle(def))
             .forEach((def) => {
-                if (def.optionsSource === 'CUSTOM') {
+                if (def.optionsSource === 'CUSTOM' || def.type === 'BUCKET') {
                     options[def.filterId] = def.options;
                     return;
                 }
@@ -624,6 +675,7 @@ export default class BoardFilterWidget extends LightningElement {
     }
 
     resolveMissingLabels() {
+        this.resolveUsersWithoutRole();
         const ids = new Set();
         this._defs.forEach((def) => {
             if (def.type === 'LOOKUP' || def.type === 'USER') {
@@ -657,6 +709,33 @@ export default class BoardFilterWidget extends LightningElement {
             this.refreshStoredLabels();
         };
         resolveRecordLabels({ recordIds: missing, refreshToken: this.currentRefreshToken })
+            .then(settle)
+            .catch(() => settle(null));
+    }
+
+    /** Asks Apex which users picked on Team match mode filters have no role (their Team is only themselves). */
+    resolveUsersWithoutRole() {
+        const ids = new Set();
+        this._defs.forEach((def) => {
+            if (def.type === 'USER' && def.matchMode === 'usersAndTeam') {
+                this.currentValue(def).values.forEach((id) => ids.add(id));
+            }
+        });
+        const missing = [...ids].filter((id) => !(id in this._userHasNoRole) && !this._roleRequests.has(id));
+        if (!missing.length) {
+            return;
+        }
+        missing.forEach((id) => this._roleRequests.add(id));
+        const settle = (withoutRole) => {
+            const roleless = new Set(withoutRole || []);
+            const next = { ...this._userHasNoRole };
+            missing.forEach((id) => {
+                this._roleRequests.delete(id);
+                next[id] = roleless.has(id);
+            });
+            this._userHasNoRole = next;
+        };
+        findUsersWithoutRole({ userIds: missing, refreshToken: this.currentRefreshToken })
             .then(settle)
             .catch(() => settle(null));
     }
@@ -819,7 +898,34 @@ export default class BoardFilterWidget extends LightningElement {
 
     /** Non-error setup hint for a Filter widget without (valid) filter definitions (spec story 10). */
     get showSetupPlaceholder() {
-        return !this._scopeError && this._defs.length === 0;
+        return !this._scopeError && this._defs.length === 0 && !this.hasCurrencyPicker;
+    }
+
+    /** Whether the Admin placed a Currency picker item in the bar. */
+    get hasCurrencyPickerItem() {
+        return this._layout.some((section) => section.items.some((item) => item.currencyPicker));
+    }
+
+    /** Whether the bar shows a Currency picker: placed by the Admin, and not known to be a single-currency org. */
+    get hasCurrencyPicker() {
+        return this.hasCurrencyPickerItem && this._multiCurrency !== false;
+    }
+
+    /** Asks once whether the org has several currencies, when the bar has a Currency picker item. */
+    loadCurrencyAvailability() {
+        if (this._currencyRequested || !this.hasCurrencyPickerItem) {
+            return;
+        }
+        this._currencyRequested = true;
+        Promise.resolve(getCurrencyOptions())
+            .then((options) => {
+                if (options) {
+                    this._multiCurrency = options.multiCurrency === true;
+                }
+            })
+            .catch(() => {
+                // Unknown: the picker renders nothing by itself in a single-currency org.
+            });
     }
 
     get lastUpdatedValue() {
@@ -858,6 +964,60 @@ export default class BoardFilterWidget extends LightningElement {
         return this._drawerExpanded ? 'utility:chevronup' : 'utility:chevrondown';
     }
 
+    /** Bar Filter sections with their filter views; a collapsed Section shows its heading and active-filter count only. */
+    get filterSections() {
+        const viewsById = new Map(this.filterViews.map((view) => [view.filterId, view]));
+        const entries = this.filterContext?.filters || {};
+        const hidePicker = !this.hasCurrencyPicker;
+        // A single-currency org has no Currency picker: no empty slot, and no Section left holding only it.
+        const layout = this._layout
+            .map((section) => {
+                if (!hidePicker || !section.items.some((item) => item.currencyPicker)) {
+                    return section;
+                }
+                const items = section.items.filter((item) => !item.currencyPicker);
+                return items.length ? { ...section, items } : null;
+            })
+            .filter(Boolean);
+        return layout.map((section) => {
+            // The Currency picker sits in its own slot but is not a filter (never counted as active).
+            const views = section.items.map((item) => {
+                if (item.currencyPicker) {
+                    return {
+                        key: 'currency-picker',
+                        item: 'currencyPicker',
+                        isCurrencyPicker: true,
+                        ...item.currencyPicker
+                    };
+                }
+                return viewsById.get(item.filterId);
+            });
+            const collapsible = section.startCollapsed;
+            const expanded = !collapsible || this._sectionExpanded[section.key] === true;
+            const activeCount = section.filterIds.filter((filterId) => entries[filterId]?.active).length;
+            return {
+                key: section.key,
+                label: section.label,
+                hasHeading: Boolean(section.label),
+                collapsible,
+                expanded,
+                ariaExpanded: String(expanded),
+                iconName: expanded ? 'utility:chevrondown' : 'utility:chevronright',
+                activeCount,
+                countLabel: `${activeCount} active`,
+                views: expanded ? views : [],
+                sectionClass: this.isCompact
+                    ? 'slds-col slds-size_1-of-1 c-board-filter-section'
+                    : 'slds-col c-board-filter-section'
+            };
+        });
+    }
+
+    handleSectionToggle(event) {
+        const key = event.currentTarget.dataset.sectionKey;
+        this._sectionExpanded = { ...this._sectionExpanded, [key]: this._sectionExpanded[key] !== true };
+    }
+
     get filterViews() {
         return this._defs.map((def) => {
             const value = this.currentValue(def);
@@ -867,15 +1027,22 @@ export default class BoardFilterWidget extends LightningElement {
                 label: def.label,
                 type: def.type,
                 locked: this.isLocked(def.filterId),
-                isPicklistSingle: def.type === 'PICKLIST' && def.selectionMode === 'single',
-                isPicklistMulti: def.type === 'PICKLIST' && def.selectionMode === 'multi',
+                isPicklistButtons: false,
+                isPicklistSingle: isPicklistStyle(def) && def.selectionMode === 'single',
+                isPicklistMulti: isPicklistStyle(def) && def.selectionMode === 'multi',
                 isLookup: def.type === 'LOOKUP',
                 isUser: def.type === 'USER',
                 isDateRange: def.type === 'DATE_RANGE',
-                isText: def.type === 'TEXT'
+                isNumberRange: def.type === 'NUMBER_RANGE',
+                isText: def.type === 'TEXT',
+                isEmptyFilled: def.type === 'EMPTY_FILLED'
             };
-            if (def.type === 'PICKLIST') {
+            if (isPicklistStyle(def)) {
                 Object.assign(view, this.buildPicklistView(def, value));
+                if (view.isPicklistSingle && this.showsAsButtons(def)) {
+                    view.isPicklistButtons = true;
+                    view.isPicklistSingle = false;
+                }
             } else if (def.type === 'LOOKUP') {
                 Object.assign(view, {
                     hasTargetObject: Boolean(def.targetObjectApiName),
@@ -887,11 +1054,26 @@ export default class BoardFilterWidget extends LightningElement {
                 Object.assign(view, this.buildUserView(def, value));
             } else if (def.type === 'DATE_RANGE') {
                 Object.assign(view, this.buildDateRangeView(def, value));
+            } else if (def.type === 'NUMBER_RANGE') {
+                Object.assign(view, this.buildNumberRangeView(def, value));
             } else if (def.type === 'TEXT') {
                 Object.assign(view, this.buildTextView(def, value));
+            } else if (def.type === 'EMPTY_FILLED') {
+                Object.assign(view, this.buildEmptyFilledView(value));
             }
             return view;
         });
+    }
+
+    buildEmptyFilledView(value) {
+        return {
+            emptyFilledOptions: [
+                { label: LABEL_ALL, value: EMPTY_FILLED_ALL },
+                { label: LABEL_EMPTY, value: 'EMPTY' },
+                { label: LABEL_FILLED, value: 'FILLED' }
+            ],
+            emptyFilledValue: value.active ? value.operator : EMPTY_FILLED_ALL
+        };
     }
 
     buildTextView(def, value) {
@@ -906,6 +1088,12 @@ export default class BoardFilterWidget extends LightningElement {
                     ? `Type at least ${def.minCharacters} character${def.minCharacters === 1 ? '' : 's'}`
                     : null
         };
+    }
+
+    /** Buttons display, unless the picklist has more values than the cap (then the dropdown). */
+    showsAsButtons(def) {
+        const count = (this._picklistOptions[def.filterId] || []).length;
+        return def.display === 'buttons' && count > 0 && count <= PICKLIST_BUTTONS_CAP;
     }
 
     buildPicklistView(def, value) {
@@ -957,7 +1145,7 @@ export default class BoardFilterWidget extends LightningElement {
         return {
             meActive,
             meAriaPressed: String(meActive),
-            meAriaLabel: `${def.label}: Me`,
+            meAriaLabel: `${def.label}: ${def.matchMode === 'usersAndTeam' ? TEAM_MINE : 'Me'}`,
             meButtonClass: `slds-button c-board-me-chip ${meActive ? 'slds-button_brand' : 'slds-button_neutral'}`,
             searchLabel,
             searchPlaceholder: def.placeholder || `${searchLabel}…`,
@@ -969,8 +1157,35 @@ export default class BoardFilterWidget extends LightningElement {
             userResults: search.results.map((result) => ({
                 ...result,
                 iconName: result.entityType === 'Queue' ? 'standard:queue' : 'standard:user'
-            }))
+            })),
+            teamNotices: this.teamNoticesFor(def, value)
         };
+    }
+
+    /** "<name> has no role; showing only their records." per picked user without a role (never names a role). */
+    teamNoticesFor(def, value) {
+        if (def.matchMode !== 'usersAndTeam' || !value.active) {
+            return [];
+        }
+        return value.values
+            .filter((id) => this._userHasNoRole[id] && this._labelCache[id])
+            .map((id) => ({ key: id, text: TEAM_NO_ROLE_NOTICE.replace('{0}', this._labelCache[id]) }));
+    }
+
+    /** Min / max inputs; a currency field names the Display currency its bounds are read in. */
+    buildNumberRangeView(def, value) {
+        const currencyHint = def.currencyField ? this.displayCurrency : null;
+        return {
+            minValue: value.from || '',
+            maxValue: value.to || '',
+            currencyHint,
+            numberHint: currencyHint ? `Amounts in ${currencyHint}` : null
+        };
+    }
+
+    /** The Board's Display currency, which currency Number range bounds are typed in. */
+    get displayCurrency() {
+        return getDisplayCurrency(this.effectiveBoardId);
     }
 
     buildDateRangeView(def, value) {
@@ -1014,21 +1229,47 @@ export default class BoardFilterWidget extends LightningElement {
                     label: `${def.label}: ${text}`,
                     removeLabel: `Remove ${def.label}: ${text}`
                 });
-            if (def.type === 'PICKLIST') {
+            if (isPicklistStyle(def)) {
                 values.forEach((value) => push(value, this.optionLabelFor(def, value)));
             } else if (def.type === 'LOOKUP') {
                 values.forEach((value) => push(value, this.labelFor(value)));
             } else if (def.type === 'USER') {
-                values.forEach((value) =>
-                    push(value, value === USER_ID && entry.token === 'ME' ? 'Me' : this.labelFor(value))
-                );
+                values.forEach((value) => push(value, this.userLabelFor(def, entry, value)));
             } else if (def.type === 'DATE_RANGE') {
                 push('', this.describeDateRange(entry));
+            } else if (def.type === 'NUMBER_RANGE') {
+                push('', this.describeNumberRange(def, entry));
             } else if (def.type === 'TEXT') {
                 push('', `"${entry.text}"`);
+            } else if (def.type === 'EMPTY_FILLED') {
+                push('', entry.operator === 'EMPTY' ? LABEL_EMPTY : LABEL_FILLED);
             }
         });
         return pills;
+    }
+
+    /** A picked user's pill text: their name, or "<name>'s team" in Team match mode (never a role). */
+    userLabelFor(def, entry, value) {
+        const isMe = value === USER_ID && entry.token === 'ME';
+        if (def.matchMode === 'usersAndTeam') {
+            return isMe ? TEAM_MINE : TEAM_OF_USER.replace('{0}', this.labelFor(value));
+        }
+        return isMe ? 'Me' : this.labelFor(value);
+    }
+
+    /** Pill text of a Number range: `5,000 – 10,000`, `≥ 5,000` or `≤ 10,000`, plus the Display currency code. */
+    describeNumberRange(def, entry) {
+        const format = (bound) => {
+            const number = Number(bound);
+            return Number.isFinite(number) ? new Intl.NumberFormat(LOCALE).format(number) : bound;
+        };
+        let text = `${format(entry.from)} – ${format(entry.to)}`;
+        if (entry.operator === 'GTE') {
+            text = `≥ ${format(entry.from)}`;
+        } else if (entry.operator === 'LTE') {
+            text = `≤ ${format(entry.to)}`;
+        }
+        return def.currencyField ? `${text} ${this.displayCurrency}` : text;
     }
 
     describeDateRange(entry) {
@@ -1091,6 +1332,12 @@ export default class BoardFilterWidget extends LightningElement {
         const filterId = event.currentTarget.dataset.filterId;
         const value = eventValue(event);
         this.applyFilterValueNow(filterId, { values: value ? [value] : [] });
+    }
+
+    handleEmptyFilledChange(event) {
+        const filterId = event.currentTarget.dataset.filterId;
+        const value = eventValue(event);
+        this.applyFilterValueNow(filterId, value === EMPTY_FILLED_ALL ? {} : { operator: value });
     }
 
     handlePicklistToggle(event) {
@@ -1310,10 +1557,27 @@ export default class BoardFilterWidget extends LightningElement {
         this.scheduleFilterValue(filterId, { operator: dateRangeOperator(next.from, next.to), ...next });
     }
 
+    /** Typing a min or max: `GTE` / `LTE` with one bound, `BETWEEN` with both; debounced like a search. */
+    handleNumberInputChange(event) {
+        const { filterId, bound } = event.currentTarget.dataset;
+        const def = this.defFor(filterId);
+        if (!def) {
+            return;
+        }
+        const current = this.currentValue(def);
+        const next = { from: current.from, to: current.to };
+        next[bound] = cleanNumberBound(eventValue(event));
+        this.scheduleFilterValue(filterId, next, NUMBER_INPUT_DEBOUNCE_MS);
+    }
+
     handlePillRemove(event) {
         const { filterId, value } = event.currentTarget.dataset;
         const def = this.defFor(filterId);
         if (!def) {
+            return;
+        }
+        if (def.type === 'NUMBER_RANGE') {
+            this.applyFilterValueNow(filterId, {});
             return;
         }
         if (def.type === 'DATE_RANGE') {
