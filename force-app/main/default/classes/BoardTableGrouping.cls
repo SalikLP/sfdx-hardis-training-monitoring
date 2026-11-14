@@ -1,6 +1,6 @@
 /**
- * Row grouping of a Table with Detail rows on: up to two group fields (lookup, picklist, text or date; direct or a
- * 1-5 hop parent path).
+ * Row grouping of a Table with Detail rows on: up to two group fields (`BoardTableGroupLevel`: lookup, picklist, text
+ * or date; direct or a 1-5 hop parent path).
  *
  * Records stream through the Table's pagination cursor ordered by the group fields (blanks last) and then the
  * within-group sort, so each group's records are contiguous. Every page also runs one `GROUP BY` over both group
@@ -11,40 +11,13 @@
  * value, or by a field constant per group reached through a lookup group field (`orderBy`, e.g. `Opportunity.Amount`).
  */
 public with sharing class BoardTableGrouping {
-    /** Non-date field types a Table can group by (Detail rows on). */
-    private static final Set<Schema.DisplayType> GROUP_TYPES = new Set<Schema.DisplayType>{
-        Schema.DisplayType.REFERENCE,
-        Schema.DisplayType.PICKLIST,
-        Schema.DisplayType.COMBOBOX,
-        Schema.DisplayType.STRING,
-        Schema.DisplayType.EMAIL,
-        Schema.DisplayType.PHONE,
-        Schema.DisplayType.URL
-    };
-    private static final Set<Schema.DisplayType> DATE_TYPES = new Set<Schema.DisplayType>{
-        Schema.DisplayType.DATE,
-        Schema.DisplayType.DATETIME
-    };
-    /** Date granularities shared with the Chart widget. */
-    private static final Set<String> DATE_GRANULARITIES = new Set<String>{
-        'DAY',
-        'CALENDAR_MONTH',
-        'CALENDAR_QUARTER',
-        'CALENDAR_YEAR',
-        'FISCAL_QUARTER',
-        'FISCAL_YEAR'
-    };
     private static final Integer MAX_LEVELS = 2;
-    private static final String GROUP_KEYS_BIND = 'tableGroupKeys';
-    private static final String GROUP_FROM_BIND = 'tableGroupFrom';
-    private static final String GROUP_TO_BIND = 'tableGroupTo';
     /** Prefix of the bind names of a Row limit's top-group restriction (kept apart from the page-scoped binds). */
     private static final String TOP_BIND_PREFIX = 'top_';
-    private static Organization fiscalSettings;
 
     /** Resolved first group field returned to the Widget (the second, if any, as its `secondLevel`). */
     public GroupField resolvedField;
-    private List<GroupLevel> levels = new List<GroupLevel>();
+    private List<BoardTableGroupLevel> levels = new List<BoardTableGroupLevel>();
     /** Summarized columns whose Stacked summaries each Group row carries (see `BoardTableGroupSummaries`). */
     public List<BoardTableEngine.SummarySpec> summarySpecs = new List<BoardTableEngine.SummarySpec>();
 
@@ -65,7 +38,7 @@ public with sharing class BoardTableGrouping {
 
     private BoardTableGrouping(Schema.DescribeSObjectResult objectDescribe, List<Object> groupBy) {
         for (Integer index = 0; index < groupBy.size(); index++) {
-            levels.add(new GroupLevel(objectDescribe, BoardQueryService.asMap(groupBy[index]), index + 1));
+            levels.add(new BoardTableGroupLevel(objectDescribe, BoardQueryService.asMap(groupBy[index]), index + 1));
         }
         resolvedField = levels[0].field;
         if (levels.size() > 1) {
@@ -81,31 +54,9 @@ public with sharing class BoardTableGrouping {
         }
     }
 
-    /** `Relationship.NameField` of a lookup's target (e.g. `Opportunity.Name`), or null when unreadable. */
-    private static String nameFieldPath(BoardQueryService.ResolvedField reference) {
-        String relationshipPath = relationshipPath(reference);
-        if (relationshipPath == null) {
-            return null;
-        }
-        Schema.DescribeSObjectResult target = BoardDescribe.describeObject(
-            BoardQueryService.parentType(reference.describe)
-        );
-        if (!BoardDescribe.isReadableObject(target)) {
-            return null;
-        }
-        String nameField = BoardDescribe.readableNameField(target);
-        return nameField == null ? null : relationshipPath + '.' + nameField;
-    }
-
-    /** Relationship path of a lookup (`OpportunityId` -> `Opportunity`, `Account.ParentId` -> `Account.Parent`). */
-    private static String relationshipPath(BoardQueryService.ResolvedField reference) {
-        String relationshipName = reference.describe.getRelationshipName();
-        if (relationshipName == null) {
-            return null;
-        }
-        List<String> segments = reference.path.split('\\.');
-        segments[segments.size() - 1] = relationshipName;
-        return String.join(segments, '.');
+    /** The group fields, first level first (one or two). */
+    public List<BoardTableGroupLevel> groupLevels() {
+        return levels;
     }
 
     /** `selectList` plus each group field and its label path, case-insensitively deduped. */
@@ -115,7 +66,7 @@ public with sharing class BoardTableGrouping {
             selected.add(path.trim().toLowerCase());
         }
         List<String> extra = new List<String>();
-        for (GroupLevel level : levels) {
+        for (BoardTableGroupLevel level : levels) {
             for (String path : new List<String>{ level.field.fieldPath, level.field.labelPath }) {
                 if (path != null && selected.add(path.toLowerCase())) {
                     extra.add(path);
@@ -136,7 +87,7 @@ public with sharing class BoardTableGrouping {
     public String orderClause(String withinSortBy, String withinGroupClause) {
         List<String> parts = new List<String>();
         Set<String> orderedPaths = new Set<String>();
-        for (GroupLevel level : levels) {
+        for (BoardTableGroupLevel level : levels) {
             for (String path : level.orderPaths()) {
                 if (orderedPaths.add(path.toLowerCase())) {
                     parts.add(path + ' ' + level.field.sortDirection + ' NULLS LAST');
@@ -160,11 +111,11 @@ public with sharing class BoardTableGrouping {
         List<Map<String, Object>> values = new List<Map<String, Object>>();
         for (BoardQueryService.TableRow row : rows) {
             values.add(row.values);
-            for (GroupLevel level : levels) {
+            for (BoardTableGroupLevel level : levels) {
                 level.keyRow(row.values);
             }
         }
-        GroupLevel first = levels[0];
+        BoardTableGroupLevel first = levels[0];
         List<BoardTableEngine.TableGroup> firstGroups = BoardTableEngine.groupsInRowOrder(
             values,
             first.field.keyPath,
@@ -192,7 +143,7 @@ public with sharing class BoardTableGrouping {
             if (levels.size() == 1) {
                 continue;
             }
-            GroupLevel second = levels[1];
+            BoardTableGroupLevel second = levels[1];
             Map<String, Integer> subCounts = counts.secondLevel.get(first.countKey(firstGroup.key));
             for (
                 BoardTableEngine.TableGroup subgroup : BoardTableEngine.groupsInRowOrder(
@@ -234,7 +185,7 @@ public with sharing class BoardTableGrouping {
         GroupCounts counts = new GroupCounts(summarySpecs);
         List<List<Boolean>> slices = new List<List<Boolean>>{ new List<Boolean>() };
         for (Integer i = 0; i < levels.size(); i++) {
-            GroupLevel level = levels[i];
+            BoardTableGroupLevel level = levels[i];
             // A first-level blank is only in the restriction when on the page; a second-level blank may be anywhere
             // in the page's first-level groups (also on other pages), and they count toward them.
             Boolean countsBlank = level.isParentPath() && (i > 0 || level.hasBlankRow(values));
@@ -274,7 +225,7 @@ public with sharing class BoardTableGrouping {
         List<String> groupExpressions = new List<String>();
         List<String> predicates = new List<String>{ restriction };
         for (Integer i = 0; i < levels.size(); i++) {
-            GroupLevel level = levels[i];
+            BoardTableGroupLevel level = levels[i];
             if (blanks[i]) {
                 predicates.add(level.blankPredicate());
                 continue;
@@ -321,7 +272,7 @@ public with sharing class BoardTableGrouping {
      * when the scope has no more groups than `groupLimit` (nothing to cut).
      */
     public String topGroupsRestriction(BoardQueryService.QueryScope scope, Integer groupLimit) {
-        GroupLevel first = levels[0];
+        BoardTableGroupLevel first = levels[0];
         List<String> groupExpressions = new List<String>(first.expressions);
         List<String> orderParts = new List<String>();
         String direction = ' ' + first.field.sortDirection + ' NULLS LAST';
@@ -394,17 +345,6 @@ public with sharing class BoardTableGrouping {
         return 'MAX(' + field.path + ')';
     }
 
-    private static Organization getFiscalSettings() {
-        if (fiscalSettings == null) {
-            fiscalSettings = [
-                SELECT FiscalYearStartMonth, UsesStartDateAsFiscalYearName
-                FROM Organization
-                LIMIT 1
-            ];
-        }
-        return fiscalSettings;
-    }
-
     /**
      * Full-group counts by count key: first-level groups, and second-level groups per first-level count key; plus
      * each group's whole-group Stacked summaries per level (a first-level group merges its subgroups' rows).
@@ -432,486 +372,6 @@ public with sharing class BoardTableGrouping {
     /** Summary key of a subgroup: its first-level and second-level count keys. */
     private static String subgroupKey(String firstKey, String secondKey) {
         return firstKey + '|' + secondKey;
-    }
-
-    /** One group field: its resolved path, group order, and (for dates) bucketing. */
-    private class GroupLevel {
-        GroupField field = new GroupField();
-        Boolean isLookup = false;
-        Boolean isDateTime = false;
-        /** Date bucket granularity; null for non-date levels. */
-        String granularity;
-        String alias;
-        Map<String, String> picklistLabels = new Map<String, String>();
-        /** Date bucket labels by bucket key, collected as rows are keyed. */
-        Map<String, String> bucketLabels = new Map<String, String>();
-        /** `GROUP BY` expressions and their aliases. */
-        List<String> expressions = new List<String>();
-        List<String> aliases = new List<String>();
-
-        GroupLevel(Schema.DescribeSObjectResult objectDescribe, Map<String, Object> entry, Integer level) {
-            String rawPath = BoardQueryService.getString(entry, 'fieldPath');
-            if (String.isBlank(rawPath)) {
-                throw BoardErrors.error(BoardErrors.CONFIG_ERROR, 'Choose a group field.', null, 'groupBy');
-            }
-            BoardQueryService.ResolvedField resolved = BoardTableQuery.resolveTablePath(objectDescribe, rawPath);
-            alias = 'g' + level;
-            field.fieldPath = resolved.path;
-            field.keyPath = resolved.path;
-            field.label = resolved.describe.getLabel();
-            field.dataType = resolved.type.name();
-            field.sortDirection = 'DESC'.equalsIgnoreCase(BoardQueryService.getString(entry, 'sortDirection'))
-                ? 'DESC'
-                : 'ASC';
-            resolveGranularity(resolved, rawPath, BoardQueryService.getString(entry, 'dateGranularity'), level);
-            if (granularity == null) {
-                if (!GROUP_TYPES.contains(resolved.type) || !resolved.describe.isGroupable()) {
-                    throw BoardErrors.error(
-                        BoardErrors.CONFIG_ERROR,
-                        'A Table can group by a lookup, picklist, text or date field: ' + rawPath,
-                        null,
-                        rawPath
-                    );
-                }
-                expressions.add(resolved.path);
-                aliases.add(alias + 'k');
-            }
-            isLookup = resolved.type == Schema.DisplayType.REFERENCE;
-            if (isLookup) {
-                field.labelPath = nameFieldPath(resolved);
-            }
-            if (resolved.type == Schema.DisplayType.PICKLIST || resolved.type == Schema.DisplayType.COMBOBOX) {
-                for (Schema.PicklistEntry picklistEntry : resolved.describe.getPicklistValues()) {
-                    picklistLabels.put(picklistEntry.getValue(), picklistEntry.getLabel());
-                }
-            }
-            resolveOrderBy(objectDescribe, resolved, BoardQueryService.getString(entry, 'orderBy'));
-        }
-
-        void resolveGranularity(
-            BoardQueryService.ResolvedField resolved,
-            String rawPath,
-            String rawGranularity,
-            Integer level
-        ) {
-            String requested = String.isBlank(rawGranularity) ? null : rawGranularity.trim().toUpperCase();
-            Boolean isDate = DATE_TYPES.contains(resolved.type);
-            if (requested != null && !DATE_GRANULARITIES.contains(requested)) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    'Unsupported date granularity: ' + rawGranularity,
-                    null,
-                    rawPath
-                );
-            }
-            if (requested != null && !isDate) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    'Date granularity requires a Date or DateTime field: ' + rawPath,
-                    null,
-                    rawPath
-                );
-            }
-            if (!isDate) {
-                return;
-            }
-            granularity = requested == null ? 'DAY' : requested;
-            isDateTime = resolved.type == Schema.DisplayType.DATETIME;
-            field.dateGranularity = granularity;
-            field.keyPath = 'groupKey' + level;
-            String source = isDateTime ? 'convertTimezone(' + resolved.path + ')' : resolved.path;
-            switch on granularity {
-                when 'DAY' {
-                    addExpression(isDateTime ? 'DAY_ONLY(' + source + ')' : resolved.path, 'k');
-                }
-                when 'CALENDAR_MONTH' {
-                    addExpression('CALENDAR_YEAR(' + source + ')', 'y');
-                    addExpression('CALENDAR_MONTH(' + source + ')', 'p');
-                }
-                when 'CALENDAR_QUARTER' {
-                    addExpression('CALENDAR_YEAR(' + source + ')', 'y');
-                    addExpression('CALENDAR_QUARTER(' + source + ')', 'p');
-                }
-                when 'CALENDAR_YEAR' {
-                    addExpression('CALENDAR_YEAR(' + source + ')', 'y');
-                }
-                when 'FISCAL_QUARTER' {
-                    addExpression('FISCAL_YEAR(' + source + ')', 'y');
-                    addExpression('FISCAL_QUARTER(' + source + ')', 'p');
-                }
-                when else {
-                    addExpression('FISCAL_YEAR(' + source + ')', 'y');
-                }
-            }
-        }
-
-        void addExpression(String expression, String suffix) {
-            expressions.add(expression);
-            aliases.add(alias + suffix);
-        }
-
-        /** Group order by a field constant per group: a field of the lookup group field's record. */
-        void resolveOrderBy(
-            Schema.DescribeSObjectResult objectDescribe,
-            BoardQueryService.ResolvedField resolved,
-            String rawOrderBy
-        ) {
-            if (String.isBlank(rawOrderBy)) {
-                return;
-            }
-            String prefix = isLookup ? relationshipPath(resolved) : null;
-            BoardQueryService.ResolvedField orderField = BoardTableQuery.resolveTablePath(objectDescribe, rawOrderBy);
-            if (prefix == null || !orderField.path.startsWithIgnoreCase(prefix + '.')) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    'Order groups by a field of the lookup group field\'s record (e.g. Opportunity.Amount): ' +
-                    rawOrderBy,
-                    null,
-                    rawOrderBy
-                );
-            }
-            if (!orderField.describe.isSortable()) {
-                throw BoardErrors.error(
-                    BoardErrors.CONFIG_ERROR,
-                    'Field is not sortable: ' + rawOrderBy,
-                    null,
-                    rawOrderBy
-                );
-            }
-            field.orderBy = orderField.path;
-        }
-
-        /** `ORDER BY` paths of this level: order field, lookup record name, group field (dates by their raw value). */
-        List<String> orderPaths() {
-            List<String> paths = new List<String>();
-            for (String path : new List<String>{ field.orderBy, field.labelPath, field.fieldPath }) {
-                if (path != null) {
-                    paths.add(path);
-                }
-            }
-            return paths;
-        }
-
-        /**
-         * A parent path (e.g. `Account.CreatedDate`). For a record whose parent is missing the platform evaluates the
-         * parent's fields to placeholder values in `WHERE`, `GROUP BY` and `ORDER BY` (a date, not null), though the
-         * selected value is null; such records are told apart on the relationship Id at each hop.
-         */
-        Boolean isParentPath() {
-            return field.fieldPath.contains('.');
-        }
-
-        /** `Id` path of each relationship hop (`Account.Owner.Name` -> `Account.Id`, `Account.Owner.Id`). */
-        List<String> parentIdPaths() {
-            List<String> segments = field.fieldPath.split('\\.');
-            List<String> paths = new List<String>();
-            for (Integer hop = 1; hop < segments.size(); hop++) {
-                List<String> relationship = new List<String>();
-                for (Integer i = 0; i < hop; i++) {
-                    relationship.add(segments[i]);
-                }
-                paths.add(String.join(relationship, '.') + '.Id');
-            }
-            return paths;
-        }
-
-        /** Records of this level's "(Blank)" group: a missing parent at any hop, or no value. */
-        String blankPredicate() {
-            List<String> predicates = new List<String>();
-            for (String idPath : parentIdPaths()) {
-                predicates.add(idPath + ' = null');
-            }
-            predicates.add(field.fieldPath + ' = null');
-            return '(' + String.join(predicates, ' OR ') + ')';
-        }
-
-        /** Records of this level's non-blank groups: every parent present, and a value. */
-        String valuePredicate() {
-            List<String> predicates = new List<String>();
-            for (String idPath : parentIdPaths()) {
-                predicates.add(idPath + ' != null');
-            }
-            predicates.add(field.fieldPath + ' != null');
-            return '(' + String.join(predicates, ' AND ') + ')';
-        }
-
-        /** Whether a loaded row falls in this level's "(Blank)" group. */
-        Boolean hasBlankRow(List<Map<String, Object>> rows) {
-            for (Map<String, Object> row : rows) {
-                Object key = row.get(field.keyPath);
-                if (key == null || String.isBlank(String.valueOf(key))) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        List<String> selectColumns() {
-            List<String> columns = new List<String>();
-            for (Integer i = 0; i < expressions.size(); i++) {
-                columns.add(expressions[i] + ' ' + aliases[i]);
-            }
-            return columns;
-        }
-
-        /** Writes a date row's bucket key under `keyPath` (other levels key rows by the group field itself). */
-        void keyRow(Map<String, Object> row) {
-            if (granularity == null) {
-                return;
-            }
-            Date day = dayOf(row.get(field.fieldPath));
-            if (day == null) {
-                row.put(field.keyPath, null);
-                return;
-            }
-            List<String> bucket = bucketOf(day);
-            bucketLabels.put(bucket[0], bucket[1]);
-            row.put(field.keyPath, bucket[0]);
-        }
-
-        /** Local calendar date of a Date or DateTime value (DateTimes in the user's time zone, as `convertTimezone`). */
-        Date dayOf(Object raw) {
-            if (raw == null) {
-                return null;
-            }
-            return isDateTime ? ((Datetime) raw).date() : (Date) raw;
-        }
-
-        /** Group key of an aggregate row (as `keyRow` writes it for a record); null for blanks. */
-        String keyOf(AggregateResult aggregate) {
-            if (granularity == null) {
-                Object raw = aggregate.get(alias + 'k');
-                return raw == null ? null : String.valueOf(raw);
-            }
-            if (granularity == 'DAY') {
-                Date day = (Date) aggregate.get(alias + 'k');
-                return day == null ? null : String.valueOf(day);
-            }
-            Integer year = (Integer) aggregate.get(alias + 'y');
-            Integer period = aliases.size() > 1 ? (Integer) aggregate.get(alias + 'p') : null;
-            return year == null ? null : bucketKey(year, period);
-        }
-
-        /** Count key: text groups match case-insensitively, as `GROUP BY` folds case; blanks under `''`. */
-        String countKey(String key) {
-            if (String.isBlank(key)) {
-                return '';
-            }
-            return isLookup || granularity != null ? key : key.toLowerCase();
-        }
-
-        /** Sets a group's full-group count, lookup link and display label (picklist label, date bucket label). */
-        void decorate(BoardTableEngine.TableGroup tableGroup, Integer count) {
-            tableGroup.count = count == null ? 0 : count;
-            if (tableGroup.key == null) {
-                return;
-            }
-            if (isLookup) {
-                tableGroup.recordId = tableGroup.key;
-            }
-            if (picklistLabels.containsKey(tableGroup.key)) {
-                tableGroup.label = picklistLabels.get(tableGroup.key);
-            }
-            if (bucketLabels.containsKey(tableGroup.key)) {
-                tableGroup.label = bucketLabels.get(tableGroup.key);
-            }
-        }
-
-        /**
-         * `WHERE` predicate limiting the count query to the page's groups of this (first) level: their keys, or for
-         * dates the range from the first to the last bucket on the page (the page's buckets are contiguous).
-         */
-        String pageRestriction(List<BoardTableEngine.TableGroup> groups, Map<String, Object> binds) {
-            List<String> predicates = new List<String>();
-            Boolean hasBlank = false;
-            List<Object> keys = isLookup ? (List<Object>) new List<Id>() : (List<Object>) new List<String>();
-            Date firstDay;
-            Date lastDay;
-            for (BoardTableEngine.TableGroup tableGroup : groups) {
-                if (tableGroup.key == null) {
-                    hasBlank = true;
-                } else if (granularity != null) {
-                    Date day = bucketStart(tableGroup.key);
-                    firstDay = firstDay == null || day < firstDay ? day : firstDay;
-                    lastDay = lastDay == null || day > lastDay ? day : lastDay;
-                } else {
-                    keys.add(isLookup ? (Object) Id.valueOf(tableGroup.key) : (Object) tableGroup.key);
-                }
-            }
-            if (!keys.isEmpty()) {
-                binds.put(GROUP_KEYS_BIND, keys);
-                predicates.add(withValue(field.fieldPath + ' IN :' + GROUP_KEYS_BIND));
-            }
-            if (firstDay != null) {
-                Date endDay = nextBucketStart(lastDay);
-                binds.put(GROUP_FROM_BIND, isDateTime ? (Object) localMidnight(firstDay) : (Object) firstDay);
-                binds.put(GROUP_TO_BIND, isDateTime ? (Object) localMidnight(endDay) : (Object) endDay);
-                predicates.add(
-                    withValue(
-                        '(' +
-                            field.fieldPath +
-                            ' >= :' +
-                            GROUP_FROM_BIND +
-                            ' AND ' +
-                            field.fieldPath +
-                            ' < :' +
-                            GROUP_TO_BIND +
-                            ')'
-                    )
-                );
-            }
-            if (hasBlank) {
-                predicates.add(isParentPath() ? blankPredicate() : field.fieldPath + ' = null');
-            }
-            return String.join(predicates, ' OR ');
-        }
-
-        /** A key predicate of a parent path also requires the parent (a missing one's placeholder could match). */
-        String withValue(String keyPredicate) {
-            return isParentPath() ? '(' + keyPredicate + ' AND ' + valuePredicate() + ')' : keyPredicate;
-        }
-
-        Datetime localMidnight(Date day) {
-            return Datetime.newInstance(day, Time.newInstance(0, 0, 0, 0));
-        }
-
-        // ---- Date buckets (keys and labels as the Chart widget's: `2026-03`, `2026-Q1`, `FY2026-Q2`) ----------------
-
-        /** `[key, label]` of the bucket holding `day`. */
-        List<String> bucketOf(Date day) {
-            if (granularity == 'DAY') {
-                return new List<String>{ String.valueOf(day), day.format() };
-            }
-            Integer period;
-            Integer year = day.year();
-            switch on granularity {
-                when 'CALENDAR_MONTH' {
-                    period = day.month();
-                }
-                when 'CALENDAR_QUARTER' {
-                    period = (day.month() - 1) / 3 + 1;
-                }
-                when 'CALENDAR_YEAR' {
-                    period = null;
-                }
-                when else {
-                    year = fiscalYearName(day);
-                    period = granularity == 'FISCAL_QUARTER' ? fiscalQuarterIndex(day) + 1 : null;
-                }
-            }
-            return new List<String>{ bucketKey(year, period), bucketLabel(year, period) };
-        }
-
-        String bucketKey(Integer year, Integer period) {
-            String yearText = String.valueOf(year);
-            switch on granularity {
-                when 'CALENDAR_MONTH' {
-                    return yearText + '-' + String.valueOf(period).leftPad(2, '0');
-                }
-                when 'CALENDAR_QUARTER' {
-                    return yearText + '-Q' + period;
-                }
-                when 'CALENDAR_YEAR' {
-                    return yearText;
-                }
-                when 'FISCAL_QUARTER' {
-                    return 'FY' + yearText + '-Q' + period;
-                }
-                when else {
-                    return 'FY' + yearText;
-                }
-            }
-        }
-
-        String bucketLabel(Integer year, Integer period) {
-            String yearText = String.valueOf(year);
-            switch on granularity {
-                when 'CALENDAR_MONTH' {
-                    return Datetime.newInstance(year, period, 1).format('MMM yyyy');
-                }
-                when 'CALENDAR_QUARTER' {
-                    return 'Q' + period + ' ' + yearText;
-                }
-                when 'CALENDAR_YEAR' {
-                    return yearText;
-                }
-                when 'FISCAL_QUARTER' {
-                    return 'Q' + period + ' FY' + yearText;
-                }
-                when else {
-                    return 'FY' + yearText;
-                }
-            }
-        }
-
-        /** First day of the bucket a bucket key names (inverse of `bucketKey`). */
-        Date bucketStart(String key) {
-            if (granularity == 'DAY') {
-                return Date.valueOf(key);
-            }
-            String body = key.removeStart('FY');
-            Integer year = Integer.valueOf(body.left(4));
-            String periodText = body.length() > 4 ? body.substring(5).removeStart('Q') : null;
-            Integer period = periodText == null ? null : Integer.valueOf(periodText);
-            switch on granularity {
-                when 'CALENDAR_MONTH' {
-                    return Date.newInstance(year, period, 1);
-                }
-                when 'CALENDAR_QUARTER' {
-                    return Date.newInstance(year, (period - 1) * 3 + 1, 1);
-                }
-                when 'CALENDAR_YEAR' {
-                    return Date.newInstance(year, 1, 1);
-                }
-                when else {
-                    Date fiscalStart = fiscalYearStartFor(year);
-                    return period == null ? fiscalStart : fiscalStart.addMonths((period - 1) * 3);
-                }
-            }
-        }
-
-        /** First day of the bucket after the one starting `start`. */
-        Date nextBucketStart(Date start) {
-            switch on granularity {
-                when 'DAY' {
-                    return start.addDays(1);
-                }
-                when 'CALENDAR_MONTH' {
-                    return start.addMonths(1);
-                }
-                when 'CALENDAR_QUARTER', 'FISCAL_QUARTER' {
-                    return start.addMonths(3);
-                }
-                when else {
-                    return start.addMonths(12);
-                }
-            }
-        }
-
-        Integer fiscalStartMonth() {
-            Organization settings = getFiscalSettings();
-            return settings.FiscalYearStartMonth == null ? 1 : settings.FiscalYearStartMonth;
-        }
-
-        /** Whether a fiscal year is named by the calendar year it ends in (the default when it starts after January). */
-        Boolean namedByEndYear() {
-            return fiscalStartMonth() != 1 && !getFiscalSettings().UsesStartDateAsFiscalYearName;
-        }
-
-        Integer fiscalYearName(Date day) {
-            Integer startYear = day.month() >= fiscalStartMonth() ? day.year() : day.year() - 1;
-            return namedByEndYear() ? startYear + 1 : startYear;
-        }
-
-        Integer fiscalQuarterIndex(Date day) {
-            return Math.mod(day.month() - fiscalStartMonth() + 12, 12) / 3;
-        }
-
-        /** First day of the fiscal year named `fiscalYear`. */
-        Date fiscalYearStartFor(Integer fiscalYear) {
-            Integer startYear = namedByEndYear() ? fiscalYear - 1 : fiscalYear;
-            return Date.newInstance(startYear, fiscalStartMonth(), 1);
-        }
     }
 
     /** A group field as the Widget renders it: group column header and Group row labels and links. */

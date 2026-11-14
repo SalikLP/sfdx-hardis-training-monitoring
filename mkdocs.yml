@@ -302,6 +302,7 @@ nav:
           - boardSetupFilterDefinitions: lwc/boardSetupFilterDefinitions.md
           - boardSetupGuide: lwc/boardSetupGuide.md
           - boardSetupPreview: lwc/boardSetupPreview.md
+          - boardSetupStepContent: lwc/boardSetupStepContent.md
           - boardSetupSteps: lwc/boardSetupSteps.md
           - boardTableCpe: lwc/boardTableCpe.md
           - boardTableFlowModal: lwc/boardTableFlowModal.md
@@ -314,7 +315,6 @@ nav:
           - protoBoardWidget: lwc/protoBoardWidget.md
           - protoFilterWidget: lwc/protoFilterWidget.md
           - protoSetupPreviewDialog: lwc/protoSetupPreviewDialog.md
-          - protoTableHarness: lwc/protoTableHarness.md
           - protoTabProbe: lwc/protoTabProbe.md
           - protoWidgetCpe: lwc/protoWidgetCpe.md
       - Aura Components:
@@ -338,7 +338,6 @@ nav:
       - MediaAdSalesManagement_UtilityBar: pages/MediaAdSalesManagement_UtilityBar.md
       - Proto_Board_Account_Record_Page: pages/Proto_Board_Account_Record_Page.md
       - Proto_Board_App_Page: pages/Proto_Board_App_Page.md
-      - Proto_Table_Widget_Lab: pages/Proto_Table_Widget_Lab.md
       - Proto_Tabs_Filter_Context: pages/Proto_Tabs_Filter_Context.md
       - RevenueCloudConsole_UtilityBar: pages/RevenueCloudConsole_UtilityBar.md
       - SalesCloudMobile_UtilityBar: pages/SalesCloudMobile_UtilityBar.md

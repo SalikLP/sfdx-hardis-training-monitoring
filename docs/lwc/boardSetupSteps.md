@@ -20,6 +20,61 @@ changed the object. `paths(config)` lists `{ key, label, path }`; Bucket field r
 
 **Kind**: global function  
 
+### checkablePath(path)
+
+Whether a path can be checked against the object's field describes: not a Bucket field reference, `SELF`, or a
+child semi-join (`Child(ForeignKey).Path`, whose relationship isn't among the object's fields).
+
+**Kind**: global function  
+
+### conditionPaths(tree, key, label)
+
+`{ key, label, path }` of every condition in a condition tree (a list of entries, or one group or condition).
+
+**Kind**: global function  
+
+### allPaths(...lists)
+
+Combines several `paths(config)` lists into one.
+
+**Kind**: global function  
+
+### baseFilterPaths(config)
+
+The Base filters' fields (Data step): a condition tree on the Widget's object.
+
+**Kind**: global function  
+
+### measureFieldPaths(measures)
+
+The fields of a list of Measures read on the Widget's object: conditions and Average per record fields.
+
+**Kind**: global function  
+
+### bucketRulePaths(config)
+
+The fields of the Widget's own Bucket field rules.
+
+**Kind**: global function  
+
+### filterBindingPaths(config)
+
+The Filter binding paths set to a field path (each target of a multi-field binding).
+
+**Kind**: global function  
+
+### rowActionPaths(config)
+
+The Table's Row action row fields: lookup targets, Create defaults' row fields and Screen Flow inputs.
+
+**Kind**: global function  
+
+### filterBindingsStep(widgetType)
+
+The Filter bindings step, shared by every data Widget: binding paths must be on the Widget's object.
+
+**Kind**: global function  
+
 ### step(widgetType, { extraErrors, ...descriptor })
 
 A step descriptor of `widgetType`: `validate` keeps the `configErrors` of the whole draft that belong to the step
@@ -79,6 +134,12 @@ Whether the chart groups by date: a date Group by field (once described) or a sa
 ### chartGroupingPaths(config)
 
 The Chart widget's field paths that must exist on its object, per step.
+
+**Kind**: global function  
+
+### chartMeasurePaths(config)
+
+The Chart widget's Measure fields that must exist on its object (a Cross-object measure reads another object).
 
 **Kind**: global function  
 

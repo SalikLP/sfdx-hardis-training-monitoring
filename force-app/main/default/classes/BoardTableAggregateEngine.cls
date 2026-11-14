@@ -8,6 +8,11 @@
  * from one cursor chunk call to the next. `orderGroups` then orders them like the SOQL tier's `ORDER BY`: by a summary,
  * by a value constant per group, or by the key (picklists in definition order), text ignoring case, blanks last in
  * either direction, ties by key, and the "(Blank)" group last.
+ *
+ * With a second group field (`Plan.secondLevel`) the running groups are second-level groups (each with its first-level
+ * `parentKey`); `groups()` rolls them up into first-level groups, each with its second-level groups as `subgroups`
+ * (counts summed, summaries merged), and `orderGroups` orders both levels. The SOQL tier feeds the same accumulator
+ * with its `GROUP BY` rows (`addGroup`), so both tiers share the roll-up and the order.
  */
 public with sharing class BoardTableAggregateEngine {
     /** What to group by, carry, summarize and order by. */
@@ -27,6 +32,8 @@ public with sharing class BoardTableAggregateEngine {
         public String orderFunction;
         /** Lower-cased path -> picklist values in definition order (the order SOQL sorts picklists in). */
         public Map<String, List<String>> rankedValues = new Map<String, List<String>>();
+        /** The second group field's plan (key, values constant per second-level group, order); null for one level. */
+        public Plan secondLevel;
 
         /**
          * Orders the groups by the summary `rawSummaryOrder` names (`{ columnId, summaryFunction }`) and returns its
@@ -56,6 +63,10 @@ public with sharing class BoardTableAggregateEngine {
     /** One group: key (null for "(Blank)"), record count, values constant per group, running summaries. */
     public class AggregatedGroup {
         public String key;
+        /** Second-level groups: the key of the first-level group they are nested under. */
+        public String parentKey;
+        /** First-level groups of a two-level plan: their second-level groups (in order after `orderGroups`). */
+        public List<AggregatedGroup> subgroups = new List<AggregatedGroup>();
         public Integer count = 0;
         public Map<String, Object> values = new Map<String, Object>();
         /** One per `Plan.specs` entry. */
@@ -75,16 +86,21 @@ public with sharing class BoardTableAggregateEngine {
 
         /** Adds one record's flattened values. */
         public void add(Map<String, Object> row) {
-            Object rawKey = row.get(plan.keyPath);
-            String key = rawKey == null || String.isBlank(String.valueOf(rawKey)) ? null : String.valueOf(rawKey);
-            AggregatedGroup aggregatedGroup = byFoldedKey.get(foldKey(key));
+            Object rawKey = row.get(leafPlan().keyPath);
+            String key = keyOf(rawKey);
+            String parentKey = plan.secondLevel == null ? null : keyOf(row.get(plan.keyPath));
+            AggregatedGroup aggregatedGroup = byFoldedKey.get(leafKey(parentKey, key));
             if (aggregatedGroup == null) {
                 aggregatedGroup = newGroup(key);
-                aggregatedGroup.values.put(plan.keyPath, rawKey);
+                aggregatedGroup.parentKey = parentKey;
+                aggregatedGroup.values.put(leafPlan().keyPath, rawKey);
+                if (plan.secondLevel != null) {
+                    aggregatedGroup.values.put(plan.keyPath, row.get(plan.keyPath));
+                }
                 track(aggregatedGroup);
             }
             aggregatedGroup.count++;
-            for (String path : plan.valuePaths) {
+            for (String path : leafValuePaths()) {
                 Object value = row.get(path);
                 if (value != null && aggregatedGroup.values.get(path) == null) {
                     aggregatedGroup.values.put(path, value);
@@ -95,12 +111,96 @@ public with sharing class BoardTableAggregateEngine {
             }
         }
 
-        /** Every group so far, unordered. */
-        public List<AggregatedGroup> groups() {
-            return tracked;
+        /**
+         * Merges one pre-aggregated group (a SOQL-tier `GROUP BY` row: key, `parentKey` with two levels, count,
+         * values and one mergeable summary per spec) into the running groups.
+         */
+        public void addGroup(AggregatedGroup chunk) {
+            AggregatedGroup aggregatedGroup = byFoldedKey.get(leafKey(chunk.parentKey, chunk.key));
+            if (aggregatedGroup == null) {
+                aggregatedGroup = newGroup(chunk.key);
+                aggregatedGroup.parentKey = chunk.parentKey;
+                track(aggregatedGroup);
+            }
+            aggregatedGroup.count += chunk.count;
+            for (String path : chunk.values.keySet()) {
+                if (aggregatedGroup.values.get(path) == null) {
+                    aggregatedGroup.values.put(path, chunk.values.get(path));
+                }
+            }
+            mergeSummaries(aggregatedGroup, chunk);
         }
 
-        /** Compact running state: `[[key, count, values, [[sum, count, min, max], ...]], ...]`. */
+        /**
+         * Every group so far, unordered: with one level the running groups; with two the first-level groups rolled up
+         * from them, each with its second-level groups as `subgroups`.
+         */
+        public List<AggregatedGroup> groups() {
+            if (plan.secondLevel == null) {
+                return tracked;
+            }
+            List<AggregatedGroup> firstLevel = new List<AggregatedGroup>();
+            Map<String, AggregatedGroup> byParent = new Map<String, AggregatedGroup>();
+            for (AggregatedGroup leaf : tracked) {
+                AggregatedGroup parent = byParent.get(foldKey(leaf.parentKey));
+                if (parent == null) {
+                    parent = new AggregatedGroup();
+                    parent.key = leaf.parentKey;
+                    parent.values.put(plan.keyPath, leaf.values.get(plan.keyPath));
+                    for (String path : plan.valuePaths) {
+                        parent.values.put(path, null);
+                    }
+                    for (Integer c = 0; c < plan.specs.size(); c++) {
+                        parent.summaries.add(new BoardTableEngine.Summary());
+                    }
+                    byParent.put(foldKey(leaf.parentKey), parent);
+                    firstLevel.add(parent);
+                }
+                parent.count += leaf.count;
+                for (String path : plan.valuePaths) {
+                    if (parent.values.get(path) == null) {
+                        parent.values.put(path, leaf.values.get(path));
+                    }
+                }
+                mergeSummaries(parent, leaf);
+                parent.subgroups.add(leaf);
+            }
+            return firstLevel;
+        }
+
+        /** Merges `chunk`'s summaries into `target`'s. */
+        private void mergeSummaries(AggregatedGroup target, AggregatedGroup chunk) {
+            for (Integer c = 0; c < plan.specs.size(); c++) {
+                BoardTableEngine.Summary part = chunk.summaries[c];
+                target.summaries[c].addAggregate(part.sum, part.count, part.min, part.max);
+            }
+        }
+
+        /** The plan of the running groups: the second level's with two levels. */
+        private Plan leafPlan() {
+            return plan.secondLevel == null ? plan : plan.secondLevel;
+        }
+
+        /** Values each running group keeps: both levels' with two levels. */
+        private List<String> leafValuePaths() {
+            if (plan.secondLevel == null) {
+                return plan.valuePaths;
+            }
+            List<String> paths = new List<String>(plan.valuePaths);
+            paths.addAll(plan.secondLevel.valuePaths);
+            return paths;
+        }
+
+        /** Folded running-group key: the key, prefixed by the (length-prefixed) parent key with two levels. */
+        private String leafKey(String parentKey, String key) {
+            if (plan.secondLevel == null) {
+                return foldKey(key);
+            }
+            String parent = foldKey(parentKey);
+            return parent.length() + ':' + parent + foldKey(key);
+        }
+
+        /** Compact running state: `[[key, count, values, [[sum, count, min, max], ...], parentKey], ...]`. */
         public String state() {
             List<Object> encoded = new List<Object>();
             for (AggregatedGroup aggregatedGroup : tracked) {
@@ -109,7 +209,13 @@ public with sharing class BoardTableAggregateEngine {
                     summaries.add(new List<Object>{ summary.sum, summary.count, summary.min, summary.max });
                 }
                 encoded.add(
-                    new List<Object>{ aggregatedGroup.key, aggregatedGroup.count, aggregatedGroup.values, summaries }
+                    new List<Object>{
+                        aggregatedGroup.key,
+                        aggregatedGroup.count,
+                        aggregatedGroup.values,
+                        summaries,
+                        aggregatedGroup.parentKey
+                    }
                 );
             }
             return JSON.serialize(encoded);
@@ -124,6 +230,7 @@ public with sharing class BoardTableAggregateEngine {
                 for (Object rawGroup : (List<Object>) JSON.deserializeUntyped(state)) {
                     List<Object> encoded = (List<Object>) rawGroup;
                     AggregatedGroup aggregatedGroup = newGroup((String) encoded[0]);
+                    aggregatedGroup.parentKey = encoded.size() > 4 ? (String) encoded[4] : null;
                     aggregatedGroup.count = BoardQueryService.toDecimal(encoded[1]).intValue();
                     aggregatedGroup.values = (Map<String, Object>) encoded[2];
                     List<Object> summaries = (List<Object>) encoded[3];
@@ -152,7 +259,7 @@ public with sharing class BoardTableAggregateEngine {
         private AggregatedGroup newGroup(String key) {
             AggregatedGroup aggregatedGroup = new AggregatedGroup();
             aggregatedGroup.key = key;
-            for (String path : plan.valuePaths) {
+            for (String path : leafValuePaths()) {
                 aggregatedGroup.values.put(path, null);
             }
             for (Integer c = 0; c < plan.specs.size(); c++) {
@@ -163,15 +270,20 @@ public with sharing class BoardTableAggregateEngine {
 
         private void track(AggregatedGroup aggregatedGroup) {
             tracked.add(aggregatedGroup);
-            byFoldedKey.put(foldKey(aggregatedGroup.key), aggregatedGroup);
+            byFoldedKey.put(leafKey(aggregatedGroup.parentKey, aggregatedGroup.key), aggregatedGroup);
         }
+    }
+
+    /** A group key: null for null and blank values (the "(Blank)" group). */
+    private static String keyOf(Object rawKey) {
+        return rawKey == null || String.isBlank(String.valueOf(rawKey)) ? null : String.valueOf(rawKey);
     }
 
     private static String foldKey(String key) {
         return key == null ? '' : key.toLowerCase();
     }
 
-    /** The groups in the SOQL tier's order, "(Blank)" last. */
+    /** The groups in the SOQL tier's order, "(Blank)" last; with two levels each group's subgroups too. */
     public static List<AggregatedGroup> orderGroups(List<AggregatedGroup> groups, Plan plan) {
         List<AggregatedGroup> ordered = new List<AggregatedGroup>();
         AggregatedGroup blank;
@@ -185,6 +297,11 @@ public with sharing class BoardTableAggregateEngine {
         ordered.sort(new GroupOrder(plan));
         if (blank != null) {
             ordered.add(blank);
+        }
+        if (plan.secondLevel != null) {
+            for (AggregatedGroup aggregatedGroup : ordered) {
+                aggregatedGroup.subgroups = orderGroups(aggregatedGroup.subgroups, plan.secondLevel);
+            }
         }
         return ordered;
     }

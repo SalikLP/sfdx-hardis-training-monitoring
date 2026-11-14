@@ -137,8 +137,11 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 | [BoardSchemaServiceTest](../apex/BoardSchemaServiceTest.md) | Test |
 | BoardTableAggregate | Lightning Controller |
 | BoardTableAggregateCursorTest | Test |
+| BoardTableAggregateEngineLevelsTest | Test |
 | BoardTableAggregateEngineTest | Test |
+| BoardTableAggregateLevelsTest | Test |
 | BoardTableGrouping | Lightning Controller |
+| BoardTableGroupLevel | Class |
 | BoardTableQuery | Lightning Controller |
 | BoardTableRowLimitGroupedTest | Test |
 | [ProtoTableQueryService](../apex/ProtoTableQueryService.md) | Lightning Controller |
@@ -151,8 +154,8 @@ linkStyle 0 stroke:#A6A6A6,stroke-width:2px;
 | [boardConfigUtils](../lwc/boardConfigUtils.md) | Board Config Utils | ❌ |  |
 | [boardCpeCommon](../lwc/boardCpeCommon.md) | Shared Board Flow CPE shell: header, builderContext filter bindings, base filters, and Config JSON drawer | ❌ |  |
 | [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
+| [boardFilterSetupSteps](../lwc/boardFilterSetupSteps.md) | Board Filter Setup Steps | ❌ |  |
 | [boardSetupSteps](../lwc/boardSetupSteps.md) | <!-- --> | ❌ |  |
-| [protoTableHarness](../lwc/protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 
 
 

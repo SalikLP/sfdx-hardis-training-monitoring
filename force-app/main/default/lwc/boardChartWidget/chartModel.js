@@ -83,13 +83,13 @@ export function normalizeBarSettings(config = {}) {
         includeNullBucket: config.includeNullBucket !== false,
         legendPosition: ['top', 'bottom', 'hidden'].includes(config.legendPosition) ? config.legendPosition : 'auto',
         showDataLabels: config.showDataLabels === true,
-        colorByCategory: config.colorByCategory === true,
+        colorByCategory: config.colourByCategory === true,
         labelMode: ['value', 'percent', 'both', 'none'].includes(config.labelMode) ? config.labelMode : 'percent',
         centreTotal: config.centreTotal === true,
         showTotal: config.showTotal === true,
-        waterfallIncreaseColor: config.waterfallIncreaseColor || null,
-        waterfallDecreaseColor: config.waterfallDecreaseColor || null,
-        waterfallTotalColor: config.waterfallTotalColor || null,
+        waterfallIncreaseColor: config.waterfallIncreaseColour || null,
+        waterfallDecreaseColor: config.waterfallDecreaseColour || null,
+        waterfallTotalColor: config.waterfallTotalColour || null,
         showPoints: config.showPoints !== false
     };
 }
@@ -125,7 +125,7 @@ export function normalizeMeasures(config = {}) {
             showAs,
             label: typeof measure.label === 'string' && measure.label.trim() ? measure.label.trim() : null,
             format,
-            color: typeof measure.color === 'string' && measure.color.trim() ? measure.color.trim() : null,
+            color: typeof measure.colour === 'string' && measure.colour.trim() ? measure.colour.trim() : null,
             hidden: measure.hidden === true || index === headlineIndex,
             formula: aggregateFunction === 'FORMULA' && typeof measure.formula === 'string' ? measure.formula : null,
             isCurrency: aggregateFunction === 'FORMULA' && measure.isCurrency === true,

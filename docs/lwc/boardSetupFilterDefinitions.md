@@ -88,6 +88,12 @@ At most one Currency picker per Filter widget, and none in a single-currency org
 
 **Kind**: instance property (getter) of <code>BoardSetupFilterDefinitions</code>  
 
+#### newItemOptions
+
+What Add can create: every filter type, a Filter section, and the Currency picker while one can be added.
+
+**Kind**: instance property (getter) of <code>BoardSetupFilterDefinitions</code>  
+
 #### recordContext
 
 The draft's Record context; its override follows the filters edited here.

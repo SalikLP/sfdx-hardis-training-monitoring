@@ -6,17 +6,29 @@
  * config opens with free navigation between steps.
  */
 
-/** Envelope keys that don't count as config: the title is set in the panel. */
-const ENVELOPE_KEYS = ['version', 'widgetType', 'title'];
+/**
+ * Keys that don't count as Widget content: the envelope, the title (set in the panel) and the Board-level settings
+ * (Board id, which Flow Builder pre-fills with its meta default "default"; Wait for Filter widget; Config currency).
+ */
+const NON_CONTENT_KEYS = ['version', 'widgetType', 'title', 'boardId', 'waitForFilterWidget', 'configCurrency'];
+
+/** Defaults the config envelope writes for a Widget nobody has set up yet (`orderConfig` in `c/boardCpeUtils`). */
+const DEFAULT_VALUES = { chartType: 'bar' };
+
+function isContentKey(config, key) {
+    return !NON_CONTENT_KEYS.includes(key) && !(key in DEFAULT_VALUES && config[key] === DEFAULT_VALUES[key]);
+}
 
 /**
- * True when the Setup dialog opens in Guided mode: the Widget has no config besides its envelope and no config key
- * bound to a Flow resource (`references`).
+ * True when the Setup dialog opens in Guided mode: the Widget has no Data / Measures / Columns / Filters content
+ * (only the envelope, Board-level settings and defaults) and no content key bound to a Flow resource (`references`).
  */
 export function opensGuided(config, references = {}) {
-    const own = config && typeof config === 'object' ? Object.keys(config) : [];
+    const own = config && typeof config === 'object' ? config : {};
     const bound = references && typeof references === 'object' ? Object.keys(references) : [];
-    return !own.some((key) => !ENVELOPE_KEYS.includes(key)) && !bound.length;
+    return (
+        !Object.keys(own).some((key) => isContentKey(own, key)) && !bound.some((key) => !NON_CONTENT_KEYS.includes(key))
+    );
 }
 
 /**

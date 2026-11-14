@@ -86,13 +86,16 @@
         <members>BoardTableAggregateCursor</members>
         <members>BoardTableAggregateCursorTest</members>
         <members>BoardTableAggregateEngine</members>
+        <members>BoardTableAggregateEngineLevelsTest</members>
         <members>BoardTableAggregateEngineTest</members>
+        <members>BoardTableAggregateLevelsTest</members>
         <members>BoardTableBucketColumns</members>
         <members>BoardTableBucketGroup</members>
         <members>BoardTableCurrency</members>
         <members>BoardTableEngine</members>
         <members>BoardTableEngineTest</members>
         <members>BoardTableGroupBarScales</members>
+        <members>BoardTableGroupLevel</members>
         <members>BoardTableGroupSummaries</members>
         <members>BoardTableGrouping</members>
         <members>BoardTableQuery</members>
@@ -407,7 +410,6 @@
         <members>Installation__c</members>
         <members>Panel_Batch__c</members>
         <members>Proto_Board_App_Page</members>
-        <members>Proto_Table_Widget_Lab</members>
         <members>Proto_Tabs_Filter_Context</members>
         <members>Service_Command_Board</members>
         <name>CustomTab</name>
@@ -519,7 +521,6 @@
         <members>MediaAdSalesManagement_UtilityBar</members>
         <members>Proto_Board_Account_Record_Page</members>
         <members>Proto_Board_App_Page</members>
-        <members>Proto_Table_Widget_Lab</members>
         <members>Proto_Tabs_Filter_Context</members>
         <members>RevenueCloudConsole_UtilityBar</members>
         <members>SalesCloudMobile_UtilityBar</members>
@@ -786,6 +787,7 @@
         <members>boardSetupFilterDefinitions</members>
         <members>boardSetupGuide</members>
         <members>boardSetupPreview</members>
+        <members>boardSetupStepContent</members>
         <members>boardSetupSteps</members>
         <members>boardTableCpe</members>
         <members>boardTableFlowModal</members>
@@ -799,7 +801,6 @@
         <members>protoFilterWidget</members>
         <members>protoSetupPreviewDialog</members>
         <members>protoTabProbe</members>
-        <members>protoTableHarness</members>
         <members>protoWidgetCpe</members>
         <name>LightningComponentBundle</name>
     </types>

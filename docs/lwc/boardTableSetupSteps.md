@@ -37,124 +37,136 @@ Filter binding switched to "Field path" without a path fires `steperrors` with `
 `context`: `builderContext` and `elementInfo` (Filter widget discovery for the Filter bindings).
 
 **Kind**: global class  
-**Extends**: <code>LightningElement</code>  
+**Extends**: <code>SetupStepContent</code>  
 
 #### config
 
 The Setup dialog's draft config.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 **Decorators**: <code>@api</code>  
 
 #### groupFieldTypes
 
 `Schema.DisplayType` of each group field, by `Object::path`, once known (decides the date granularity box).
 
-**Kind**: instance property of <code>BoardTableSetupSteps</code>  
+**Kind**: global property  
 **Default**: <code>{}</code>  
+
+#### boardBucketFields
+
+Bucket fields of the Board's Filter widget, usable as columns by id.
+
+**Kind**: instance property (getter)  
 
 #### handleBucketFields(event)
 
 Writes the Bucket fields; the columns and group field of a removed Bucket field go with it.
 
-**Kind**: instance method of <code>BoardTableSetupSteps</code>  
+**Kind**: global function  
 
 #### resolveGroupFieldTypes()
 
 Describes saved group fields (e.g. after reopening the dialog) to know which are dates.
 
-**Kind**: instance method of <code>BoardTableSetupSteps</code>  
+**Kind**: global function  
 
 #### groupEntries
 
 The configured group fields, first level first.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### groupLevels
 
 One editor block per group level: the configured ones, plus an empty "Then group by" below a single level (none
 below a Bucket field, which groups an aggregated table by itself).
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### groupsByBucket
 
 True when the first group field is a Bucket field (`bucket:<id>`).
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### showBucketGroup
 
 Offered with Detail rows off; kept visible while a flagged Bucket group (Detail rows on) is set.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
+
+#### bucketGroupFieldOptions
+
+The Widget's own Bucket fields, then the Board's not shadowed by an own one with the same id.
+
+**Kind**: instance property (getter)  
 
 #### handleBucketGroup(event)
 
 Groups by a Bucket field (one level, no order field), or clears the group field when blank.
 
-**Kind**: instance method of <code>BoardTableSetupSteps</code>  
+**Kind**: global function  
 
 #### handleGroupField(event)
 
 A new group field keeps the level's group order but drops its granularity and order field; blank removes it.
 
-**Kind**: instance method of <code>BoardTableSetupSteps</code>  
+**Kind**: global function  
 
 #### updateGroupEntries(entries)
 
 Defaults (ascending order, Day granularity, order by group value) are left out of the config.
 
-**Kind**: instance method of <code>BoardTableSetupSteps</code>  
+**Kind**: global function  
 
 #### detailRows
 
 Detail rows on (default): records under their Group rows; off: only Group rows, an aggregated table.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### showSummaryOrder
 
 Summary group order: offered with Detail rows off, and kept visible while a flagged one is set.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### summaryOrder
 
 `columnId:FUNCTION` of the summary groups are ordered by, or `''` for the group value.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### summaryOrderOptions
 
 `Group value`, then one option per summary the columns show (`Sum of Amount`).
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### handleSummaryOrder(event)
 
 Orders the first-level groups by a summary (Detail rows off), or by the group value when blank.
 
-**Kind**: instance method of <code>BoardTableSetupSteps</code>  
+**Kind**: global function  
 
 #### showSubtotalsSetting
 
 Subtotals close groups of records: offered with Row grouping and Detail rows on.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### rowLimitMax
 
 Largest Row limit: 200 groups with Row grouping and Detail rows on, else 2,000 rows or Group rows.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### rowLimitHelp
 
 With Row grouping a Row limit counts first-level groups in the group order.
 
-**Kind**: instance property (getter) of <code>BoardTableSetupSteps</code>
+**Kind**: instance property (getter)
 
 ## Files
 

@@ -28,15 +28,21 @@
         <lightning-combobox
             class="c-filter-rc-mode"
             label="Mode"
-            field-level-help="Implicit filters Widgets by the record Id where they bind it; Locked feeds the record into a filter viewers can't change; Default pre-fills that filter and viewers can change it."
+            field-level-help="What the Board does with the record it sits on. The text below the picker explains the chosen mode."
             options={recordContextOptions}
             value={recordContextMode}
             onchange={handleRecordContextMode}
         ></lightning-combobox>
+        <div class="c-filter-rc-mode-help slds-m-top_xx-small slds-text-body_small slds-text-color_weak">
+            <p class="c-filter-rc-mode-description">{recordContextModeHelp.description}</p>
+            <p class="c-filter-rc-mode-example">
+                <span class="slds-text-title_bold">Example:</span> {recordContextModeHelp.example}
+            </p>
+        </div>
         <lightning-combobox
             class="c-filter-rc-filter slds-m-top_x-small"
             label="Feed the record into filter"
-            field-level-help="A Picklist, Lookup or User filter that receives the record (or the field below)."
+            field-level-help="Locked and Default put the record into this filter of the Filter bar. Only Picklist, Lookup and User filters can receive it. Examples: on an Account page, pick the Account filter to show this Account. A Picklist filter receives a field of the record and needs a field path below: on an Account page, the Industry filter with field path Industry shows everything in the same industry as this Account."
             options={overrideFilterOptions}
             value={overrideFilterId}
             onchange={handleOverrideFilterId}
@@ -44,9 +50,9 @@
         <lightning-input
             class="c-filter-rc-path slds-m-top_x-small"
             label="Host record field path (optional)"
-            placeholder="AccountId"
+            placeholder="e.g. AccountId"
             value={overrideFieldPath}
-            field-level-help="Read this field (1–5 hop parent path) from the host record instead of its Id."
+            field-level-help="Leave blank to use the record itself. Fill in when the filter needs another value from the record: a field on it, or on a parent up to 5 levels up. Examples: on a Case page, AccountId feeds the Case's Account into the Account filter; OwnerId feeds its owner into the Owner filter; Account.ParentId feeds the parent Account."
             onchange={handleOverrideFieldPath}
         ></lightning-input>
         <template lwc:if={isLocked}>

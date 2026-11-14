@@ -1,4 +1,5 @@
 import { LightningElement, api } from 'lwc';
+import { SetupStepContent } from 'c/boardSetupStepContent';
 import { metricMeasures } from 'c/boardConfigUtils';
 import { DISPLAY_GAUGE, DISPLAY_NUMBER, DISPLAY_OPTIONS, isGaugeDisplay } from 'c/boardMetricGauge';
 import {
@@ -13,7 +14,8 @@ import {
     NO_DRAG,
     overRowDrag,
     parseNumber,
-    startRowDrag
+    startRowDrag,
+    remapMeasureRefs
 } from 'c/boardCpeUtils';
 
 /** Number vs Gauge as picture tiles (`c-board-picture-tiles`). */
@@ -49,7 +51,7 @@ const THRESHOLD_VARIANTS = THRESHOLD_VARIANT_OPTIONS.map(({ value }) => ({ label
  *
  * `context`: `builderContext` and `elementInfo` (Filter widget discovery for the Filter bindings).
  */
-export default class BoardMetricSetupSteps extends LightningElement {
+export default class BoardMetricSetupSteps extends SetupStepContent(LightningElement) {
     @api step;
 
     _config = {};
@@ -101,47 +103,6 @@ export default class BoardMetricSetupSteps extends LightningElement {
         return this.step === 'filterBindings';
     }
 
-    get builderContext() {
-        return this._context.builderContext || {};
-    }
-
-    get elementInfo() {
-        return this._context.elementInfo || {};
-    }
-
-    update(patch) {
-        this.dispatchEvent(new CustomEvent('change', { detail: { patch } }));
-    }
-
-    reportErrors(step, errors) {
-        this.dispatchEvent(new CustomEvent('steperrors', { detail: { step, errors } }));
-    }
-
-    // ---- Data ----------------------------------------------------------------------------------------------------
-
-    get objectApiName() {
-        return this.config.objectApiName || null;
-    }
-
-    get objectPickerValue() {
-        return this.objectApiName || '';
-    }
-
-    handleObject(event) {
-        const value = event.detail.value;
-        this.update({ objectApiName: value && String(value).trim() ? value : null });
-    }
-
-    get baseFilters() {
-        return this.config.baseFilters || null;
-    }
-
-    handleBaseFilters(event) {
-        event.stopPropagation();
-        const baseFilters = event.detail.baseFilters || [];
-        this.update({ baseFilters: baseFilters.length ? baseFilters : null });
-    }
-
     // ---- Measures ------------------------------------------------------------------------------------------------
 
     /** The Measures list; a single-aggregate config shows as its one visible Measure. */
@@ -150,9 +111,12 @@ export default class BoardMetricSetupSteps extends LightningElement {
     }
 
     /** Writes the Measures list; a single-aggregate config's keys move into it on the first Measure edit. */
+    /** A reorder or removal (`mapping`) keeps Formula slots and the Gauge's Measures on the same Measures. */
     handleMeasuresChange(event) {
+        const { measures, mapping } = event.detail;
         this.update({
-            measures: event.detail.measures,
+            measures,
+            ...(mapping ? remapMeasureRefs(this.config, measures, mapping) : {}),
             aggregateFunction: null,
             valueFieldApiName: null,
             format: null
@@ -166,15 +130,6 @@ export default class BoardMetricSetupSteps extends LightningElement {
     }
 
     // ---- Display (number | Gauge) --------------------------------------------------------------------------------
-
-    get subtitle() {
-        return this.config.subtitle || '';
-    }
-
-    handleSubtitle(event) {
-        const value = event.detail.value;
-        this.update({ subtitle: value && value.trim() ? value : null });
-    }
 
     get display() {
         return isGaugeDisplay(this.config) ? DISPLAY_GAUGE : DISPLAY_NUMBER;
@@ -376,17 +331,4 @@ export default class BoardMetricSetupSteps extends LightningElement {
     }
 
     // ---- Filter bindings -----------------------------------------------------------------------------------------
-
-    handleBindingsChange(event) {
-        event.stopPropagation();
-        this.update({ filterBindings: event.detail.filterBindings || null });
-    }
-
-    handleBindingState(event) {
-        event.stopPropagation();
-        this.reportErrors(
-            'filterBindings',
-            (event.detail.errors || []).map((item) => item.errorString)
-        );
-    }
 }

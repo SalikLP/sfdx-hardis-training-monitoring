@@ -27,6 +27,12 @@ export function isCurrencyPickerItem(item) {
 /**
  * A Filter widget config's `filters` list, reading the older Board-level `currencyPicker: { label }` setting as a
  * Currency picker item at the end of the list (unless the list already has one).
+ *
+ * Legacy shim: Board-level `currencyPicker` was written only by builds before the Currency picker became a Filter
+ * item (CRMA parity, currency ticket 04); an edit in the Setup dialog's Filters step stores the item in `filters` and
+ * drops the key. It can be removed (with the `delete merged.currencyPicker` in `parseAndMergeConfig` and the Setup dialog's
+ * Filters step summary fallback) once no saved Filter widget config carries a `currencyPicker` key, i.e. after every
+ * Board in production has had its Filters step saved once, or been migrated.
  */
 export function filterItemsOf(config) {
     const filters = Array.isArray(config?.filters) ? config.filters : [];
@@ -192,6 +198,51 @@ const CHILD_ROWS_REMOVED_ERROR = {
     retryable: false
 };
 
+/**
+ * Config keys renamed to the glossary's British spelling ("colour"): old spelling → new. Saved configs with the old
+ * spellings still load (`normalizeConfigSpelling`); nothing writes them any more.
+ */
+const RENAMED_KEYS = {
+    colorByCategory: 'colourByCategory',
+    waterfallIncreaseColor: 'waterfallIncreaseColour',
+    waterfallDecreaseColor: 'waterfallDecreaseColour',
+    waterfallTotalColor: 'waterfallTotalColour'
+};
+const RENAMED_MEASURE_KEYS = { color: 'colour' };
+
+function renameKeys(source, renames) {
+    const next = { ...source };
+    Object.entries(renames).forEach(([oldKey, newKey]) => {
+        if (Object.prototype.hasOwnProperty.call(next, oldKey)) {
+            if (!Object.prototype.hasOwnProperty.call(next, newKey)) {
+                next[newKey] = next[oldKey];
+            }
+            delete next[oldKey];
+        }
+    });
+    return next;
+}
+
+/**
+ * The one place old config key spellings become the current ones (`colorByCategory` → `colourByCategory`,
+ * `waterfall…Color` → `waterfall…Colour`, a Measure's `color` → `colour`); a key already in the new spelling wins.
+ * Read by the Widgets (`parseAndMergeConfig`) and by the Config editor (`orderConfig` in `c/boardCpeUtils`), so a
+ * saved config keeps working and the editor's next write uses the new spellings.
+ */
+export function normalizeConfigSpelling(config) {
+    if (!config || typeof config !== 'object' || Array.isArray(config)) {
+        return config;
+    }
+    const next = renameKeys(config, RENAMED_KEYS);
+    if (Array.isArray(next.measures)) {
+        next.measures = next.measures.map((measure) => {
+            const isObject = measure && typeof measure === 'object' && !Array.isArray(measure);
+            return isObject ? renameKeys(measure, RENAMED_MEASURE_KEYS) : measure;
+        });
+    }
+    return next;
+}
+
 export function parseAndMergeConfig(widgetType, rawConfigJson, topLevelProps = {}) {
     const cleanTop = {};
     ['boardId', 'title', 'objectApiName'].forEach((key) => {
@@ -252,6 +303,7 @@ export function parseAndMergeConfig(widgetType, rawConfigJson, topLevelProps = {
         }
     }
 
+    parsed = normalizeConfigSpelling(parsed);
     const merged = {
         version: 1,
         widgetType,

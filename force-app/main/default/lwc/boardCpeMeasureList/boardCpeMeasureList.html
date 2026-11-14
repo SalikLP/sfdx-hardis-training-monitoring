@@ -159,9 +159,9 @@
                         class="c-measure-color slds-m-top_xx-small"
                         label="Colour (optional)"
                         placeholder="Palette colour by position, or a hex colour such as #0176d3"
-                        value={row.color}
+                        value={row.colour}
                         data-index={row.index}
-                        data-name="color"
+                        data-name="colour"
                         onchange={handleMeasureText}
                     ></lightning-input>
                 </template>
@@ -179,7 +179,7 @@
                     <c-board-picture-tiles
                         class="c-measure-show-as slds-m-top_xx-small"
                         label="Show as"
-                        field-level-help="Percent of total: each category's share of the grand total. Percent of category: each series' share within its category. A percentage defaults to a percent format; set a number format below to override it."
+                        field-level-help={row.showAsHelp}
                         options={row.showAsOptions}
                         value={row.showAs}
                         data-index={row.index}
@@ -190,8 +190,8 @@
                     <c-board-picture-tiles
                         class="c-measure-render slds-m-top_xx-small"
                         label="Draw as"
-                        field-level-help="A Reference line draws the Measure's value as one line across the chart, e.g. a target or an average."
-                        options={measureRenderOptions}
+                        field-level-help={row.renderHelp}
+                        options={row.renderOptions}
                         value={row.render}
                         data-index={row.index}
                         onchange={handleMeasureRender}

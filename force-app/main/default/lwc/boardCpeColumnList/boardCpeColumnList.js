@@ -9,9 +9,10 @@ import {
     nextSequentialId,
     overRowDrag,
     resolveFieldDescribe,
-    startRowDrag
+    startRowDrag,
+    containInnerChanges
 } from 'c/boardCpeUtils';
-import { bucketFieldOptions, bucketIdOf, findBucketField } from 'c/boardBucketFields';
+import { bucketIdOf, findBucketField, ownAndBoardBucketFieldOptions } from 'c/boardBucketFields';
 
 const DISPLAY_AS_OPTIONS = [
     { label: 'Auto (from field type)', value: 'auto' },
@@ -46,6 +47,10 @@ const DATA_BAR_TYPES = new Set(['INTEGER', 'LONG', 'DOUBLE', 'CURRENCY', 'PERCEN
  * Fires a non-bubbling `change` event with `detail.columns` (the full, re-ordered/edited array).
  */
 export default class BoardCpeColumnList extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     _objectApiName;
     @api addLabel = 'Add column';
     /** Prefix of generated column ids (`col1`, `col2`, …). */
@@ -57,6 +62,8 @@ export default class BoardCpeColumnList extends LightningElement {
     _columns = [];
     /** The Widget's Bucket fields, offered as columns (`fieldPath: 'bucket:<id>'`). */
     @api bucketFields = [];
+    /** The Board's Bucket fields (of its Filter widget), offered too unless an own one has the same id. */
+    @api boardBucketFields = [];
     /** Drag-to-reorder state (see the drag helpers in c/boardCpeUtils). */
     drag = NO_DRAG;
 
@@ -119,8 +126,9 @@ export default class BoardCpeColumnList extends LightningElement {
         return this._columns.length > 0;
     }
 
+    /** The Widget's own Bucket fields, then the Board's not shadowed by an own one with the same id. */
     get bucketOptions() {
-        return bucketFieldOptions(this.bucketFields);
+        return ownAndBoardBucketFieldOptions(this.bucketFields, this.boardBucketFields);
     }
 
     get hasBucketFields() {
@@ -133,7 +141,7 @@ export default class BoardCpeColumnList extends LightningElement {
         if (id === null) {
             return null;
         }
-        return findBucketField(this.bucketFields, id)?.label || id;
+        return (findBucketField(this.bucketFields, id) || findBucketField(this.boardBucketFields, id))?.label || id;
     }
 
     get rows() {

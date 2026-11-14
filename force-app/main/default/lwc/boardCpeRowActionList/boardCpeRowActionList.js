@@ -8,7 +8,8 @@ import {
     moveItem,
     nextSequentialId,
     overRowDrag,
-    startRowDrag
+    startRowDrag,
+    containInnerChanges
 } from 'c/boardCpeUtils';
 
 const TYPE_OPTIONS = [
@@ -30,6 +31,10 @@ const PLACEMENT_OPTIONS = [
  * `detail.rowActions` (the full, re-ordered/edited array).
  */
 export default class BoardCpeRowActionList extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     @api objectApiName;
 
     typeOptions = TYPE_OPTIONS;
@@ -137,6 +142,10 @@ export default class BoardCpeRowActionList extends LightningElement {
     handleText(event) {
         const value = event.detail.value;
         this.updateAction(event, { [event.target.dataset.name]: value && value.trim() ? value : null });
+    }
+
+    handleFlow(event) {
+        this.updateAction(event, { flowApiName: event.detail.value || null });
     }
 
     handleChoice(event) {

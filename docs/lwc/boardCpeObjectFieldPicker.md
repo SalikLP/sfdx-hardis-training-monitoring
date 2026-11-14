@@ -16,12 +16,12 @@ Polymorphic lookups traverse to `User` when possible, matching `BoardQueryServic
 ### BoardCpeObjectFieldPicker
 
 Searchable object picker (`mode="object"`), capability-filtered field picker with 1–5 hop parent dot-path and
-`Child(ForeignKey).Field` builder (`mode="field"`), and child relationship selector (`mode="childRelationship"`),
-backed by `BoardSchemaService`.
+`Child(ForeignKey).Field` builder (`mode="field"`), child relationship selector (`mode="childRelationship"`), and
+picker of the org's active Screen Flows (`mode="screenFlow"`), backed by `BoardSchemaService`.
 
 Fires a non-bubbling `change` event: `{ value, object }` (object), `{ value, field, objectApiName }` (field, where
 `objectApiName` is the leaf field's object), `{ value: 'Child(FK)', childRelationship }` (childRelationship), or
-`{ value: null }` when cleared.
+`{ value, flow }` (screenFlow, the flow's API name), or `{ value: null }` when cleared.
 
 **Kind**: global class  
 **Extends**: <code>LightningElement</code>  
@@ -47,6 +47,12 @@ Parent relationship hops allowed in a field path (0–5, default 5).
 
 **Kind**: instance property (getter) of <code>BoardCpeObjectFieldPicker</code>  
 **Decorators**: <code>@api</code>  
+
+#### isFlatListMode
+
+Object and Screen Flow modes pick from one flat list of `{ apiName, label }` that needs no object.
+
+**Kind**: instance property (getter) of <code>BoardCpeObjectFieldPicker</code>  
 
 #### requiredTests
 

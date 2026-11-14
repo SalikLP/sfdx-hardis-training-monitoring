@@ -87,7 +87,9 @@
 | BoardTableAggregateCursor | Lightning Controller |
 | BoardTableAggregateCursorTest | Test |
 | BoardTableAggregateEngine | Class |
+| BoardTableAggregateEngineLevelsTest | Test |
 | BoardTableAggregateEngineTest | Test |
+| BoardTableAggregateLevelsTest | Test |
 | BoardTableBucketColumns | Class |
 | BoardTableBucketGroup | Class |
 | BoardTableCurrency | Class |
@@ -95,6 +97,7 @@
 | BoardTableEngineTest | Test |
 | BoardTableGroupBarScales | Class |
 | BoardTableGrouping | Lightning Controller |
+| BoardTableGroupLevel | Class |
 | BoardTableGroupSummaries | Class |
 | BoardTableQuery | Lightning Controller |
 | BoardTableRowLimit | Class |

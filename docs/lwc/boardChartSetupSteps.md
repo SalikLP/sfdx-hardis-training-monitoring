@@ -42,141 +42,147 @@ path) fire `steperrors` with `detail.step` and `detail.errors`.
 (Filter widget discovery for the Filter bindings).
 
 **Kind**: global class  
-**Extends**: <code>LightningElement</code>  
+**Extends**: <code>SetupStepContent</code>  
 
 #### config
 
 The Setup dialog's draft config.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 **Decorators**: <code>@api</code>  
 
 #### groupByType
 
 `Schema.DisplayType` of the Group by leaf field, once known.
 
-**Kind**: instance property of <code>BoardChartSetupSteps</code>  
+**Kind**: global property  
 **Default**: <code>null</code>  
 
 #### boardBucketFields
 
 Bucket fields of the Board's Filter widget, usable by id.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### handleFormulaCheck(event)
 
 FormulaEval build errors of the Formula measures, checked on the server by the Measures list.
 
-**Kind**: instance method of <code>BoardChartSetupSteps</code>  
+**Kind**: global function  
 
 #### resolveGroupByType()
 
 Describes the saved Group by path (e.g. after reopening the editor) to decide which options apply.
 
-**Kind**: instance method of <code>BoardChartSetupSteps</code>  
+**Kind**: global function  
 
 #### panelField
 
 The Panel field (Small multiples): a Cross-object measure maps a field of its source object to it too.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### handleChartType(event)
 
 Only `chartType` changes: the other types' settings stay in the config, so switching back restores them.
 
-**Kind**: instance method of <code>BoardChartSetupSteps</code>  
+**Kind**: global function  
 
 #### showBarSettings
 
 Bar-only settings: stack mode and colour by category (orientation is in the shell).
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### isSingleMeasureType
 
 Pie, donut and polarArea: one Measure, no series field, always coloured by category.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### showStackBy
 
 Stack by is hidden for one-Measure types, unless a leftover value needs clearing.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### handleWaterfallColor(event)
 
 A colour equal to its default is not stored, so the default keeps following the code.
 
-**Kind**: instance method of <code>BoardChartSetupSteps</code>  
+**Kind**: global function  
 
 #### maxCategories
 
 Max categories of the chart type; Small multiples show at most 50 per Panel.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### measureLabels
 
 Each Measure's label for the panel sort: the Admin's label, else e.g. `Record Count` or `SUM of Amount`.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### categoryNoun
 
 What a category is drawn as: `bars` on a bar chart, else `categories`.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### groupByPickerValue
 
 The Group by field picker shows nothing while a Bucket field is the Group by.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### hasBucketFields
 
 The Widget's own Bucket fields or the Board's (its Filter widget's), so the Bucket field pickers show.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### bucketOptions
 
 The Widget's own Bucket fields, then the Board's not shadowed by an own one with the same id.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### handleBucketFields(event)
 
 Writes the Bucket fields; a Group by, Stack by or Panel field on a removed Bucket field is cleared.
 
-**Kind**: instance method of <code>BoardChartSetupSteps</code>  
+**Kind**: global function  
 
 #### stackByDisabled
 
 Several Measures disable the Stack by field: a chart shows several Measures or one split by series.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### canShareCategory
 
 Percent of category shares a category between its series or between several Measures.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>  
+**Kind**: instance property (getter)  
 
-#### updateMeasures(measures)
+#### updateMeasures(measures, [refs])
 
-Writes the Measures list; turning a Measure non-additive turns an "Other" bar into truncation.
+Writes the Measures list; Measures that can't merge into "Other" (`otherBarProblem`) turn it into truncation.
 
-**Kind**: instance method of <code>BoardChartSetupSteps</code>  
+**Kind**: global function  
 
-#### nonAdditiveFunction
+#### handleMeasuresChange(event)
 
-The first Measure that can't be summed into "Other" (not COUNT or SUM), or null.
+A reorder or removal (`mapping`) keeps Formula slots and the Panel headline / sort on the same Measures.
 
-**Kind**: instance property (getter) of <code>BoardChartSetupSteps</code>
+**Kind**: global function  
+
+#### otherProblem
+
+Why the Measures can't have an "Other" bar (`otherBarProblem`), or null.
+
+**Kind**: instance property (getter)
 
 ## Files
 

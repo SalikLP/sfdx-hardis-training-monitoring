@@ -391,10 +391,6 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
-        <apexClass>BoardQueryServiceChildRowsTest</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
         <apexClass>BoardQueryServiceCurrencyTest</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -491,7 +487,15 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>BoardTableAggregateEngineLevelsTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>BoardTableAggregateEngineTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardTableAggregateLevelsTest</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -516,6 +520,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>BoardTableGroupBarScales</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>BoardTableGroupLevel</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -568,10 +576,6 @@
     </classAccesses>
     <classAccesses>
         <apexClass>InstallationSchedulerTest</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>ProtoTableQueryService</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -6317,6 +6321,15 @@
         <allowEdit>true</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>true</modifyAllRecords>
+        <object>DataKitPackageActivation</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>true</modifyAllRecords>
         <object>DataKnowledgeDataspcScope</object>
         <viewAllFields>false</viewAllFields>
         <viewAllRecords>true</viewAllRecords>
@@ -9532,10 +9545,6 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>Proto_Board_App_Page</tab>
-        <visibility>Hidden</visibility>
-    </tabVisibilities>
-    <tabVisibilities>
-        <tab>Proto_Table_Widget_Lab</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>

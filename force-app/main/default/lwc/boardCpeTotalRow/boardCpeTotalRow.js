@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import { TABLE_SUMMARY_FUNCTIONS, isPlainObject, resolveFieldDescribe } from 'c/boardCpeUtils';
+import { TABLE_SUMMARY_FUNCTIONS, isPlainObject, resolveFieldDescribe, containInnerChanges } from 'c/boardCpeUtils';
 
 const SUMMARY_LABELS = { SUM: 'Sum', AVG: 'Average', MIN: 'Min', MAX: 'Max' };
 const SUMMARY_OPTIONS = TABLE_SUMMARY_FUNCTIONS.map((value) => ({ label: SUMMARY_LABELS[value], value }));
@@ -14,6 +14,10 @@ const DEFAULT_SUMMARIES = ['SUM'];
  * column array with `summaries` set or removed).
  */
 export default class BoardCpeTotalRow extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     @api showTotalRow = false;
     /** Row grouping is on: Group and Subtotal rows show the summaries, so the pickers show with the Total row off. */
     @api grouped = false;

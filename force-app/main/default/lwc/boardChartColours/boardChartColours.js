@@ -7,8 +7,9 @@
 
 import { bucketIdOf, findBucketField } from 'c/boardBucketFields';
 
-const OTHER_GREY = '#747474';
-const BLANK_GREY = '#9a9a9a';
+/** Neutral greys for the "Other" roll-up and the "(Blank)" value; never taken from the palette. */
+export const OTHER_COLOR = '#747474';
+export const BLANK_COLOR = '#9a9a9a';
 
 const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
 
@@ -36,6 +37,14 @@ export const SLDS_NAMED_COLOURS = [
     { label: 'Cloud blue', value: '#2f8fa0' },
     { label: 'Red', value: '#c23934' }
 ];
+
+/**
+ * The 12-colour categorical palette of every chart, in order: the named SLDS colours, constant in light and dark mode
+ * (each ≥ 3:1 on a white and a #181818 surface). The first 6 are the SLDS 2 mid-scale palette hooks
+ * `blue/teal/orange/pink/indigo/hot-orange-50` and match the `--board-chart-palette-1..6` CSS fallbacks; 7..12 can be
+ * overridden with `--board-chart-palette-7..12` (`resolveChartTheme` in `c/boardChartUtils`).
+ */
+export const SLDS_COLOR_SAFE_PALETTE = SLDS_NAMED_COLOURS.map((option) => option.value);
 
 /** The named colour for a hex value, or undefined for a custom hex. */
 export function namedColourOf(colour) {
@@ -227,13 +236,24 @@ export function resolveColours(items, theme) {
             return item.color;
         }
         if (item.isOther) {
-            return theme.otherColor || OTHER_GREY;
+            return theme.otherColor || OTHER_COLOR;
         }
         if (item.isBlank) {
-            return theme.blankColor || BLANK_GREY;
+            return theme.blankColor || BLANK_COLOR;
         }
         const color = palette[next % palette.length];
         next += 1;
         return color;
     });
+}
+
+/**
+ * Colour of each item by position only (e.g. a chart's Measures): like `resolveColours` but ignoring colours the
+ * items carry, so "Other" and "(Blank)" get their greys and every other item takes the next palette colour.
+ */
+export function assignColors(items, theme) {
+    return resolveColours(
+        items.map((item) => ({ isOther: item.isOther === true, isBlank: item.isBlank === true })),
+        theme
+    );
 }

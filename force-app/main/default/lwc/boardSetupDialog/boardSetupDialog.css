@@ -9,18 +9,45 @@
     width: 100%;
 }
 
-/* Keep step settings at a readable line length. */
+/* The step settings take the room the preview leaves, never less than a usable editor width. */
 .c-setup-content {
-    min-width: 0;
+    flex: 1 1 auto;
+    min-width: 30rem;
+}
+
+/* Beside an open preview the settings stop at a readable line length and the preview takes the rest. */
+.c-setup-content_beside-preview {
+    flex: 0 1 48rem;
+}
+
+/* Keep the step's intro and example at a readable line length when the settings span the modal. */
+.c-setup-step-help {
     max-width: 48rem;
 }
 
-/* Live preview on the right: about 2/3 of the modal when open; collapsed it keeps only its toggle. */
+/* Live preview on the right: the width the settings leave when open; collapsed it keeps only its toggle. */
 .c-setup-preview {
+    flex: 0 0 auto;
     border-left: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
 }
 
 .c-setup-preview_open {
-    flex: 0 0 60%;
+    flex: 1 1 24rem;
     min-width: 0;
+}
+
+/*
+ * Fitted to the visible modal body (measured by the dialog): the content is exactly that tall and each column scrolls
+ * on its own, so the modal body never shows a second scrollbar and the preview stays in view beside long settings.
+ */
+.c-setup_fitted {
+    height: var(--c-setup-visible-height);
+    overflow: hidden;
+}
+
+.c-setup_fitted > .c-setup-nav,
+.c-setup_fitted > .c-setup-content,
+.c-setup_fitted > .c-setup-preview {
+    min-height: 0;
+    overflow-y: auto;
 }

@@ -14,6 +14,14 @@
             object-api-name={objectApiName}
             onchange={handleBaseFilters}
         ></c-board-setup-base-filters>
+        <lightning-input
+            class="c-chart-data-provider slds-m-top_small"
+            label="Data provider (optional)"
+            placeholder="Apex class name"
+            field-level-help="An Apex class implementing BoardDataProvider that supplies the chart's values instead of querying the object. It receives the request after Filter bindings and Base filters; its errors show in the preview."
+            value={dataProvider}
+            onchange={handleDataProvider}
+        ></lightning-input>
     </template>
 
     <template lwc:if={isChartType}>
@@ -149,7 +157,7 @@
                 type="checkbox"
                 label="Colour by category"
                 field-level-help="Each category gets its own colour instead of one colour for the Measure."
-                checked={colorByCategory}
+                checked={colourByCategory}
                 onchange={handleColorByCategory}
             ></lightning-input>
         </template>
@@ -266,9 +274,9 @@
                 type="color"
                 label="Increase colour"
                 field-level-help="Waterfall steps are coloured by direction: up, down, and the Total bar."
-                data-key="waterfallIncreaseColor"
+                data-key="waterfallIncreaseColour"
                 data-kind="increase"
-                value={waterfallIncreaseColor}
+                value={waterfallIncreaseColour}
                 onchange={handleWaterfallColor}
             ></lightning-input>
             <lightning-input
@@ -276,9 +284,9 @@
                 type="color"
                 label="Decrease colour"
                 field-level-help="Waterfall steps are coloured by direction: up, down, and the Total bar."
-                data-key="waterfallDecreaseColor"
+                data-key="waterfallDecreaseColour"
                 data-kind="decrease"
-                value={waterfallDecreaseColor}
+                value={waterfallDecreaseColour}
                 onchange={handleWaterfallColor}
             ></lightning-input>
             <lightning-input
@@ -286,9 +294,9 @@
                 type="color"
                 label="Total colour"
                 field-level-help="Waterfall steps are coloured by direction: up, down, and the Total bar."
-                data-key="waterfallTotalColor"
+                data-key="waterfallTotalColour"
                 data-kind="total"
-                value={waterfallTotalColor}
+                value={waterfallTotalColour}
                 onchange={handleWaterfallColor}
             ></lightning-input>
         </template>

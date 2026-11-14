@@ -225,11 +225,7 @@ private class BoardQueryServiceTableAggregateTest {
     }
 
     @IsTest
-    static void groupingsTheAggregateCannotShowAreConfigErrors() {
-        Map<String, Object> twoLevels = aggregateRequest(null);
-        ((List<Object>) twoLevels.get('groupBy')).add(new Map<String, Object>{ 'fieldPath' => 'StageName' });
-        assertError(twoLevels, 'CONFIG_ERROR', 'Detail rows off');
-
+    static void columnsTheAggregateCannotShowAreConfigErrors() {
         Map<String, Object> longText = aggregateRequest(null);
         ((List<Object>) longText.get('columns'))
             .add(new Map<String, Object>{ 'id' => 'description', 'fieldPath' => 'Account.Description' });

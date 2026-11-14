@@ -1,4 +1,5 @@
 import { LightningElement, api } from 'lwc';
+import { containInnerChanges } from 'c/boardCpeUtils';
 
 const CROSS_OBJECT_KEYS = ['sourceObject', 'categoryMapping', 'panelMapping', 'filterBindings', 'dataProvider'];
 const FORECASTING_QUOTA = 'forecastingquota';
@@ -16,6 +17,10 @@ function text(value) {
  * removes every Cross-object key.
  */
 export default class BoardCpeCrossObjectMeasure extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     /** The Measure being edited. */
     @api measure;
     /** Chart widget: the source object needs a field matching the category. */

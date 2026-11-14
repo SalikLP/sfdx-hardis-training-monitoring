@@ -14,6 +14,14 @@
             object-api-name={objectApiName}
             onchange={handleBaseFilters}
         ></c-board-setup-base-filters>
+        <lightning-input
+            class="c-metric-data-provider slds-m-top_small"
+            label="Data provider (optional)"
+            placeholder="Apex class name"
+            field-level-help="An Apex class implementing BoardDataProvider that supplies the Metric's values instead of querying the object. It receives the request after Filter bindings and Base filters; its errors show in the preview."
+            value={dataProvider}
+            onchange={handleDataProvider}
+        ></lightning-input>
     </template>
 
     <template lwc:if={isMeasures}>

@@ -7,6 +7,13 @@
 
 ## JS Documentation
 
+### OTHER_COLOR
+
+Neutral greys for the "Other" roll-up and the "(Blank)" value; never taken from the palette.
+
+**Kind**: global constant  
+**Default**: <code>'#747474'</code>  
+
 ### LIGHT_SURFACE
 
 Surfaces a chart colour must stand out on: the SLDS light and dark Widget backgrounds.
@@ -21,6 +28,16 @@ light and dark surfaces. A custom hex outside this set is the advanced option.
 
 **Kind**: global constant  
 **Default**: <code>[...]</code>  
+
+### SLDS_COLOR_SAFE_PALETTE
+
+The 12-colour categorical palette of every chart, in order: the named SLDS colours, constant in light and dark mode
+(each ≥ 3:1 on a white and a #181818 surface). The first 6 are the SLDS 2 mid-scale palette hooks
+`blue/teal/orange/pink/indigo/hot-orange-50` and match the `--board-chart-palette-1..6` CSS fallbacks; 7..12 can be
+overridden with `--board-chart-palette-7..12` (`resolveChartTheme` in `c/boardChartUtils`).
+
+**Kind**: global constant  
+**Default**: <code>SLDS_NAMED_COLOURS.map((option) =&gt; option.value)</code>  
 
 ### namedColourOf(colour)
 
@@ -86,6 +103,13 @@ colour wins over a rule colour; "Other" and "(Blank)" are never coloured.
 Colour of each item in order: an item's own `color` wins; the others take palette colours in order, skipping the
 palette colours that own colours in this list already use (so no two values share a colour while the palette lasts);
 "Other" and "(Blank)" items get their greys and never use up a palette colour.
+
+**Kind**: global function  
+
+### assignColors(items, theme)
+
+Colour of each item by position only (e.g. a chart's Measures): like `resolveColours` but ignoring colours the
+items carry, so "Other" and "(Blank)" get their greys and every other item takes the next palette colour.
 
 **Kind**: global function
 

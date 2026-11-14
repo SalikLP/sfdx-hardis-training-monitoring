@@ -28,12 +28,12 @@ Design-time errors of the rows (`[{ key: 'filterBindings', errorString }]`).
 **Kind**: instance method of <code>BoardCpeFilterBindings</code>  
 **Decorators**: <code>@api</code>  
 
-#### reset()
+#### disconnectedCallback()
 
-Forgets the rows switched to "Field path" and the hand-added ids (e.g. after pasting a whole config).
+A "Field path" row still waiting for a path lives only here, so it is dropped when the editor goes away (the
+Admin leaves the Setup dialog step): report the state without it, so its error doesn't outlive the row.
 
-**Kind**: instance method of <code>BoardCpeFilterBindings</code>  
-**Decorators**: <code>@api</code>
+**Kind**: instance method of <code>BoardCpeFilterBindings</code>
 
 ## Files
 

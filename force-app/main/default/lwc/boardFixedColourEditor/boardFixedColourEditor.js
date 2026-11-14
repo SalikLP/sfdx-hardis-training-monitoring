@@ -1,5 +1,6 @@
 import { LightningElement, api } from 'lwc';
 import { SLDS_NAMED_COLOURS, contrastWarning, fixedColourErrors, namedColourOf } from 'c/boardChartColours';
+import { containInnerChanges } from 'c/boardCpeUtils';
 
 const CUSTOM = 'custom';
 const COLOUR_OPTIONS = [...SLDS_NAMED_COLOURS, { label: 'Custom hex colour…', value: CUSTOM }];
@@ -12,6 +13,10 @@ const COLOUR_OPTIONS = [...SLDS_NAMED_COLOURS, { label: 'Custom hex colour…', 
  * Fires `change` with `detail.value`, the whole edited list, after every edit.
  */
 export default class BoardFixedColourEditor extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     colourOptions = COLOUR_OPTIONS;
     entries = [];
     /** Rows switched to a custom hex while their colour is still a named one. */

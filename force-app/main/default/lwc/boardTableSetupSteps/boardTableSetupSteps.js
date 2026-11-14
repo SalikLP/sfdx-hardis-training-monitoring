@@ -1,4 +1,5 @@
 import { LightningElement, api } from 'lwc';
+import { SetupStepContent } from 'c/boardSetupStepContent';
 import {
     DATE_FIELD_TYPES,
     DATE_GRANULARITY_OPTIONS,
@@ -7,7 +8,7 @@ import {
     resolveFieldDescribe,
     rowLimitMax
 } from 'c/boardCpeUtils';
-import { bucketFieldOptions, bucketIdOf, findBucketField } from 'c/boardBucketFields';
+import { bucketIdOf, findBucketField, ownAndBoardBucketFieldOptions } from 'c/boardBucketFields';
 
 const DIRECTION_OPTIONS = [
     { label: 'Ascending', value: 'ASC' },
@@ -53,7 +54,7 @@ const SUBTOTALS_TILES = [
  *
  * `context`: `builderContext` and `elementInfo` (Filter widget discovery for the Filter bindings).
  */
-export default class BoardTableSetupSteps extends LightningElement {
+export default class BoardTableSetupSteps extends SetupStepContent(LightningElement) {
     @api step;
 
     _config = {};
@@ -113,56 +114,6 @@ export default class BoardTableSetupSteps extends LightningElement {
         return this.step === 'filterBindings';
     }
 
-    get builderContext() {
-        return this._context.builderContext || {};
-    }
-
-    get elementInfo() {
-        return this._context.elementInfo || {};
-    }
-
-    update(patch) {
-        this.dispatchEvent(new CustomEvent('change', { detail: { patch } }));
-    }
-
-    get objectApiName() {
-        return this.config.objectApiName || null;
-    }
-
-    // ---- Data ----------------------------------------------------------------------------------------------------
-
-    get objectPickerValue() {
-        return this.objectApiName || '';
-    }
-
-    handleObject(event) {
-        const value = event.detail.value;
-        this.update({ objectApiName: value && String(value).trim() ? value : null });
-    }
-
-    get baseFilters() {
-        return this.config.baseFilters || null;
-    }
-
-    handleBaseFilters(event) {
-        event.stopPropagation();
-        const baseFilters = event.detail.baseFilters || [];
-        this.update({ baseFilters: baseFilters.length ? baseFilters : null });
-    }
-
-    // ---- Filter bindings -----------------------------------------------------------------------------------------
-
-    handleBindingsChange(event) {
-        event.stopPropagation();
-        this.update({ filterBindings: event.detail.filterBindings || null });
-    }
-
-    handleBindingState(event) {
-        event.stopPropagation();
-        const errors = (event.detail.errors || []).map((item) => item.errorString);
-        this.dispatchEvent(new CustomEvent('steperrors', { detail: { step: 'filterBindings', errors } }));
-    }
-
     // ---- Columns -------------------------------------------------------------------------------------------------
 
     get columns() {
@@ -178,13 +129,20 @@ export default class BoardTableSetupSteps extends LightningElement {
         return Array.isArray(this.config.bucketFields) ? this.config.bucketFields : [];
     }
 
+    /** Bucket fields of the Board's Filter widget, usable as columns by id. */
+    get boardBucketFields() {
+        return Array.isArray(this._context.boardBucketFields) ? this._context.boardBucketFields : [];
+    }
+
     /** Writes the Bucket fields; the columns and group field of a removed Bucket field go with it. */
     handleBucketFields(event) {
         const bucketFields = event.detail.value;
         const patch = { bucketFields };
         const isKept = (fieldPath) => {
             const id = bucketIdOf(fieldPath);
-            return id === null || Boolean(findBucketField(bucketFields, id));
+            return (
+                id === null || Boolean(findBucketField(bucketFields, id) || findBucketField(this.boardBucketFields, id))
+            );
         };
         const kept = this.columns.filter((column) => isKept(column.fieldPath));
         if (kept.length !== this.columns.length) {
@@ -268,11 +226,16 @@ export default class BoardTableSetupSteps extends LightningElement {
 
     /** Offered with Detail rows off; kept visible while a flagged Bucket group (Detail rows on) is set. */
     get showBucketGroup() {
-        return (this.detailRowsOff && this.bucketFields.length > 0) || this.groupsByBucket;
+        return (this.detailRowsOff && this.bucketGroupFieldOptions.length > 0) || this.groupsByBucket;
+    }
+
+    /** The Widget's own Bucket fields, then the Board's not shadowed by an own one with the same id. */
+    get bucketGroupFieldOptions() {
+        return ownAndBoardBucketFieldOptions(this.bucketFields, this.boardBucketFields);
     }
 
     get bucketGroupOptions() {
-        return [{ label: 'None', value: '' }, ...bucketFieldOptions(this.bucketFields)];
+        return [{ label: 'None', value: '' }, ...this.bucketGroupFieldOptions];
     }
 
     get bucketGroupValue() {

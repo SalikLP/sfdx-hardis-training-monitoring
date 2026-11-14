@@ -329,6 +329,27 @@ private class BoardSchemaServiceTest {
     }
 
     @IsTest
+    static void screenFlowsListActiveScreenFlowsWithApiNameAndLabel() {
+        // Flows can't be created in a test: whatever the org has, every entry must be an active Screen Flow.
+        List<BoardSchemaService.FlowInfo> flows = BoardSchemaService.getScreenFlows(0);
+
+        Set<String> activeScreenFlows = new Set<String>();
+        for (FlowDefinitionView flow : [
+            SELECT ApiName
+            FROM FlowDefinitionView
+            WHERE ProcessType = 'Flow' AND IsActive = TRUE
+            LIMIT 2000
+        ]) {
+            activeScreenFlows.add(flow.ApiName);
+        }
+        Assert.areEqual(activeScreenFlows.size(), flows.size(), 'One entry per active Screen Flow');
+        for (BoardSchemaService.FlowInfo flow : flows) {
+            Assert.isTrue(activeScreenFlows.contains(flow.apiName), 'Not an active Screen Flow: ' + flow.apiName);
+            Assert.isFalse(String.isBlank(flow.label), 'Every flow has a label: ' + flow.apiName);
+        }
+    }
+
+    @IsTest
     static void searchTreatsLikeWildcardsAsLiterals() {
         List<BoardSchemaService.UserQueueOption> options = BoardSchemaService.searchUsersAndQueues('%_%', true, 0);
 

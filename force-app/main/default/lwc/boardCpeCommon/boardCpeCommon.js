@@ -1,10 +1,8 @@
 import { LightningElement, api } from 'lwc';
 import BoardSetupDialog from 'c/boardSetupDialog';
 import { normalizeBoardError } from 'c/boardConfigUtils';
-import { chartTypeHasSetting } from 'c/boardChartUtils';
 import {
     DIALOG_SAVE,
-    ORIENTATION_OPTIONS,
     WIDGET_TYPES,
     applyPatch,
     configErrors,
@@ -24,7 +22,7 @@ import {
     topLevelKeysFor,
     validateConfigText
 } from 'c/boardCpeUtils';
-import { filterBindingsSummary, stepsFor } from 'c/boardSetupSteps';
+import { stepsFor } from 'c/boardSetupSteps';
 import { bindingRows, bindingsOf, discoverFilterWidgets } from 'c/boardCpeBindings';
 
 const CHANGED_EVENT = 'configuration_editor_input_value_changed';
@@ -34,33 +32,21 @@ const DELETED_EVENT = 'configuration_editor_input_value_deleted';
 const SECTIONS = [
     {
         name: 'board',
-        errorKeys: ['boardId', 'title', 'objectApiName', 'orientation'],
+        errorKeys: ['boardId', 'title'],
         summary: (cpe) => cpe.boardSummary,
         openWhenNew: true
-    },
-    {
-        name: 'bindings',
-        errorKeys: ['filterBindings'],
-        summary: (cpe) => cpe.bindingsSummary,
-        hasError: (cpe) => cpe.hasBindingDraftErrors
     },
     // Advanced: Config JSON; always collapsed on load.
     { name: 'advanced', summary: (cpe) => cpe.advancedSummary, hasError: (cpe) => cpe.hasDraftErrors }
 ];
 
 /**
- * Shared Flow Custom Property Editor shell composed by every Board CPE.
- *
- * Renders the Board Config section (Board id/title, plus the Object Picker for data Widgets and orientation for the
- * Chart widget), the Filter bindings section (`builderContext` Filter widget discovery + `filterBindings` overrides,
- * data Widgets), and the "Advanced: Config JSON" portability section. Each is a `c-board-cpe-section`: Board starts
- * open for a new Widget, everything else starts collapsed, and a section with a validation error is forced open.
- *
- * With `setup-dialog` (ADR 0002), the panel is an overview: Board (Board id, title, *Wait for Filter widget*), one
- * summary line per Setup dialog step with "Edit…" opening the dialog (`c/boardSetupDialog`) at that step, and
- * Advanced: Config JSON. Object, orientation, Filter bindings and Base filters are then edited only in the dialog's
- * steps; a Save there applies the whole draft as one config change. Every Widget's Config editor uses this mode; Base
- * filters exist only as the Data step of the Setup dialog.
+ * Shared Flow Custom Property Editor shell composed by every Board CPE (ADR 0002). The panel is an overview: Board
+ * (Board id, title, *Wait for Filter widget* for data Widgets), one summary line per Setup dialog step with "Edit…"
+ * opening the dialog (`c/boardSetupDialog`) at that step, and Advanced: Config JSON. Everything else (object,
+ * orientation, Filter bindings, Base filters, ...) is edited only in the dialog's steps; a Save there applies the
+ * whole draft as one config change. Board and Advanced are `c-board-cpe-section`s: Board starts open for a new Widget,
+ * Advanced collapsed, and a section with a validation error is forced open.
  *
  * Every edit dispatches `configuration_editor_input_value_changed` (or `..._deleted` for cleared values) for the
  * serialized `configJson`, and also for the discrete top-level property when `boardId`, `title`, or `objectApiName`
@@ -75,16 +61,11 @@ export default class BoardCpeCommon extends LightningElement {
     previewLoading = false;
     previewError = null;
 
-    /** Rows and errors reported by the Filter bindings editor (`bindingstate`), while it is shown. */
-    bindingState = null;
-
     /** Open state of the shell's Config sections: set once on load (a new Widget opens Board), then by the Admin. */
     sectionOpen = null;
     jsonDraft = null;
     draftErrors = [];
     drawerMessage = null;
-
-    orientationOptions = ORIENTATION_OPTIONS;
 
     _widgetType = 'metric';
     _inputVariables = [];
@@ -102,12 +83,6 @@ export default class BoardCpeCommon extends LightningElement {
         this._widgetType = WIDGET_TYPES.includes(value) ? value : 'metric';
         this.syncFromInputs();
     }
-
-    /**
-     * Slim panel for a Widget edited in its Setup dialog: Object, orientation and Filter bindings move into the
-     * dialog's steps, and the panel lists one summary line per step with "Edit…".
-     */
-    @api setupDialog = false;
 
     /** What the step summaries can't read from the config (e.g. the Group by field type), from the Widget's CPE. */
     @api stepContext = {};
@@ -169,8 +144,8 @@ export default class BoardCpeCommon extends LightningElement {
     }
 
     /**
-     * Design-time errors (`[{ key, errorString }]`): the Config JSON draft or saved JSON, the shared envelope rules,
-     * the widget's own rules (`configErrors`), and Filter bindings switched to "Field path" without a path.
+     * Design-time errors (`[{ key, errorString }]`): the Config JSON draft or saved JSON, the shared envelope rules and
+     * the widget's own rules (`configErrors`).
      */
     @api
     validate() {
@@ -190,10 +165,6 @@ export default class BoardCpeCommon extends LightningElement {
                 boardBucketFields: this.boardBucketFields
             })
         );
-        const bindingsEditor = this.bindingsEditor;
-        if (bindingsEditor) {
-            errors.push(...bindingsEditor.validate());
-        }
         return errors;
     }
 
@@ -228,6 +199,13 @@ export default class BoardCpeCommon extends LightningElement {
         this.notifyConfig();
     }
 
+    /**
+     * Applies one config change: one `configJson` event, plus one per changed top-level property. The top-level
+     * events are required, not duplicates: `boardId`, `title` and `objectApiName` are separate Flow inputs in the
+     * Widget's meta, and Flow Builder keeps their last value. `readCpeState` lets a stored top-level value override
+     * `configJson` when the editor reopens, so a Setup dialog Save that changes the object without also writing
+     * `objectApiName` would reopen on the old object.
+     */
     commit(nextConfig, topLevelKeys = []) {
         this.config = orderConfig(this._widgetType, nextConfig);
         topLevelKeys.forEach((key) => this.emitInput(key, this.config[key]));
@@ -311,12 +289,6 @@ export default class BoardCpeCommon extends LightningElement {
         );
     }
 
-    /** Filter bindings switched to "Field path" without a path, or binding rows with an invalid path. */
-    get hasBindingDraftErrors() {
-        const state = this.bindingState;
-        return Boolean(state) && (state.errors.length > 0 || state.rows.some((row) => row.error));
-    }
-
     /** `default · Account`; the object part only for data Widgets. */
     get boardSummary() {
         const boardId = this.boardIdValue || 'default';
@@ -325,11 +297,6 @@ export default class BoardCpeCommon extends LightningElement {
         }
         const object = this.objectApiNameValue || this.references.objectApiName || 'No object';
         return joinSummary([boardId, object]);
-    }
-
-    /** `3 bound · 1 opted out`, or `None` without any Filter to bind. */
-    get bindingsSummary() {
-        return filterBindingsSummary(this.bindingRows);
     }
 
     get advancedSummary() {
@@ -349,25 +316,6 @@ export default class BoardCpeCommon extends LightningElement {
         return isDataWidget(this._widgetType);
     }
 
-    get isChart() {
-        return this._widgetType === 'chart';
-    }
-
-    /** The Object Picker: in the panel for data Widgets, unless their Setup dialog's Data step edits it. */
-    get showObject() {
-        return this.isDataWidget && !this.setupDialog;
-    }
-
-    /** The Filter bindings section: in the panel for data Widgets, unless their Setup dialog has the step. */
-    get showBindings() {
-        return this.isDataWidget && !this.setupDialog;
-    }
-
-    /** Orientation is a bar setting: hidden (but kept) while the Chart widget draws another chart type. */
-    get showOrientation() {
-        return !this.setupDialog && this.isChart && chartTypeHasSetting(this.config.chartType, 'orientation');
-    }
-
     get boardIdValue() {
         return this.config.boardId || '';
     }
@@ -378,10 +326,6 @@ export default class BoardCpeCommon extends LightningElement {
 
     get objectApiNameValue() {
         return this.config.objectApiName || '';
-    }
-
-    get orientationValue() {
-        return this.config.orientation || 'vertical';
     }
 
     get referenceNotes() {
@@ -403,10 +347,6 @@ export default class BoardCpeCommon extends LightningElement {
         this.setTopLevel('title', event.detail.value);
     }
 
-    handleObjectChange(event) {
-        this.setTopLevel('objectApiName', event.detail.value);
-    }
-
     /** Wait for Filter widget: on unless the config says `false`. */
     get waitForFilterWidgetValue() {
         return this.config.waitForFilterWidget !== false;
@@ -419,17 +359,6 @@ export default class BoardCpeCommon extends LightningElement {
             delete next.waitForFilterWidget;
         } else {
             next.waitForFilterWidget = false;
-        }
-        this.commit(next);
-    }
-
-    handleOrientationChange(event) {
-        // Orientation is a bar setting in the Widget config, not a top-level property.
-        const next = { ...this.config };
-        if (hasText(event.detail.value)) {
-            next.orientation = event.detail.value;
-        } else {
-            delete next.orientation;
         }
         this.commit(next);
     }
@@ -451,22 +380,12 @@ export default class BoardCpeCommon extends LightningElement {
 
     // ---- Filter bindings -----------------------------------------------------------------------------------------
 
-    get bindingsEditor() {
-        return this.template.querySelector('c-board-cpe-filter-bindings');
-    }
-
     get discovery() {
         return discoverFilterWidgets(this._builderContext, this._elementInfo, this.config.boardId);
     }
 
-    /**
-     * The Filter binding rows: as the bindings editor reports them while it is shown (it knows the rows switched to
-     * "Field path" and the hand-added ids), else from the config (the slim panel of the Setup dialog).
-     */
+    /** The Filter binding rows of the config, for the Filter bindings step summary. */
     get bindingRows() {
-        if (this.bindingState) {
-            return this.bindingState.rows;
-        }
         return bindingRows({
             discovery: this.discovery,
             bindings: bindingsOf(this.config),
@@ -476,20 +395,6 @@ export default class BoardCpeCommon extends LightningElement {
             previewError: this.previewError,
             bucketFields: this.config.bucketFields
         });
-    }
-
-    handleBindingsChange(event) {
-        const next = { ...this.config };
-        if (event.detail.filterBindings) {
-            next.filterBindings = event.detail.filterBindings;
-        } else {
-            delete next.filterBindings;
-        }
-        this.commit(next);
-    }
-
-    handleBindingState(event) {
-        this.bindingState = event.detail;
     }
 
     // ---- Setup dialog --------------------------------------------------------------------------------------------
@@ -514,6 +419,10 @@ export default class BoardCpeCommon extends LightningElement {
             hasError: step.validate(this.config, context).length > 0,
             editLabel: `Edit ${step.label}`
         }));
+    }
+
+    get hasSetupSteps() {
+        return stepsFor(this._widgetType).length > 0;
     }
 
     /**
@@ -620,9 +529,6 @@ export default class BoardCpeCommon extends LightningElement {
         }
         this.jsonDraft = null;
         this.draftErrors = [];
-        if (this.bindingsEditor) {
-            this.bindingsEditor.reset();
-        }
         this.references = references;
         this.commit(
             config,

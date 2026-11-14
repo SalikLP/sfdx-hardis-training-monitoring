@@ -12,6 +12,8 @@
  * - `validate`: the step's errors over the WHOLE draft config, so an upstream change (e.g. a different object) makes
  *   a later step invalid without clearing anything.
  * - `intro` / `example`: a short explanation and a worked example shown when the step opens.
+ * - `retired` (optional): `[{ message, keys }]`, retired settings of a saved config whose error (`message`) the step
+ *   reports; the Setup dialog offers "Remove retired setting" on that error, which drops `keys` from the draft.
  *
  * `context` (all optional) carries what a pure function over the config can't know:
  * - `references`: top-level keys bound to Flow resources (`readCpeState`)
@@ -31,11 +33,15 @@ import {
     configErrors,
     countConditions,
     countLabel,
+    flattenConditions,
+    isConditionGroup,
+    isIgnoreBinding,
     isPlainObject,
     joinSummary,
+    MEASURES_REPLACED_MESSAGE,
     metricMeasuresSummary
 } from 'c/boardCpeUtils';
-import { filterItemsOf, isCurrencyPickerItem, metricMeasures } from 'c/boardConfigUtils';
+import { CHILD_ROWS_REMOVED_MESSAGE, filterItemsOf, isCurrencyPickerItem, metricMeasures } from 'c/boardConfigUtils';
 import { isGaugeDisplay } from 'c/boardMetricGauge';
 import { isCrossObjectMeasure } from 'c/boardCrossObjectMeasure';
 import { bucketIdOf, findBucketField } from 'c/boardBucketFields';
@@ -75,8 +81,105 @@ function fieldsOnObjectErrors(config, context, paths) {
     }
     return paths(config)
         .map((entry) => ({ ...entry, path: cleanString(entry.path) }))
-        .filter(({ path }) => path && bucketIdOf(path) === null && !isOnObject(path, objectFields))
+        .filter(({ path }) => path && checkablePath(path) && !isOnObject(path, objectFields))
         .map(({ key, label, path }) => error(key, `${label} "${path}" is not a field of ${object}.`));
+}
+
+/**
+ * Whether a path can be checked against the object's field describes: not a Bucket field reference, `SELF`, or a
+ * child semi-join (`Child(ForeignKey).Path`, whose relationship isn't among the object's fields).
+ */
+function checkablePath(path) {
+    return bucketIdOf(path) === null && path.toUpperCase() !== 'SELF' && !path.includes('(');
+}
+
+/** `{ key, label, path }` of every condition in a condition tree (a list of entries, or one group or condition). */
+function conditionPaths(tree, key, label) {
+    const entries = Array.isArray(tree) ? tree : [tree];
+    return flattenConditions(entries)
+        .filter((entry) => isPlainObject(entry) && !isConditionGroup(entry))
+        .map((condition) => ({ key, label, path: condition.fieldPath }));
+}
+
+/** Combines several `paths(config)` lists into one. */
+function allPaths(...lists) {
+    return (config) => lists.flatMap((paths) => paths(config));
+}
+
+/** The Base filters' fields (Data step): a condition tree on the Widget's object. */
+function baseFilterPaths(config) {
+    return conditionPaths(config.baseFilters || [], 'baseFilters', 'Base filter field').map((entry, index) => ({
+        ...entry,
+        label: `Base filter ${index + 1} field`
+    }));
+}
+
+/** The fields of a list of Measures read on the Widget's object: conditions and Average per record fields. */
+function measureFieldPaths(measures) {
+    return measures.flatMap((measure, index) => {
+        if (!isPlainObject(measure) || isCrossObjectMeasure(measure)) {
+            return [];
+        }
+        const label = `Measure ${index + 1}`;
+        return [
+            ...(measure.condition ? conditionPaths(measure.condition, 'measures', `${label} condition field`) : []),
+            { key: 'measures', label: `${label}: per-record field`, path: measure.perField }
+        ];
+    });
+}
+
+/** The fields of the Widget's own Bucket field rules. */
+function bucketRulePaths(config) {
+    return (Array.isArray(config.bucketFields) ? config.bucketFields : []).filter(isPlainObject).flatMap((field) =>
+        (Array.isArray(field.rules) ? field.rules : []).filter(isPlainObject).flatMap((rule, index) => {
+            const label = `Bucket field "${field.label || field.id}" rule ${index + 1} field`;
+            return rule.condition ? conditionPaths(rule.condition, 'bucketFields', label) : [];
+        })
+    );
+}
+
+/** The Filter binding paths set to a field path (each target of a multi-field binding). */
+function filterBindingPaths(config) {
+    const bindings = isPlainObject(config.filterBindings) ? config.filterBindings : {};
+    return Object.entries(bindings)
+        .filter(([, binding]) => typeof binding === 'string' && !isIgnoreBinding(binding))
+        .flatMap(([filterId, binding]) =>
+            binding
+                .split(',')
+                .map((path) => ({ key: 'filterBindings', label: `Filter binding "${filterId}" field`, path }))
+        );
+}
+
+/** The Table's Row action row fields: lookup targets, Create defaults' row fields and Screen Flow inputs. */
+function rowActionPaths(config) {
+    return (Array.isArray(config.rowActions) ? config.rowActions : [])
+        .filter(isPlainObject)
+        .flatMap((action, index) => {
+            const label = `Row action ${index + 1}`;
+            const rowFields = (list, what) =>
+                (Array.isArray(list) ? list : [])
+                    .filter(isPlainObject)
+                    .map((entry) => ({ key: 'rowActions', label: `${label} ${what} row field`, path: entry.rowField }));
+            return [
+                { key: 'rowActions', label: `${label} target`, path: action.target },
+                ...rowFields(action.defaults, 'default'),
+                ...rowFields(action.inputs, 'input')
+            ];
+        });
+}
+
+/** The Filter bindings step, shared by every data Widget: binding paths must be on the Widget's object. */
+function filterBindingsStep(widgetType) {
+    return step(widgetType, {
+        name: 'filterBindings',
+        label: 'Filter bindings',
+        required: false,
+        errorKeys: ['filterBindings'],
+        summary: (config, context = {}) => filterBindingsSummary(context.bindingRows),
+        extraErrors: (config, context) => fieldsOnObjectErrors(config, context, filterBindingPaths),
+        intro: "Choose which field of this Widget's object each Filter of the Board applies to, or opt out of a Filter.",
+        example: 'The Account filter applies to Opportunity.AccountId; the Owner filter is ignored.'
+    });
 }
 
 /**
@@ -114,8 +217,9 @@ export function dataStep(widgetType, overrides = {}) {
         name: 'data',
         label: 'Data',
         required: true,
-        errorKeys: ['objectApiName', 'baseFilters'],
+        errorKeys: ['objectApiName', 'baseFilters', 'dataProvider'],
         summary: dataSummary,
+        extraErrors: (config, context) => fieldsOnObjectErrors(config, context, baseFilterPaths),
         ...overrides
     });
 }
@@ -209,11 +313,12 @@ function chartGroupingPaths(config) {
     ];
 }
 
+/** The Chart widget's Measure fields that must exist on its object (a Cross-object measure reads another object). */
 function chartMeasurePaths(config) {
     return chartMeasures(config).map((measure, index) => ({
         key: 'measures',
         label: `Measure ${index + 1}: value field`,
-        path: measure && measure.valueFieldApiName
+        path: measure && !isCrossObjectMeasure(measure) ? measure.valueFieldApiName : null
     }));
 }
 
@@ -254,7 +359,13 @@ export const CHART_STEPS = [
         errorKeys: ['measures'],
         sections: { measure: (config) => chartMeasuresSummary(config) },
         summary: (config) => chartMeasuresSummary(config),
-        extraErrors: (config, context) => fieldsOnObjectErrors(config, context, chartMeasurePaths),
+        retired: [{ message: MEASURES_REPLACED_MESSAGE, keys: ['aggregateFunction', 'valueFieldApiName'] }],
+        extraErrors: (config, context) =>
+            fieldsOnObjectErrors(
+                config,
+                context,
+                allPaths(chartMeasurePaths, (c) => measureFieldPaths(chartMeasures(c)))
+            ),
         intro: 'Each Measure is one value per category: a count, a sum or average of a field, or a Formula over the other Measures.',
         example: 'Win rate: Measure A counts Won Opportunities, Measure B counts Closed ones, Formula Won ÷ Closed.'
     }),
@@ -268,7 +379,8 @@ export const CHART_STEPS = [
             const panels = hasPanelField(config) ? chartSmallMultiplesSummary(config) : '';
             return joinSummary([chartDimensionsSummary(config, context), panels]);
         },
-        extraErrors: (config, context) => fieldsOnObjectErrors(config, context, chartGroupingPaths),
+        extraErrors: (config, context) =>
+            fieldsOnObjectErrors(config, context, allPaths(chartGroupingPaths, bucketRulePaths)),
         intro: 'Group by gives the categories on the axis; Stack by splits each category into series; a Panel field draws one small chart per value.',
         example: 'Group by Stage, stacked by Type: one bar per stage, split into New Business and Renewal.'
     }),
@@ -282,15 +394,7 @@ export const CHART_STEPS = [
         intro: 'Sort the categories, cap how many are shown, and set the legend, labels and colours.',
         example: 'Top 10 Accounts by Amount, the rest summed into one "Other" bar.'
     }),
-    step('chart', {
-        name: 'filterBindings',
-        label: 'Filter bindings',
-        required: false,
-        errorKeys: ['filterBindings'],
-        summary: (config, context = {}) => filterBindingsSummary(context.bindingRows),
-        intro: "Choose which field of this Widget's object each Filter of the Board applies to, or opt out of a Filter.",
-        example: 'The Account filter applies to Opportunity.AccountId; the Owner filter is ignored.'
-    })
+    filterBindingsStep('chart')
 ];
 
 // ---- Metric widget -------------------------------------------------------------------------------------------------
@@ -328,7 +432,12 @@ export const METRIC_STEPS = [
         errorKeys: ['measures', 'aggregateFunction', 'valueFieldApiName', 'format'],
         sections: { measure: (config) => metricMeasuresSummary(config) },
         summary: (config) => metricMeasuresSummary(config),
-        extraErrors: (config, context) => fieldsOnObjectErrors(config, context, metricMeasurePaths),
+        extraErrors: (config, context) =>
+            fieldsOnObjectErrors(
+                config,
+                context,
+                allPaths(metricMeasurePaths, (c) => measureFieldPaths(metricMeasures(c)))
+            ),
         intro: 'The Metric shows exactly one visible Measure: a count, a sum or average of a field, or a Formula over Hidden Measures. Hidden Measures can also feed the Gauge.',
         example: 'Win rate: Hidden Measures count Won and Closed Opportunities, the visible Formula is Won ÷ Closed.'
     }),
@@ -352,15 +461,7 @@ export const METRIC_STEPS = [
         intro: 'Colour the value by rules checked in order; the first rule that matches sets the status. On a Gauge the rules are its bands.',
         example: 'Green at 100 or more, amber at 50 or more, red below 50.'
     }),
-    step('metric', {
-        name: 'filterBindings',
-        label: 'Filter bindings',
-        required: false,
-        errorKeys: ['filterBindings'],
-        summary: (config, context = {}) => filterBindingsSummary(context.bindingRows),
-        intro: "Choose which field of this Widget's object each Filter of the Board applies to, or opt out of a Filter.",
-        example: 'The Account filter applies to Opportunity.AccountId; the Owner filter is ignored.'
-    })
+    filterBindingsStep('metric')
 ];
 
 // ---- Table widget --------------------------------------------------------------------------------------------------
@@ -465,7 +566,8 @@ export const TABLE_STEPS = [
         required: true,
         errorKeys: ['columns', 'bucketFields'],
         summary: tableColumnsSummary,
-        extraErrors: (config, context) => fieldsOnObjectErrors(config, context, tableColumnPaths),
+        extraErrors: (config, context) =>
+            fieldsOnObjectErrors(config, context, allPaths(tableColumnPaths, bucketRulePaths)),
         intro: 'Each column shows a field of the record or of a parent record up to five lookups away, or a Bucket field.',
         example: 'Name, Account.Name, Amount shown as a Data bar, and Close Date.'
     }),
@@ -474,6 +576,7 @@ export const TABLE_STEPS = [
         label: 'Grouping',
         required: false,
         errorKeys: ['groupBy', 'childRelationship'],
+        retired: [{ message: CHILD_ROWS_REMOVED_MESSAGE, keys: ['childRelationship'] }],
         summary: tableGroupingSummary,
         extraErrors: (config, context) => fieldsOnObjectErrors(config, context, tableGroupPaths),
         intro: 'Group the rows by up to two fields. Turn Detail rows off to show only the Group rows: an aggregated table.',
@@ -504,18 +607,11 @@ export const TABLE_STEPS = [
         required: false,
         errorKeys: ['rowActions'],
         summary: tableRowActionsSummary,
+        extraErrors: (config, context) => fieldsOnObjectErrors(config, context, rowActionPaths),
         intro: 'Row actions open, edit or create a record, or run a Screen Flow, from the row’s menu.',
         example: 'Edit the Opportunity, or create a Task with WhatId set from the row’s Id.'
     }),
-    step('table', {
-        name: 'filterBindings',
-        label: 'Filter bindings',
-        required: false,
-        errorKeys: ['filterBindings'],
-        summary: (config, context = {}) => filterBindingsSummary(context.bindingRows),
-        intro: "Choose which field of this Widget's object each Filter of the Board applies to, or opt out of a Filter.",
-        example: 'The Account filter applies to Opportunity.AccountId; the Owner filter is ignored.'
-    })
+    filterBindingsStep('table')
 ];
 
 // ---- Filter widget -------------------------------------------------------------------------------------------------
@@ -594,9 +690,9 @@ export const FILTER_STEPS = [
         required: false,
         errorKeys: ['recordContext'],
         summary: recordContextSummary,
-        intro: 'On a record page (or with a Flow recordId) the Board can be scoped to that record, or feed it into one of the filters.',
+        intro: 'What the Board does with the record it sits on (a record page, or a Flow recordId): show only data related to it, or put it into one of the filters. Off a record page this step has no effect.',
         example:
-            'On an Account page, Locked feeds the Account into the Account filter, so every Widget shows that Account only.'
+            'On a Case page, Locked with the Account filter and field path AccountId makes every Widget show the Account of that Case only.'
     }),
     step('filter', {
         name: 'persistence',

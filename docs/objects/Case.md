@@ -144,6 +144,7 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | BoardTableBucketGroup | Class |
 | BoardTableEngine | Lightning Controller |
 | BoardTableGrouping | Lightning Controller |
+| BoardTableGroupLevel | Class |
 | BoardTableQuery | Lightning Controller |
 | [ProtoTableQueryService](../apex/ProtoTableQueryService.md) | Lightning Controller |
 
@@ -166,13 +167,13 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
 | [boardCrossObjectMeasure](../lwc/boardCrossObjectMeasure.md) | <!-- --> | ❌ |  |
 | [boardFilterDialog](../lwc/boardFilterDialog.md) | Board Filter Definitions Config Dialog | ❌ |  |
+| [boardFilterSetupSteps](../lwc/boardFilterSetupSteps.md) | Board Filter Setup Steps | ❌ |  |
 | [boardFilterWidget](../lwc/boardFilterWidget.md) | Declarative filter bar widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
 | [boardFixedColourEditor](../lwc/boardFixedColourEditor.md) | Board Fixed Colour Editor | ❌ |  |
 | [boardMetricWidget](../lwc/boardMetricWidget.md) | Declarative KPI metric widget for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
 | [boardSetupFilterDefinitions](../lwc/boardSetupFilterDefinitions.md) | Board Setup Filter Definitions | ❌ |  |
 | [boardSetupSteps](../lwc/boardSetupSteps.md) | <!-- --> | ❌ |  |
 | [boardTableWidget](../lwc/boardTableWidget.md) | Declarative table widget with child row expansion for Board component library | ✅ | lightning__FlowScreen, lightning__AppPage, lightning__HomePage, lightning__RecordPage |
-| [protoTableHarness](../lwc/protoTableHarness.md) | Throwaway prototype comparing custom SLDS 1/2 table vs lightning-datatable vs lightning-tree-grid, expandable child rows, free-text search auto-expand, and infinite scroll. | ✅ | lightning__AppPage, lightning__HomePage, lightning__RecordPage, lightning__FlowScreen |
 
 
 

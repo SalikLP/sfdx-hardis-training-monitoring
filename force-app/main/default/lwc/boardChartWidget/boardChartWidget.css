@@ -16,13 +16,17 @@
         Arial,
         sans-serif
     );
-    /* Mid-scale categorical palette, constant in light and dark mode; same values as boardChartUtils SLDS_COLOR_SAFE_PALETTE */
+    /* Mid-scale categorical palette, constant in light and dark mode; same values as boardChartColours SLDS_COLOR_SAFE_PALETTE */
     --board-chart-palette-1: var(--slds-g-color-palette-blue-50, #0176d3);
     --board-chart-palette-2: var(--slds-g-color-palette-teal-50, #0b827c);
     --board-chart-palette-3: var(--slds-g-color-palette-orange-50, #a96404);
     --board-chart-palette-4: var(--slds-g-color-palette-pink-50, #e3066a);
     --board-chart-palette-5: var(--slds-g-color-palette-indigo-50, #5867e8);
     --board-chart-palette-6: var(--slds-g-color-palette-hot-orange-50, #d83a00);
+    /* Waterfall steps; same values as boardChartUtils WATERFALL_DEFAULT_COLORS */
+    --board-chart-waterfall-increase: var(--slds-g-color-success-1, #2e844a);
+    --board-chart-waterfall-decrease: var(--slds-g-color-error-1, #ba0517);
+    --board-chart-waterfall-total: var(--slds-g-color-neutral-base-50, #747474);
 }
 
 .c-board-card {

@@ -1,6 +1,6 @@
 import { LightningElement, api } from 'lwc';
 import { SLDS_NAMED_COLOURS, contrastWarning, namedColourOf } from 'c/boardChartColours';
-import { baseFilterError, moveItem } from 'c/boardCpeUtils';
+import { baseFilterError, moveItem, containInnerChanges } from 'c/boardCpeUtils';
 import {
     DEFAULT_BUCKET_FALLBACK_LABEL,
     MAX_BUCKET_RULES,
@@ -25,6 +25,10 @@ const COLOUR_OPTIONS = [
  * Fires `change` with `detail.value`, the whole edited list, after every edit.
  */
 export default class BoardBucketFieldEditor extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     /** Object the rule conditions' field pickers start from. */
     @api objectApiName;
 

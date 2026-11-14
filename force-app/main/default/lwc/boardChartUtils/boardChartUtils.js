@@ -1,56 +1,15 @@
 import { loadScript } from 'lightning/platformResourceLoader';
 import CHARTJS from '@salesforce/resourceUrl/chartjs';
-import { resolveColours } from 'c/boardChartColours';
+import { BLANK_COLOR, OTHER_COLOR, SLDS_COLOR_SAFE_PALETTE, assignColors, resolveColours } from 'c/boardChartColours';
 
 /**
  * Shared Chart.js v4 engine for Board chart Widgets: singleton static resource loader, SLDS 1/2 theme sampler,
- * media query listeners, the SLDS Color-Safe categorical palette, and an inline bar data-label plugin.
+ * media query listeners, and an inline bar data-label plugin. The palette, the greys and colour resolution live in
+ * `c/boardChartColours`.
  */
 
 export const PREFERS_DARK_QUERY = '(prefers-color-scheme: dark)';
 export const PREFERS_REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
-
-/**
- * 12-color categorical palette, constant in light and dark mode (each ≥3:1 on a white and a #181818 surface). The
- * first 6 are the SLDS 2 mid-scale palette hooks `blue/teal/orange/pink/indigo/hot-orange-50` and match the
- * `--board-chart-palette-1..6` CSS fallbacks; 7..12 can be overridden with `--board-chart-palette-7..12`.
- */
-export const SLDS_COLOR_SAFE_PALETTE = [
-    '#0176d3',
-    '#0b827c',
-    '#a96404',
-    '#e3066a',
-    '#5867e8',
-    '#d83a00',
-    '#2e844a',
-    '#9050e9',
-    '#8a6d00',
-    '#b0409a',
-    '#2f8fa0',
-    '#c23934'
-];
-/** Neutral greys for the "Other" roll-up and the "(Blank)" value; never taken from the palette. */
-export const OTHER_COLOR = '#747474';
-export const BLANK_COLOR = '#9a9a9a';
-
-/**
- * Colour for each item (series or category) in order: "Other" and "(Blank)" items get their grey, every other item
- * takes the next palette colour (wrapping), so the greys never use up a palette colour.
- */
-export function assignColors(items, theme) {
-    let next = 0;
-    return items.map((item) => {
-        if (item.isOther) {
-            return theme.otherColor || OTHER_COLOR;
-        }
-        if (item.isBlank) {
-            return theme.blankColor || BLANK_COLOR;
-        }
-        const color = theme.palette[next % theme.palette.length];
-        next += 1;
-        return color;
-    });
-}
 
 /**
  * Colour of each series of a model: series field values honour their fixed colours (the palette skips colours they
@@ -59,6 +18,12 @@ export function assignColors(items, theme) {
 function seriesItemColors(model, theme) {
     return model.hasSeries ? resolveColours(model.series, theme) : assignColors(model.series, theme);
 }
+
+/**
+ * Waterfall step colours when neither the Widget nor the `--board-chart-waterfall-*` hooks set them; the same values
+ * as those hooks' fallbacks in `boardChartWidget.css`.
+ */
+export const WATERFALL_DEFAULT_COLORS = { increase: '#2e844a', decrease: '#ba0517', total: '#747474' };
 
 const THEME_DEFAULTS = {
     text: '#5c5c5c',
@@ -124,6 +89,11 @@ export function resolveChartTheme(element) {
     theme.palette = SLDS_COLOR_SAFE_PALETTE.map((color, index) => read(`--board-chart-palette-${index + 1}`, color));
     theme.otherColor = read('--board-chart-other', OTHER_COLOR);
     theme.blankColor = read('--board-chart-blank', BLANK_COLOR);
+    theme.waterfall = {
+        increase: read('--board-chart-waterfall-increase', WATERFALL_DEFAULT_COLORS.increase),
+        decrease: read('--board-chart-waterfall-decrease', WATERFALL_DEFAULT_COLORS.decrease),
+        total: read('--board-chart-waterfall-total', WATERFALL_DEFAULT_COLORS.total)
+    };
     return theme;
 }
 
@@ -777,22 +747,7 @@ function buildBarConfig(
                     position: legendPosition,
                     labels: { color: theme.text, font, boxWidth: 12 }
                 },
-                tooltip: {
-                    enabled: true,
-                    backgroundColor: theme.tooltipBackground,
-                    titleColor: theme.tooltipText,
-                    bodyColor: theme.tooltipText,
-                    bodyFont: font,
-                    displayColors: multiSeries,
-                    callbacks: {
-                        title: () => '',
-                        label: (context) =>
-                            `${context.label} — ${context.dataset.label}: ${formatValue(
-                                context.raw,
-                                context.dataset.boardMeasureIndex || 0
-                            )}`
-                    }
-                },
+                tooltip: tooltipOptions(theme, font, multiSeries, formatValue),
                 boardBarDataLabels: {
                     display: settings.showDataLabels,
                     stacked: model.isStacked,
@@ -1005,8 +960,6 @@ function buildRadarConfig(model, { settings, theme, animation, formatValue, form
 }
 
 /** Default waterfall colours: increase green, decrease red, Total neutral; each can be overridden per Widget. */
-export const WATERFALL_DEFAULT_COLORS = { increase: '#2e844a', decrease: '#ba0517', total: '#747474' };
-
 /**
  * Floating steps of a waterfall: each value moves the running total from `start` to `end` (`increase` or `decrease`);
  * `showTotal` appends a `total` step from zero to the final running total. Missing values count as zero.
@@ -1034,11 +987,13 @@ function buildWaterfallConfig(model, { settings, theme, animation, formatValue, 
     const font = { family: theme.fontFamily, size: 12 };
     const series = model.series[0];
     const showTotal = settings.showTotal === true;
+    // The Widget's own colours, else the theme's (`--board-chart-waterfall-*` hooks), else the defaults.
+    const defaults = { ...WATERFALL_DEFAULT_COLORS, ...(theme.waterfall || {}) };
     const steps = buildWaterfallSteps(series.values, showTotal);
     const colors = {
-        increase: waterfallColor(settings.waterfallIncreaseColor, WATERFALL_DEFAULT_COLORS.increase),
-        decrease: waterfallColor(settings.waterfallDecreaseColor, WATERFALL_DEFAULT_COLORS.decrease),
-        total: waterfallColor(settings.waterfallTotalColor, WATERFALL_DEFAULT_COLORS.total)
+        increase: waterfallColor(settings.waterfallIncreaseColor, defaults.increase),
+        decrease: waterfallColor(settings.waterfallDecreaseColor, defaults.decrease),
+        total: waterfallColor(settings.waterfallTotalColor, defaults.total)
     };
     const stepColors = steps.map((step) => colors[step.kind]);
     return {

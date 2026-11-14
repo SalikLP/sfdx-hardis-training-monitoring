@@ -10,33 +10,11 @@
 ### PREFERS_DARK_QUERY
 
 Shared Chart.js v4 engine for Board chart Widgets: singleton static resource loader, SLDS 1/2 theme sampler,
-media query listeners, the SLDS Color-Safe categorical palette, and an inline bar data-label plugin.
+media query listeners, and an inline bar data-label plugin. The palette, the greys and colour resolution live in
+`c/boardChartColours`.
 
 **Kind**: global constant  
 **Default**: <code>'(prefers-color-scheme: dark)'</code>  
-
-### SLDS_COLOR_SAFE_PALETTE
-
-12-color categorical palette, constant in light and dark mode (each ≥3:1 on a white and a #181818 surface). The
-first 6 are the SLDS 2 mid-scale palette hooks `blue/teal/orange/pink/indigo/hot-orange-50` and match the
-`--board-chart-palette-1..6` CSS fallbacks; 7..12 can be overridden with `--board-chart-palette-7..12`.
-
-**Kind**: global constant  
-**Default**: <code>[...]</code>  
-
-### OTHER_COLOR
-
-Neutral greys for the "Other" roll-up and the "(Blank)" value; never taken from the palette.
-
-**Kind**: global constant  
-**Default**: <code>'#747474'</code>  
-
-### assignColors(items, theme)
-
-Colour for each item (series or category) in order: "Other" and "(Blank)" items get their grey, every other item
-takes the next palette colour (wrapping), so the greys never use up a palette colour.
-
-**Kind**: global function  
 
 ### seriesItemColors(model, theme)
 
@@ -44,6 +22,14 @@ Colour of each series of a model: series field values honour their fixed colours
 take, see `c/boardChartColours`); Measures take palette colours by position, a Measure's own colour applied on top.
 
 **Kind**: global function  
+
+### WATERFALL_DEFAULT_COLORS
+
+Waterfall step colours when neither the Widget nor the `--board-chart-waterfall-*` hooks set them; the same values
+as those hooks' fallbacks in `boardChartWidget.css`.
+
+**Kind**: global constant  
+**Default**: <code>{ increase: '#2e844a', decrease: '#ba0517', total: '#747474' }</code>  
 
 ### loadChartJs(component)
 
@@ -318,13 +304,6 @@ Chart.js v4 `radar` config: categories are the spokes, each series value or Meas
 outline in its palette colour or fixed colour). Points shown unless `showPoints` is off.
 
 **Kind**: global function  
-
-### WATERFALL_DEFAULT_COLORS
-
-Default waterfall colours: increase green, decrease red, Total neutral; each can be overridden per Widget.
-
-**Kind**: global constant  
-**Default**: <code>{ increase: '#2e844a', decrease: '#ba0517', total: '#747474' }</code>  
 
 ### buildWaterfallSteps(values, showTotal)
 

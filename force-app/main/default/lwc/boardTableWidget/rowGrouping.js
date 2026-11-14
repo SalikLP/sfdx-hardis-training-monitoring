@@ -58,14 +58,20 @@ function subgroupToken(parentToken, key) {
     return `${parentToken}${TOKEN_SEPARATOR}${groupToken(key)}`;
 }
 
+/**
+ * Token of a group as the server returns it (`{ level, parentKey, key }`, Detail rows on or off): a second-level
+ * group's token carries its first-level group's key.
+ */
+export function groupFactToken(group) {
+    return group?.level === 2 ? subgroupToken(groupToken(group.parentKey), group.key) : groupToken(group?.key);
+}
+
 /** Group facts by token, with a page's groups merged in (a later page's count of the same group is the same count). */
 export function mergeGroups(groupsByToken, pageGroups) {
     const merged = { ...(groupsByToken || {}) };
     (Array.isArray(pageGroups) ? pageGroups : []).forEach((group) => {
         if (group) {
-            const token =
-                group.level === 2 ? subgroupToken(groupToken(group.parentKey), group.key) : groupToken(group.key);
-            merged[token] = group;
+            merged[groupFactToken(group)] = group;
         }
     });
     return merged;

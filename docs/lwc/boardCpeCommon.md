@@ -16,18 +16,12 @@ The shell's own Config sections (see `sectionStates` in `c/boardCpeUtils`).
 
 ### BoardCpeCommon
 
-Shared Flow Custom Property Editor shell composed by every Board CPE.
-
-Renders the Board Config section (Board id/title, plus the Object Picker for data Widgets and orientation for the
-Chart widget), the Filter bindings section (`builderContext` Filter widget discovery + `filterBindings` overrides,
-data Widgets), and the "Advanced: Config JSON" portability section. Each is a `c-board-cpe-section`: Board starts
-open for a new Widget, everything else starts collapsed, and a section with a validation error is forced open.
-
-With `setup-dialog` (ADR 0002), the panel is an overview: Board (Board id, title, *Wait for Filter widget*), one
-summary line per Setup dialog step with "Edit…" opening the dialog (`c/boardSetupDialog`) at that step, and
-Advanced: Config JSON. Object, orientation, Filter bindings and Base filters are then edited only in the dialog's
-steps; a Save there applies the whole draft as one config change. Every Widget's Config editor uses this mode; Base
-filters exist only as the Data step of the Setup dialog.
+Shared Flow Custom Property Editor shell composed by every Board CPE (ADR 0002). The panel is an overview: Board
+(Board id, title, *Wait for Filter widget* for data Widgets), one summary line per Setup dialog step with "Edit…"
+opening the dialog (`c/boardSetupDialog`) at that step, and Advanced: Config JSON. Everything else (object,
+orientation, Filter bindings, Base filters, ...) is edited only in the dialog's steps; a Save there applies the
+whole draft as one config change. Board and Advanced are `c-board-cpe-section`s: Board starts open for a new Widget,
+Advanced collapsed, and a section with a validation error is forced open.
 
 Every edit dispatches `configuration_editor_input_value_changed` (or `..._deleted` for cleared values) for the
 serialized `configJson`, and also for the discrete top-level property when `boardId`, `title`, or `objectApiName`
@@ -35,13 +29,6 @@ changes. A non-bubbling `configchange` event (`detail.config`) reports the curre
 
 **Kind**: global class  
 **Extends**: <code>LightningElement</code>  
-
-#### bindingState
-
-Rows and errors reported by the Filter bindings editor (`bindingstate`), while it is shown.
-
-**Kind**: instance property of <code>BoardCpeCommon</code>  
-**Default**: <code>null</code>  
 
 #### sectionOpen
 
@@ -56,15 +43,6 @@ Open state of the shell's Config sections: set once on load (a new Widget opens 
 
 **Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
 **Decorators**: <code>@api</code>  
-
-#### setupDialog
-
-Slim panel for a Widget edited in its Setup dialog: Object, orientation and Filter bindings move into the
-dialog's steps, and the panel lists one summary line per step with "Edit…".
-
-**Kind**: instance property of <code>BoardCpeCommon</code>  
-**Decorators**: <code>@api</code>  
-**Default**: <code>false</code>  
 
 #### stepContext
 
@@ -112,11 +90,21 @@ Shallow-merges `patch` into the config (null/undefined removes a key), then emit
 
 #### validate()
 
-Design-time errors (`[{ key, errorString }]`): the Config JSON draft or saved JSON, the shared envelope rules,
-the widget's own rules (`configErrors`), and Filter bindings switched to "Field path" without a path.
+Design-time errors (`[{ key, errorString }]`): the Config JSON draft or saved JSON, the shared envelope rules and
+the widget's own rules (`configErrors`).
 
 **Kind**: instance method of <code>BoardCpeCommon</code>  
 **Decorators**: <code>@api</code>  
+
+#### commit(nextConfig, [topLevelKeys])
+
+Applies one config change: one `configJson` event, plus one per changed top-level property. The top-level
+events are required, not duplicates: `boardId`, `title` and `objectApiName` are separate Flow inputs in the
+Widget's meta, and Flow Builder keeps their last value. `readCpeState` lets a stored top-level value override
+`configJson` when the editor reopens, so a Setup dialog Save that changes the object without also writing
+`objectApiName` would reopen on the old object.
+
+**Kind**: instance method of <code>BoardCpeCommon</code>  
 
 #### notifyConfig()
 
@@ -131,39 +119,9 @@ Bucket fields of the Filter widgets discovered on this Board (`builderContext`).
 
 **Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
 
-#### hasBindingDraftErrors
-
-Filter bindings switched to "Field path" without a path, or binding rows with an invalid path.
-
-**Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
-
 #### boardSummary
 
 `default · Account`; the object part only for data Widgets.
-
-**Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
-
-#### bindingsSummary
-
-`3 bound · 1 opted out`, or `None` without any Filter to bind.
-
-**Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
-
-#### showObject
-
-The Object Picker: in the panel for data Widgets, unless their Setup dialog's Data step edits it.
-
-**Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
-
-#### showBindings
-
-The Filter bindings section: in the panel for data Widgets, unless their Setup dialog has the step.
-
-**Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
-
-#### showOrientation
-
-Orientation is a bar setting: hidden (but kept) while the Chart widget draws another chart type.
 
 **Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
 
@@ -181,8 +139,7 @@ Off writes `waitForFilterWidget: false`; on removes the key (missing = on).
 
 #### bindingRows
 
-The Filter binding rows: as the bindings editor reports them while it is shown (it knows the rows switched to
-"Field path" and the hand-added ids), else from the config (the slim panel of the Setup dialog).
+The Filter binding rows of the config, for the Filter bindings step summary.
 
 **Kind**: instance property (getter) of <code>BoardCpeCommon</code>  
 

@@ -1,5 +1,12 @@
 import { LightningElement, api } from 'lwc';
-import { FORMAT_STYLE_OPTIONS, NOTATION_OPTIONS, applyPatch, isPlainObject, parseNumber } from 'c/boardCpeUtils';
+import {
+    FORMAT_STYLE_OPTIONS,
+    NOTATION_OPTIONS,
+    applyPatch,
+    isPlainObject,
+    parseNumber,
+    containInnerChanges
+} from 'c/boardCpeUtils';
 
 const DEFAULT = '';
 const STYLE_OPTIONS = [{ label: 'Default (number)', value: DEFAULT }, ...FORMAT_STYLE_OPTIONS];
@@ -35,6 +42,10 @@ function isCustomized(format, defaultNotation) {
  * default.
  */
 export default class BoardCpeFormatEditor extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     @api label = 'Number format';
     /** Widget default notation shown in the Notation picker: `standard` (Bar/Table) or `compact` (Metric). */
     @api defaultNotation = 'standard';

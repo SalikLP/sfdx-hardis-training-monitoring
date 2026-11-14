@@ -13,8 +13,8 @@ import {
     measureTitle,
     moveItem,
     overRowDrag,
-    remapFormulaMeasures,
-    startRowDrag
+    startRowDrag,
+    containInnerChanges
 } from 'c/boardCpeUtils';
 import {
     MEASURE_AXIS_OPTIONS,
@@ -23,14 +23,14 @@ import {
     normalizeMeasureDisplay
 } from 'c/boardChartUtils';
 
-/** Old index → new index of every item after `moveItem(items, index, offset)`. */
+/** `mapping[oldIndex]` = new index of every item after `moveItem(items, index, offset)`. */
 function movedIndexes(length, index, offset) {
     const order = moveItem(
         Array.from({ length }, (unused, position) => position),
         index,
         offset
     );
-    return (oldIndex) => order.indexOf(oldIndex);
+    return Array.from({ length }, (unused, oldIndex) => order.indexOf(oldIndex));
 }
 
 /** Picture tile illustration (`c-board-picture-tiles`) of each Show as and Draw as choice. */
@@ -49,6 +49,18 @@ const RENDER_TILES = MEASURE_RENDER_OPTIONS.map((option) => ({
     illustration: RENDER_ILLUSTRATIONS[option.value]
 }));
 
+const SHOW_AS_HELP =
+    "Percent of total: each category's share of the grand total. Percent of category: each series' share within its category. A percentage defaults to a percent format; set a number format below to override it.";
+const SHOW_AS_REFERENCE_LINE_HELP = 'A Reference line shows the overall value, not a percentage.';
+const RENDER_HELP =
+    "A Reference line draws the Measure's value as one line across the chart, e.g. a target or an average.";
+const RENDER_SHARE_HELP = "A Share of total can't be drawn as a Reference line.";
+
+/** `tiles` with the options in `unavailable` disabled. */
+function withDisabled(tiles, unavailable) {
+    return tiles.map((tile) => (unavailable.includes(tile.value) ? { ...tile, disabled: true } : tile));
+}
+
 function formulaText(measure) {
     return typeof measure.formula === 'string' ? measure.formula.trim() : '';
 }
@@ -60,11 +72,16 @@ function formulaText(measure) {
  * of total "Show as" choice for COUNT and SUM Measures (`showShareOfTotal`, Chart widget only; never on the Metric
  * widget). A Formula measure (`FORMULA`) takes formula text over the other Measures by slot (Measure 1 is A);
  * reordering or removing Measures keeps its references on the same Measures. Rows reorder by arrows or drag. Fires a
- * non-bubbling `change` event with `detail.measures` (the full edited list), and `formulacheck` with `detail.errors`
+ * non-bubbling `change` event with `detail.measures` (the full edited list; plus `detail.mapping` after a reorder or
+ * a removal, see `updateMeasures`), and `formulacheck` with `detail.errors`
  * (the server's FormulaEval build errors, `Measure 2 (B) formula: …`) whenever they change. An Average per record
  * (`AVG_PER`) Measure adds its per-record lookup `perField` and how each record's value is taken, `inner`.
  */
 export default class BoardCpeMeasureList extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     @api objectApiName;
     @api maxMeasures = 6;
     /** Why no Measure can be added right now (e.g. a Stack by field is set); empty when adding is allowed. */
@@ -91,7 +108,6 @@ export default class BoardCpeMeasureList extends LightningElement {
 
     aggregateOptions = MEASURE_AGGREGATE_OPTIONS;
     perRecordInnerOptions = PER_RECORD_INNER_OPTIONS;
-    measureRenderOptions = RENDER_TILES;
     measureAxisOptions = MEASURE_AXIS_OPTIONS;
     _measures = [{ aggregateFunction: 'COUNT' }];
     /** Server build message per formula text (null: it builds). */
@@ -179,6 +195,8 @@ export default class BoardCpeMeasureList extends LightningElement {
             const aggregateFunction = measure.aggregateFunction || 'COUNT';
             const isFormula = isFormulaMeasure(measure);
             const showAs = measure.showAs || 'value';
+            const display = this.measureDisplayRow(measure);
+            const isReferenceLine = display.showDisplay && display.render === 'referenceLine';
             return {
                 key: `measure-${index}`,
                 index,
@@ -195,18 +213,27 @@ export default class BoardCpeMeasureList extends LightningElement {
                 valueCapability: this.valueCapability(aggregateFunction),
                 valueFieldApiName: measure.valueFieldApiName || '',
                 label: measure.label || '',
-                color: measure.color || '',
+                colour: measure.colour || '',
                 hidden: measure.hidden === true,
                 format: measure.format || null,
                 condition: measure.condition || undefined,
                 conditionIdPrefix: `m${index + 1}c`,
                 showShareOfTotal: this.showShareOfTotal && ROLLUP_FUNCTIONS.includes(aggregateFunction),
                 showAs,
-                showAsOptions: SHOW_AS_TILES.filter(
-                    (option) =>
-                        option.value !== 'percentOfCategory' || this.canShareCategory || showAs === 'percentOfCategory'
+                showAsOptions: withDisabled(
+                    SHOW_AS_TILES.filter(
+                        (option) =>
+                            option.value !== 'percentOfCategory' ||
+                            this.canShareCategory ||
+                            showAs === 'percentOfCategory'
+                    ),
+                    isReferenceLine ? ['percentOfTotal', 'percentOfCategory'] : []
                 ),
-                ...this.measureDisplayRow(measure),
+                showAsHelp: isReferenceLine ? `${SHOW_AS_HELP} ${SHOW_AS_REFERENCE_LINE_HELP}` : SHOW_AS_HELP,
+                ...display,
+                // A Share of total and a Reference line exclude each other (a share of the whole scope is always 100%).
+                renderOptions: withDisabled(RENDER_TILES, showAs !== 'value' ? ['referenceLine'] : []),
+                renderHelp: showAs !== 'value' ? `${RENDER_HELP} ${RENDER_SHARE_HELP}` : RENDER_HELP,
                 // Cross-object measure: its value field and condition are on its own source object.
                 measure,
                 showCrossObject: !isFormula,
@@ -219,8 +246,13 @@ export default class BoardCpeMeasureList extends LightningElement {
         });
     }
 
-    updateMeasures(measures) {
-        this.dispatchEvent(new CustomEvent('change', { detail: { measures } }));
+    /**
+     * Fires `change` with the new `measures`, plus `mapping` (old position → new position, -1 when removed) when the
+     * list was reordered or a Measure removed: the owner remaps every position-based Measure reference with it
+     * (`remapMeasureRefs` in `c/boardCpeUtils`).
+     */
+    updateMeasures(measures, mapping = null) {
+        this.dispatchEvent(new CustomEvent('change', { detail: mapping ? { measures, mapping } : { measures } }));
     }
 
     renderedCallback() {
@@ -252,20 +284,16 @@ export default class BoardCpeMeasureList extends LightningElement {
     handleRemoveMeasure(event) {
         const index = Number(event.currentTarget.dataset.index);
         this.updateMeasures(
-            remapFormulaMeasures(
-                this._measures.filter((measure, position) => position !== index),
-                (oldIndex) => (oldIndex === index ? -1 : oldIndex - (oldIndex > index ? 1 : 0))
-            )
+            this._measures.filter((measure, position) => position !== index),
+            this._measures.map((measure, oldIndex) => (oldIndex === index ? -1 : oldIndex - (oldIndex > index ? 1 : 0)))
         );
     }
 
-    /** Moves a Measure; Formula measures keep pointing at the same Measures. */
+    /** Moves a Measure; the owner keeps every reference on the same Measures (`mapping`). */
     moveMeasure(index, offset) {
         this.updateMeasures(
-            remapFormulaMeasures(
-                moveItem(this._measures, index, offset),
-                movedIndexes(this._measures.length, index, offset)
-            )
+            moveItem(this._measures, index, offset),
+            movedIndexes(this._measures.length, index, offset)
         );
     }
 

@@ -37,10 +37,6 @@
         <name>Proto_Board_App_Page</name>
     </customTabs>
     <customTabs>
-        <label><!-- Proto Table Widget --></label>
-        <name>Proto_Table_Widget_Lab</name>
-    </customTabs>
-    <customTabs>
         <label><!-- PROTOTYPE Tabs Filter Context --></label>
         <name>Proto_Tabs_Filter_Context</name>
     </customTabs>

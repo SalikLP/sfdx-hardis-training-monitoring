@@ -5,8 +5,31 @@ import {
     RECORD_CONTEXT_MODE_OPTIONS,
     cleanString,
     compactRecordContext,
-    isPlainObject
+    isPlainObject,
+    containInnerChanges
 } from 'c/boardCpeUtils';
+
+/** What each Record context mode does, with an example, shown under the Mode picker. */
+const RECORD_CONTEXT_MODE_HELP = {
+    IMPLICIT: {
+        description:
+            'Every Widget shows only data related to the record, without a visible filter. Each Widget finds the field that points at the record on its own, or uses its Filter bindings.',
+        example:
+            "On an Account page, an Opportunity chart shows that Account's Opportunities and a Case table shows its Cases."
+    },
+    LOCKED: {
+        description:
+            "The record is put into the filter chosen below, and viewers can't change it. Widgets then follow that filter like any other. A badge can show which record the Board is locked to.",
+        example:
+            'On an Account page with the Account filter chosen below, the Account filter always shows this Account and is read-only.'
+    },
+    DEFAULT: {
+        description:
+            'The record is pre-filled in the filter chosen below when the page opens. Viewers can change or clear it to look at other records.',
+        example:
+            'On an Account page with the Account filter chosen below, the Board opens on this Account, and a viewer can pick another Account.'
+    }
+};
 
 /**
  * Step content of the Filter widget's Setup dialog (`c/boardSetupDialog`): the inputs of one step (`step`: `filters`,
@@ -24,6 +47,10 @@ import {
  * Every edit fires `change` with `detail.patch` (merged into the draft by the dialog; null removes a key).
  */
 export default class BoardFilterSetupSteps extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     @api step;
     /** Not read by the Filter widget's steps; part of the step content seam. */
     @api context;
@@ -103,6 +130,11 @@ export default class BoardFilterSetupSteps extends LightningElement {
 
     get recordContextMode() {
         return this.recordContext.mode || 'IMPLICIT';
+    }
+
+    /** What the chosen mode does, with an example, shown under the Mode picker. */
+    get recordContextModeHelp() {
+        return RECORD_CONTEXT_MODE_HELP[this.recordContextMode] || RECORD_CONTEXT_MODE_HELP.IMPLICIT;
     }
 
     get isLocked() {

@@ -3,11 +3,12 @@
  *
  * The server returns every Group row at once (`TableResult.aggregateGroups`, see `BoardTableAggregate`), each with
  * its record count, the values of fields reached through the lookup group field and the Stacked summaries of the
- * columns with summaries. There is no paging and no collapse; header clicks re-sort the loaded Group rows: by the
- * column's first summary, by the column's value, or (group column) by the group label. "(Blank)" always stays last.
+ * columns with summaries; with two group fields each first-level Group row is followed by its second-level Group rows
+ * (`level: 2`, `parentKey`). There is no paging and no collapse; header clicks re-sort the loaded Group rows: by the
+ * column's first summary, by the column's value, or (group column) by the group value. "(Blank)" always stays last.
  */
 import LOCALE from '@salesforce/i18n/locale';
-import { GROUP_COLUMN_ID, BLANK_GROUP_LABEL, buildGroupHeader, groupToken } from './rowGrouping';
+import { GROUP_COLUMN_ID, BLANK_GROUP_LABEL, buildGroupHeader, groupFactToken, groupToken } from './rowGrouping';
 import { SUMMARY_LABELS } from './totalRow';
 import { buildCellView, formatCell, summaryBarView } from './tableCells';
 
@@ -71,22 +72,64 @@ function compareValues(left, right) {
 }
 
 /**
- * The loaded aggregated table re-sorted after a header click: the group column toggles the group order by label;
- * a column with summaries sorts by its first summary; any other column by its value. Blank values sort last and
- * "(Blank)" stays the last Group row. No query.
+ * Group rows as `{ group, index, children }` entries: each first-level Group row with the second-level Group rows
+ * that follow it (`level: 2`).
+ */
+function nestGroups(groups) {
+    const nested = [];
+    groups.forEach((group, index) => {
+        const parent = nested[nested.length - 1];
+        if (group?.level === 2 && parent) {
+            parent.children.push({ group, index, children: [] });
+        } else {
+            nested.push({ group, index, children: [] });
+        }
+    });
+    return nested;
+}
+
+/** `entries` ordered by `valueOf` (then their loaded order), blank values last and "(Blank)" the last group. */
+function sortEntries(entries, valueOf, factor) {
+    return [...entries].sort((a, b) => {
+        const aBlankGroup = groupToken(a.group.key) === '';
+        const bBlankGroup = groupToken(b.group.key) === '';
+        if (aBlankGroup !== bBlankGroup) {
+            return aBlankGroup ? 1 : -1;
+        }
+        const left = valueOf(a.group);
+        const right = valueOf(b.group);
+        if (isBlank(left) || isBlank(right)) {
+            return isBlank(left) === isBlank(right) ? a.index - b.index : isBlank(left) ? 1 : -1;
+        }
+        return compareValues(left, right) * factor || a.index - b.index;
+    });
+}
+
+/** Group value a group column click orders by: a date bucket's key (`2026-03`), else the group label. */
+function groupValueOf(groupField) {
+    return groupField?.dateGranularity ? (group) => group.key : (group) => group.label;
+}
+
+/**
+ * The loaded aggregated table re-sorted after a header click: the group column toggles the first-level group order
+ * by value (date buckets by bucket, others by label); a column with summaries sorts both levels by its first summary;
+ * any other column by its value. Second-level Group rows stay under their first-level Group row. Blank values sort
+ * last and "(Blank)" stays the last Group row of its level. No query.
  * @param {object} tableData widget table state (`aggregateGroups`, `groupField`, `sortBy`, `sortDirection`)
  * @param {{ columnId: string, fieldPath: string }} header clicked header
  */
 export function sortAggregateTable(tableData, header) {
     const groups = tableData.aggregateGroups || [];
     let valueOf;
+    let sortsSubgroups = true;
     let sortBy = null;
     let sortDirection;
     let groupField = tableData.groupField;
     if (header.columnId === GROUP_COLUMN_ID) {
         sortDirection = !tableData.sortBy && direction(groupField?.sortDirection) === 'ASC' ? 'DESC' : 'ASC';
+        valueOf = groupValueOf(groupField);
         groupField = { ...groupField, sortDirection };
-        valueOf = (group) => group.label;
+        sortsSubgroups = false;
     } else {
         sortBy = header.fieldPath;
         sortDirection = tableData.sortBy === sortBy && tableData.sortDirection === 'ASC' ? 'DESC' : 'ASC';
@@ -96,22 +139,10 @@ export function sortAggregateTable(tableData, header) {
             : (group) => group.values?.[header.fieldPath];
     }
     const factor = sortDirection === 'DESC' ? -1 : 1;
-    const sorted = groups
-        .map((group, index) => ({ group, index }))
-        .sort((a, b) => {
-            const aBlankGroup = groupToken(a.group.key) === '';
-            const bBlankGroup = groupToken(b.group.key) === '';
-            if (aBlankGroup !== bBlankGroup) {
-                return aBlankGroup ? 1 : -1;
-            }
-            const left = valueOf(a.group);
-            const right = valueOf(b.group);
-            if (isBlank(left) || isBlank(right)) {
-                return isBlank(left) === isBlank(right) ? a.index - b.index : isBlank(left) ? 1 : -1;
-            }
-            return compareValues(left, right) * factor || a.index - b.index;
-        })
-        .map((entry) => entry.group);
+    const sorted = sortEntries(nestGroups(groups), valueOf, factor).flatMap((entry) => [
+        entry.group,
+        ...(sortsSubgroups ? sortEntries(entry.children, valueOf, factor) : entry.children).map((child) => child.group)
+    ]);
     return { ...tableData, aggregateGroups: sorted, groupField, sortBy, sortDirection };
 }
 
@@ -159,7 +190,8 @@ function summaryCell(token, column, summaries) {
 export function buildAggregateRowViews(groups, headerViews, columnViews, formatCount) {
     const columnsById = new Map(columnViews.map((column) => [column.id, column]));
     return (groups || []).map((group, index) => {
-        const token = groupToken(group.key);
+        const token = groupFactToken(group);
+        const level = group.level === 2 ? 2 : 1;
         const cells = headerViews.map((header) => {
             if (header.id === GROUP_COLUMN_ID) {
                 return groupLabelCell(group, token, header, formatCount);
@@ -179,7 +211,8 @@ export function buildAggregateRowViews(groups, headerViews, columnViews, formatC
             key: `aggregate-${index}-${token}`,
             isAggregateGroup: true,
             token,
-            rowClass: 'c-board-table-group-row c-board-table-aggregate-row',
+            level,
+            rowClass: `c-board-table-group-row c-board-table-group-row_level-${level} c-board-table-aggregate-row`,
             cells
         };
     });

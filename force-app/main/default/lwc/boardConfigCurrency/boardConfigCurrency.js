@@ -1,5 +1,6 @@
 import { LightningElement, api } from 'lwc';
 import getCurrencyOptions from '@salesforce/apex/BoardCurrencyConverter.getCurrencyOptions';
+import { containInnerChanges } from 'c/boardCpeUtils';
 
 /**
  * Config currency setting of the Filter widget's Setup dialog (its Currency step): a combobox of the org's active
@@ -15,6 +16,7 @@ export default class BoardConfigCurrency extends LightningElement {
     currencyOptions = null;
 
     connectedCallback() {
+        containInnerChanges(this);
         Promise.resolve(getCurrencyOptions())
             .then((options) => {
                 this.currencyOptions = options || null;

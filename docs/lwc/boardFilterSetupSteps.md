@@ -7,6 +7,13 @@
 
 ## JS Documentation
 
+### RECORD_CONTEXT_MODE_HELP
+
+What each Record context mode does, with an example, shown under the Mode picker.
+
+**Kind**: global constant  
+**Default**: <code>{...}</code>  
+
 ### BoardFilterSetupSteps
 
 Step content of the Filter widget's Setup dialog (`c/boardSetupDialog`): the inputs of one step (`step`: `filters`,
@@ -43,6 +50,12 @@ The Setup dialog's draft config.
 #### bucketObjectApiName
 
 Object the rule conditions' field pickers start from (design time only; Widgets read their own object).
+
+**Kind**: instance property (getter) of <code>BoardFilterSetupSteps</code>  
+
+#### recordContextModeHelp
+
+What the chosen mode does, with an example, shown under the Mode picker.
 
 **Kind**: instance property (getter) of <code>BoardFilterSetupSteps</code>  
 

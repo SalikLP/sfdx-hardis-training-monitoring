@@ -9,7 +9,7 @@
 
 ### movedIndexes(length, index, offset)
 
-Old index → new index of every item after `moveItem(items, index, offset)`.
+`mapping[oldIndex]` = new index of every item after `moveItem(items, index, offset)`.
 
 **Kind**: global function  
 
@@ -20,6 +20,12 @@ Picture tile illustration (`c-board-picture-tiles`) of each Show as and Draw as 
 **Kind**: global constant  
 **Default**: <code>{...}</code>  
 
+### withDisabled(tiles, unavailable)
+
+`tiles` with the options in `unavailable` disabled.
+
+**Kind**: global function  
+
 ### BoardCpeMeasureList
 
 Measures list editor shared by the Chart and Metric Config editors: up to `maxMeasures` Measures, each with
@@ -28,7 +34,8 @@ condition editor), plus an optional colour (`showColor`, Chart widget) and hidde
 of total "Show as" choice for COUNT and SUM Measures (`showShareOfTotal`, Chart widget only; never on the Metric
 widget). A Formula measure (`FORMULA`) takes formula text over the other Measures by slot (Measure 1 is A);
 reordering or removing Measures keeps its references on the same Measures. Rows reorder by arrows or drag. Fires a
-non-bubbling `change` event with `detail.measures` (the full edited list), and `formulacheck` with `detail.errors`
+non-bubbling `change` event with `detail.measures` (the full edited list; plus `detail.mapping` after a reorder or
+a removal, see `updateMeasures`), and `formulacheck` with `detail.errors`
 (the server's FormulaEval build errors, `Measure 2 (B) formula: …`) whenever they change. An Average per record
 (`AVG_PER`) Measure adds its per-record lookup `perField` and how each record's value is taken, `inner`.
 
@@ -134,9 +141,17 @@ Builds new formula texts on the server (FormulaEval), then reports the current M
 
 **Kind**: instance async method of <code>BoardCpeMeasureList</code>  
 
+#### updateMeasures(measures, [mapping])
+
+Fires `change` with the new `measures`, plus `mapping` (old position → new position, -1 when removed) when the
+list was reordered or a Measure removed: the owner remaps every position-based Measure reference with it
+(`remapMeasureRefs` in `c/boardCpeUtils`).
+
+**Kind**: instance method of <code>BoardCpeMeasureList</code>  
+
 #### moveMeasure(index, offset)
 
-Moves a Measure; Formula measures keep pointing at the same Measures.
+Moves a Measure; the owner keeps every reference on the same Measures (`mapping`).
 
 **Kind**: instance method of <code>BoardCpeMeasureList</code>  
 

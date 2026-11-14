@@ -35,58 +35,58 @@ path) fire `steperrors` with `detail.step` and `detail.errors`.
 `context`: `builderContext` and `elementInfo` (Filter widget discovery for the Filter bindings).
 
 **Kind**: global class  
-**Extends**: <code>LightningElement</code>  
+**Extends**: <code>SetupStepContent</code>  
 
 #### config
 
 The Setup dialog's draft config.
 
-**Kind**: instance property (getter) of <code>BoardMetricSetupSteps</code>  
+**Kind**: instance property (getter)  
 **Decorators**: <code>@api</code>  
 
 #### defaultNotation
 
 Widget default notation, shown by the format editor.
 
-**Kind**: instance property of <code>BoardMetricSetupSteps</code>  
+**Kind**: global property  
 **Default**: <code>defaultNotationFor('metric')</code>  
 
 #### drag
 
 Drag-to-reorder state of the threshold rules (see the drag helpers in c/boardCpeUtils).
 
-**Kind**: instance property of <code>BoardMetricSetupSteps</code>  
+**Kind**: global property  
 **Default**: <code>NO_DRAG</code>  
 
 #### measures
 
 The Measures list; a single-aggregate config shows as its one visible Measure.
 
-**Kind**: instance property (getter) of <code>BoardMetricSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### handleMeasuresChange(event)
 
-Writes the Measures list; a single-aggregate config's keys move into it on the first Measure edit.
+A reorder or removal (`mapping`) keeps Formula slots and the Gauge's Measures on the same Measures.
 
-**Kind**: instance method of <code>BoardMetricSetupSteps</code>  
+**Kind**: global function  
 
 #### handleFormulaCheck(event)
 
 FormulaEval build errors of the Formula measures, checked on the server by the Measures list.
 
-**Kind**: instance method of <code>BoardMetricSetupSteps</code>  
+**Kind**: global function  
 
 #### hiddenMeasureOptions
 
 Hidden Measures a Gauge can read, labelled by their position in the list.
 
-**Kind**: instance property (getter) of <code>BoardMetricSetupSteps</code>  
+**Kind**: instance property (getter)  
 
 #### updateGauge(patch)
 
 Writes the Gauge settings, dropping unset keys (and the whole object when empty).
 
-**Kind**: instance method of <code>BoardMetricSetupSteps</code>
+**Kind**: global function
 
 ## Files
 

@@ -36,8 +36,10 @@
                     </ol>
                 </div>
             </nav>
-            <section class="c-setup-content slds-col slds-p-horizontal_medium" aria-live="polite">
-                <h2 class="c-setup-step-title slds-text-heading_medium slds-m-bottom_small">{currentLabel}</h2>
+            <section class={contentColumnClass}>
+                <h2 class="c-setup-step-title slds-text-heading_medium slds-m-bottom_small" aria-live="polite">
+                    {currentLabel}
+                </h2>
                 <template lwc:if={current}>
                     <div class="c-setup-step-help slds-m-bottom_medium">
                         <p class="c-setup-step-intro">{current.intro}</p>
@@ -49,45 +51,58 @@
                 <template lwc:if={hasCurrentErrors}>
                     <ul class="c-setup-step-errors slds-m-bottom_small slds-text-color_error" role="alert">
                         <template for:each={currentErrors} for:item="item">
-                            <li key={item.key}>{item.message}</li>
+                            <li key={item.key}>
+                                {item.message}
+                                <template lwc:if={item.retiredKeys}>
+                                    <lightning-button
+                                        class="c-setup-remove-retired slds-m-left_x-small"
+                                        variant="base"
+                                        label="Remove retired setting"
+                                        data-keys={item.retiredKeys}
+                                        onclick={handleRemoveRetired}
+                                    ></lightning-button>
+                                </template>
+                            </li>
                         </template>
                     </ul>
                 </template>
-                <template lwc:if={isChart}>
-                    <c-board-chart-setup-steps
-                        step={currentStep}
-                        config={draft}
-                        context={stepContext}
-                        onchange={handleDraftChange}
-                        onsteperrors={handleStepErrors}
-                    ></c-board-chart-setup-steps>
-                </template>
-                <template lwc:if={isMetric}>
-                    <c-board-metric-setup-steps
-                        step={currentStep}
-                        config={draft}
-                        context={stepContext}
-                        onchange={handleDraftChange}
-                        onsteperrors={handleStepErrors}
-                    ></c-board-metric-setup-steps>
-                </template>
-                <template lwc:if={isTable}>
-                    <c-board-table-setup-steps
-                        step={currentStep}
-                        config={draft}
-                        context={stepContext}
-                        onchange={handleDraftChange}
-                        onsteperrors={handleStepErrors}
-                    ></c-board-table-setup-steps>
-                </template>
-                <template lwc:if={isFilter}>
-                    <c-board-filter-setup-steps
-                        step={currentStep}
-                        config={draft}
-                        context={stepContext}
-                        onchange={handleDraftChange}
-                    ></c-board-filter-setup-steps>
-                </template>
+                <div class="c-setup-step-body">
+                    <template lwc:if={isChart}>
+                        <c-board-chart-setup-steps
+                            step={currentStep}
+                            config={draft}
+                            context={stepContext}
+                            onchange={handleDraftChange}
+                            onsteperrors={handleStepErrors}
+                        ></c-board-chart-setup-steps>
+                    </template>
+                    <template lwc:if={isMetric}>
+                        <c-board-metric-setup-steps
+                            step={currentStep}
+                            config={draft}
+                            context={stepContext}
+                            onchange={handleDraftChange}
+                            onsteperrors={handleStepErrors}
+                        ></c-board-metric-setup-steps>
+                    </template>
+                    <template lwc:if={isTable}>
+                        <c-board-table-setup-steps
+                            step={currentStep}
+                            config={draft}
+                            context={stepContext}
+                            onchange={handleDraftChange}
+                            onsteperrors={handleStepErrors}
+                        ></c-board-table-setup-steps>
+                    </template>
+                    <template lwc:if={isFilter}>
+                        <c-board-filter-setup-steps
+                            step={currentStep}
+                            config={draft}
+                            context={stepContext}
+                            onchange={handleDraftChange}
+                        ></c-board-filter-setup-steps>
+                    </template>
+                </div>
             </section>
             <aside class={previewColumnClass} data-open={previewOpenText}>
                 <c-board-setup-preview

@@ -10,10 +10,10 @@
 ### BoardChartCpe
 
 Flow Custom Property Editor for the Board Chart widget (ADR 0002). The panel is an overview inside the shared
-`c-board-cpe-common` shell in Setup dialog mode: Board (Board id, title, *Wait for Filter widget*), one summary
+`c-board-cpe-common` shell: Board (Board id, title, *Wait for Filter widget*), one summary
 line per step of the Chart widget's Setup dialog (Data, Chart type, Measures, Grouping, Display, Filter bindings)
-with "Edit…" opening the dialog at that step, Base filters, and Advanced: Config JSON. Every other setting is
-edited in the Setup dialog's steps (`c-board-chart-setup-steps`).
+with "Edit…" opening the dialog at that step, and Advanced: Config JSON. Every other setting (Base filters too, in
+the Data step) is edited in the Setup dialog's steps (`c-board-chart-setup-steps`).
 
 **Kind**: global class  
 **Extends**: <code>LightningElement</code>  

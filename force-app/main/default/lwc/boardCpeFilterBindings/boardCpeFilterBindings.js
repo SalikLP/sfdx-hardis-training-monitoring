@@ -1,6 +1,6 @@
 import { LightningElement, api } from 'lwc';
 import { IGNORE_BINDING, normalizeBoardError } from 'c/boardConfigUtils';
-import { BINDING_PATH_HELP, cleanString, hasText, loadObjectFields } from 'c/boardCpeUtils';
+import { BINDING_PATH_HELP, cleanString, hasText, loadObjectFields, containInnerChanges } from 'c/boardCpeUtils';
 import {
     MODE_CONVENTION,
     MODE_IGNORE,
@@ -63,11 +63,20 @@ export default class BoardCpeFilterBindings extends LightningElement {
     }
 
     connectedCallback() {
+        containInnerChanges(this);
         this._connected = true;
         this.notifyState();
     }
 
+    /**
+     * A "Field path" row still waiting for a path lives only here, so it is dropped when the editor goes away (the
+     * Admin leaves the Setup dialog step): report the state without it, so its error doesn't outlive the row.
+     */
     disconnectedCallback() {
+        if (this.pendingPathIds.length) {
+            this.pendingPathIds = [];
+            this.notifyState();
+        }
         this._connected = false;
     }
 
@@ -219,13 +228,5 @@ export default class BoardCpeFilterBindings extends LightningElement {
         this.manualFilterIds = this.manualFilterIds.filter((id) => id !== filterId);
         this.pendingPathIds = this.pendingPathIds.filter((id) => id !== filterId);
         this.setBinding(filterId, undefined);
-    }
-
-    /** Forgets the rows switched to "Field path" and the hand-added ids (e.g. after pasting a whole config). */
-    @api
-    reset() {
-        this.pendingPathIds = [];
-        this.manualFilterIds = [];
-        this.notifyState();
     }
 }

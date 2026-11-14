@@ -7,17 +7,25 @@
 
 ## JS Documentation
 
-### ENVELOPE_KEYS
+### NON_CONTENT_KEYS
 
-Envelope keys that don't count as config: the title is set in the panel.
+Keys that don't count as Widget content: the envelope, the title (set in the panel) and the Board-level settings
+(Board id, which Flow Builder pre-fills with its meta default "default"; Wait for Filter widget; Config currency).
 
 **Kind**: global constant  
-**Default**: <code>['version', 'widgetType', 'title']</code>  
+**Default**: <code>['version', 'widgetType', 'title', 'boardId', 'waitForFilterWidget', 'configCurrency']</code>  
+
+### DEFAULT_VALUES
+
+Defaults the config envelope writes for a Widget nobody has set up yet (`orderConfig` in `c/boardCpeUtils`).
+
+**Kind**: global constant  
+**Default**: <code>{ chartType: 'bar' }</code>  
 
 ### opensGuided(config, [references])
 
-True when the Setup dialog opens in Guided mode: the Widget has no config besides its envelope and no config key
-bound to a Flow resource (`references`).
+True when the Setup dialog opens in Guided mode: the Widget has no Data / Measures / Columns / Filters content
+(only the envelope, Board-level settings and defaults) and no content key bound to a Flow resource (`references`).
 
 **Kind**: global function  
 

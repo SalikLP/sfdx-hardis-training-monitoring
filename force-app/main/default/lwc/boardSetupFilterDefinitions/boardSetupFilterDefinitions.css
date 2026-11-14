@@ -6,3 +6,20 @@
 .c-filter-title {
     overflow-wrap: anywhere;
 }
+
+/* Add controls: the item type picker grows beside its Add button. */
+.c-filter-add-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--slds-g-spacing-2, 0.5rem);
+}
+
+.c-filter-add-row lightning-combobox {
+    flex: 1 1 8rem;
+    min-width: 0;
+}
+
+.c-filter-add-row lightning-button {
+    flex: 0 0 auto;
+}

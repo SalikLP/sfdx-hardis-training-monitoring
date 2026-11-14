@@ -6,7 +6,7 @@
  * holds the group's record Id (plus, with Detail rows off, the group's values through the lookup).
  */
 import { buildGroupActionCells } from './rowActions';
-import { groupToken } from './rowGrouping';
+import { groupFactToken } from './rowGrouping';
 
 const GROUP_ROW_ID_PREFIX = 'group:';
 
@@ -31,8 +31,8 @@ function groupActionRow(token, group, groupFieldPath) {
 function groupOf(token, tableData) {
     const groupField = tableData?.groupField;
     if (tableData?.aggregateGroups) {
-        const group = tableData.aggregateGroups.find((candidate) => groupToken(candidate.key) === token);
-        return { group, fieldPath: groupFieldPathAt(groupField, 1) };
+        const group = tableData.aggregateGroups.find((candidate) => groupFactToken(candidate) === token);
+        return { group, fieldPath: groupFieldPathAt(groupField, group?.level === 2 ? 2 : 1) };
     }
     const group = tableData?.groups?.[token];
     return { group, fieldPath: groupFieldPathAt(groupField, group?.level === 2 ? 2 : 1) };

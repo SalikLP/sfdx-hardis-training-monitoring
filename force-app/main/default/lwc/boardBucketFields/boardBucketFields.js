@@ -56,6 +56,19 @@ export function bucketFieldOptions(bucketFields) {
         .map((field) => ({ label: text(field.label) || field.id, value: bucketReference(text(field.id)) }));
 }
 
+/**
+ * Combobox options of a Widget's own Bucket fields, then the Board's (labelled `(Board)`) not shadowed by an own one
+ * with the same id.
+ */
+export function ownAndBoardBucketFieldOptions(bucketFields, boardBucketFields) {
+    const own = bucketFieldOptions(bucketFields);
+    const ownValues = new Set(own.map((option) => option.value));
+    const board = bucketFieldOptions(boardBucketFields)
+        .filter((option) => !ownValues.has(option.value))
+        .map((option) => ({ ...option, label: `${option.label} (Board)` }));
+    return [...own, ...board];
+}
+
 /** The Bucket fields that the config's `keys` (e.g. `groupByField`, `stackByField`) reference, once each. */
 export function referencedBucketFields(config, keys) {
     const source = isPlainObject(config) ? config : {};

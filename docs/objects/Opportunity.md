@@ -124,8 +124,10 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | BoardQuotaProviderTest | Test |
 | [BoardSchemaServiceTest](../apex/BoardSchemaServiceTest.md) | Test |
 | BoardTableAggregateCursorTest | Test |
+| BoardTableAggregateLevelsTest | Test |
 | BoardTableEngineTest | Test |
 | BoardTableGrouping | Lightning Controller |
+| BoardTableGroupLevel | Class |
 | BoardTableRowLimitGroupedTest | Test |
 
 
@@ -134,6 +136,7 @@ classDef mainObject fill:#FFB3B3,stroke:#A94442,stroke-width:4px,rx:14px,ry:14px
 | Component | Description | Exposed | Targets |
 | :-------- | :---------- | :-----: | :------------- |
 | [boardCpeUtils](../lwc/boardCpeUtils.md) | Board CPE Utils | ❌ |  |
+| [boardFilterSetupSteps](../lwc/boardFilterSetupSteps.md) | Board Filter Setup Steps | ❌ |  |
 | [boardSetupSteps](../lwc/boardSetupSteps.md) | <!-- --> | ❌ |  |
 
 

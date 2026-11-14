@@ -13,6 +13,11 @@ import {
 import { stepsFor } from 'c/boardSetupSteps';
 import { guidedNav, opensGuided } from 'c/boardSetupGuide';
 
+/** The modal body's top and bottom padding (1rem each), when it can't be measured. */
+const BODY_PADDING_PX = 32;
+const ROUNDING_SLACK_PX = 4;
+const SETTLE_DELAY_MS = 500;
+
 const STATE_DONE = 'done';
 const STATE_INVALID = 'invalid';
 const STATE_NOT_VISITED = 'notVisited';
@@ -31,7 +36,7 @@ const STATE_ICONS = {
 /**
  * Setup dialog of one Widget (ADR 0002): a full-size `LightningModal` with a vertical step nav on the left and the
  * current step's content in the middle and a collapsible live preview of the draft on the right
- * (`c-board-setup-preview`, about 2/3 of the width when open). The steps are the Widget's step descriptors
+ * (`c-board-setup-preview`, the width the step content leaves when open). The steps are the Widget's step descriptors
  * (`c/boardSetupSteps`); the content of each step comes from the Widget's step editor (`c-board-chart-setup-steps`,
  * `c-board-metric-setup-steps`, `c-board-table-setup-steps`, `c-board-filter-setup-steps`).
  *
@@ -178,10 +183,27 @@ export default class BoardSetupDialog extends LightningModal {
         return this.current ? this.current.label : '';
     }
 
+    /** The current step's errors; one of a retired setting (`step.retired`) carries the keys that remove it. */
     get currentErrors() {
-        return this.current
-            ? this.errorsOf(this.current).map((message, index) => ({ key: `error-${index}`, message }))
-            : [];
+        if (!this.current) {
+            return [];
+        }
+        const retired = Array.isArray(this.current.retired) ? this.current.retired : [];
+        return this.errorsOf(this.current).map((message, index) => {
+            const setting = retired.find((entry) => entry.message === message);
+            return { key: `error-${index}`, message, retiredKeys: setting ? setting.keys.join(',') : null };
+        });
+    }
+
+    /** "Remove retired setting": drops the retired keys of that error from the draft. */
+    handleRemoveRetired(event) {
+        const keys = (event.target.dataset.keys || '').split(',').filter(Boolean);
+        if (keys.length) {
+            this.draft = orderConfig(
+                this.widgetType,
+                applyPatch(this.draft, Object.fromEntries(keys.map((key) => [key, null])))
+            );
+        }
     }
 
     get hasCurrentErrors() {
@@ -251,12 +273,108 @@ export default class BoardSetupDialog extends LightningModal {
         }
     }
 
+    get contentColumnClass() {
+        return `c-setup-content slds-p-horizontal_medium${this.previewOpen ? ' c-setup-content_beside-preview' : ''}`;
+    }
+
     get previewColumnClass() {
-        return `c-setup-preview slds-col_bump-left slds-shrink-none slds-p-left_medium${this.previewOpen ? ' c-setup-preview_open' : ''}`;
+        return `c-setup-preview slds-p-left_medium${this.previewOpen ? ' c-setup-preview_open' : ''}`;
     }
 
     get previewOpenText() {
         return String(this.previewOpen);
+    }
+
+    renderedCallback() {
+        if (!this.resizeListener) {
+            this.resizeListener = () => this.measureFillHeight();
+            window.addEventListener('resize', this.resizeListener);
+            this.observeLayout();
+            // The modal opens with an animation and its fonts and intro settle late: measure again once it rests.
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            this.settleTimer = setTimeout(this.resizeListener, SETTLE_DELAY_MS);
+        }
+        this.measureFillHeight();
+    }
+
+    disconnectedCallback() {
+        if (this.resizeListener) {
+            window.removeEventListener('resize', this.resizeListener);
+            clearTimeout(this.settleTimer);
+            this.resizeListener = null;
+        }
+        if (this.layoutObserver) {
+            this.layoutObserver.disconnect();
+            this.layoutObserver = null;
+        }
+    }
+
+    /** Measures again whenever the modal body or the step column (its intro wrapping, its errors) changes size. */
+    observeLayout() {
+        if (typeof ResizeObserver !== 'function') {
+            return;
+        }
+        this.layoutObserver = new ResizeObserver(this.resizeListener);
+        ['lightning-modal-body', '.c-setup-content'].forEach((selector) => {
+            const element = this.template.querySelector(selector);
+            if (element) {
+                this.layoutObserver.observe(element);
+            }
+        });
+    }
+
+    /**
+     * Fits the dialog's content to the visible modal body, so the body itself never scrolls: the columns get that
+     * height (`--c-setup-visible-height`) and scroll on their own. Also publishes the height left under the step's
+     * title, intro and errors (`--c-setup-fill-height`) for a step that fills the dialog (the Filter definitions
+     * list). Without a laid-out modal nothing is set: the body scrolls and such a step keeps its own estimate.
+     */
+    measureFillHeight() {
+        const setup = this.template.querySelector('.c-setup');
+        const stepBody = this.template.querySelector('.c-setup-step-body');
+        if (!setup || !stepBody) {
+            return;
+        }
+        const setupTop = setup.getBoundingClientRect().top;
+        const visible = this.visibleBodyHeight(setupTop);
+        if (visible === null) {
+            return;
+        }
+        const height = Math.floor(visible - ROUNDING_SLACK_PX);
+        // Measured inside the step column, which scrolls on its own once fitted: add back what it has scrolled.
+        const content = this.template.querySelector('.c-setup-content');
+        const aboveStep = stepBody.getBoundingClientRect().top - setupTop + (content ? content.scrollTop : 0);
+        const fill = Math.floor(height - aboveStep);
+        if (height <= 0 || fill <= 0) {
+            return;
+        }
+        setup.classList.add('c-setup_fitted');
+        setup.style.setProperty('--c-setup-visible-height', `${height}px`);
+        setup.style.setProperty('--c-setup-fill-height', `${fill}px`);
+    }
+
+    /**
+     * The height the dialog's content can take without the modal body scrolling, or null when it can't be measured.
+     * Read from the modal body when it is the scroll container (its client height minus the gap above the content,
+     * taken again below it); otherwise from the space between the modal header and footer.
+     */
+    visibleBodyHeight(setupTop) {
+        const body = this.template.querySelector('lightning-modal-body');
+        if (body && body.clientHeight > 0 && /auto|scroll/.test(getComputedStyle(body).overflowY)) {
+            const gap = setupTop - body.getBoundingClientRect().top + body.scrollTop;
+            return body.clientHeight - 2 * Math.max(gap, 0);
+        }
+        const header = this.template.querySelector('lightning-modal-header');
+        const footer = this.template.querySelector('lightning-modal-footer');
+        if (!header || !footer) {
+            return null;
+        }
+        const headerRect = header.getBoundingClientRect();
+        const footerRect = footer.getBoundingClientRect();
+        if (!headerRect.height || !footerRect.height || footerRect.top <= headerRect.bottom) {
+            return null;
+        }
+        return footerRect.top - headerRect.bottom - BODY_PADDING_PX;
     }
 
     handlePreviewToggle(event) {

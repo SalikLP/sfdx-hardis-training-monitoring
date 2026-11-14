@@ -1,15 +1,19 @@
 @import 'c/boardCpeDragStyles';
 
 /*
- * Fill the Setup dialog's step: the viewport minus the modal's outer padding, header, footer, and the step's title and
- * intro. Each pane scrolls on its own so the list and the selected item's editor stay visible together.
+ * Fill the Setup dialog's step: the dialog publishes the height left under the step's title and intro
+ * (`--c-setup-fill-height`); the viewport-based estimate only applies before it is measured. Each pane scrolls on its
+ * own so the list and the selected item's editor stay visible together.
  */
 .c-master-detail {
-    height: calc(100vh - 24rem);
+    height: var(--c-setup-fill-height, calc(100vh - 24rem));
     min-height: 20rem;
 }
 
+/* The list keeps a width that fits a label, its type badge and the row actions, however narrow the step is. */
 .c-master-detail-master {
+    flex: 0 0 auto;
+    width: clamp(15rem, 40%, 20rem);
     min-height: 0;
     border-right: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
 }
@@ -20,7 +24,11 @@
     overflow-y: auto;
 }
 
+/* Sticky: should the step ever be taller than the modal body shows, the add controls stay in view above the footer. */
 .c-master-detail-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--slds-g-color-surface-container-1, #fff);
     border-top: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, #e5e5e5);
 }
 
@@ -58,6 +66,18 @@
     box-shadow: var(--slds-g-shadow-outline-focus-1, 0 0 3px #0176d3);
 }
 
-.c-master-detail-label {
+.c-master-detail-detail {
+    flex: 1 1 0;
     min-width: 0;
+}
+
+/* The label yields last: the type badge truncates first (it shrinks 4 times as fast), down to a few letters. */
+.c-master-detail-label {
+    flex: 0 1 auto;
+    min-width: 3rem;
+}
+
+.c-master-detail-meta {
+    flex: 0 4 auto;
+    min-width: 2.5rem;
 }

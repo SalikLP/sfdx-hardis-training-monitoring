@@ -1,6 +1,6 @@
 <template>
     <div class="c-master-detail slds-grid">
-        <div class="c-master-detail-master slds-col slds-size_1-of-3 slds-grid slds-grid_vertical">
+        <div class="c-master-detail-master slds-grid slds-grid_vertical">
             <div class="c-master-detail-list-scroller slds-col">
                 <template lwc:if={hasItems}>
                     <ul class="c-master-detail-list" aria-label={listLabel}>
@@ -39,8 +39,7 @@
                                         >{row.label}</span
                                     >
                                     <template lwc:if={row.meta}>
-                                        <span
-                                            class="c-master-detail-meta slds-badge slds-m-left_xx-small slds-shrink-none"
+                                        <span class="c-master-detail-meta slds-badge slds-m-left_xx-small slds-truncate"
                                             >{row.meta}</span
                                         >
                                     </template>
@@ -100,7 +99,7 @@
                 <slot name="actions"></slot>
             </div>
         </div>
-        <div class="c-master-detail-detail slds-col slds-p-horizontal_medium">
+        <div class="c-master-detail-detail slds-p-horizontal_medium">
             <slot></slot>
         </div>
     </div>

@@ -5,12 +5,14 @@ import {
     PICKLIST_FIELD_TYPES,
     loadChildRelationships,
     loadObjectFields,
-    loadQueryableObjects
+    loadQueryableObjects,
+    loadScreenFlows,
+    containInnerChanges
 } from 'c/boardCpeUtils';
 
 const MAX_HOPS = 5;
 const MAX_OPTIONS = 100;
-const MODES = ['object', 'field', 'childRelationship'];
+const MODES = ['object', 'field', 'childRelationship', 'screenFlow'];
 const CAPABILITY_TESTS = {
     filterable: (field) => field.isFilterable,
     groupable: (field) => field.isGroupable,
@@ -33,14 +35,18 @@ function traversalTarget(field) {
 
 /**
  * Searchable object picker (`mode="object"`), capability-filtered field picker with 1–5 hop parent dot-path and
- * `Child(ForeignKey).Field` builder (`mode="field"`), and child relationship selector (`mode="childRelationship"`),
- * backed by `BoardSchemaService`.
+ * `Child(ForeignKey).Field` builder (`mode="field"`), child relationship selector (`mode="childRelationship"`), and
+ * picker of the org's active Screen Flows (`mode="screenFlow"`), backed by `BoardSchemaService`.
  *
  * Fires a non-bubbling `change` event: `{ value, object }` (object), `{ value, field, objectApiName }` (field, where
  * `objectApiName` is the leaf field's object), `{ value: 'Child(FK)', childRelationship }` (childRelationship), or
- * `{ value: null }` when cleared.
+ * `{ value, flow }` (screenFlow, the flow's API name), or `{ value: null }` when cleared.
  */
 export default class BoardCpeObjectFieldPicker extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     @api label;
     /** Help text shown next to the label. */
     @api fieldLevelHelp;
@@ -103,12 +109,21 @@ export default class BoardCpeObjectFieldPicker extends LightningElement {
         return this._mode === 'object';
     }
 
+    get isScreenFlowMode() {
+        return this._mode === 'screenFlow';
+    }
+
+    /** Object and Screen Flow modes pick from one flat list of `{ apiName, label }` that needs no object. */
+    get isFlatListMode() {
+        return this.isObjectMode || this.isScreenFlowMode;
+    }
+
     get isFieldMode() {
         return this._mode === 'field';
     }
 
     get needsObject() {
-        return !this.isObjectMode && !this._objectApiName;
+        return !this.isFlatListMode && !this._objectApiName;
     }
 
     get isInputDisabled() {
@@ -124,6 +139,9 @@ export default class BoardCpeObjectFieldPicker extends LightningElement {
         }
         if (this.isObjectMode) {
             return 'Search objects by label or API name';
+        }
+        if (this.isScreenFlowMode) {
+            return 'Search active Screen Flows by label or API name';
         }
         return this.isFieldMode ? 'Search fields' : 'Search child relationships';
     }
@@ -199,7 +217,7 @@ export default class BoardCpeObjectFieldPicker extends LightningElement {
 
     get allOptions() {
         const term = this.searchTerm.trim().toLowerCase();
-        if (this.isObjectMode) {
+        if (this.isFlatListMode) {
             return this.items
                 .filter((object) => matches(term, object.label, object.apiName))
                 .map((object) => ({
@@ -296,6 +314,8 @@ export default class BoardCpeObjectFieldPicker extends LightningElement {
             let childRelationships = [];
             if (this.isObjectMode) {
                 items = await loadQueryableObjects();
+            } else if (this.isScreenFlowMode) {
+                items = await loadScreenFlows();
             } else if (this._objectApiName) {
                 if (this._mode === 'childRelationship') {
                     childRelationships = await loadChildRelationships(this._objectApiName);
@@ -369,10 +389,10 @@ export default class BoardCpeObjectFieldPicker extends LightningElement {
         if (!option) {
             return;
         }
-        if (this.isObjectMode) {
-            const object = this.items.find((item) => item.apiName === key);
+        if (this.isFlatListMode) {
+            const item = this.items.find((candidate) => candidate.apiName === key);
             this.close();
-            this.fireChange({ value: object.apiName, object: { ...object } });
+            this.fireChange({ value: item.apiName, [this.isObjectMode ? 'object' : 'flow']: { ...item } });
             return;
         }
         if (key.startsWith('child:')) {

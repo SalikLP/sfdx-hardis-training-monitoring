@@ -15,6 +15,13 @@ value per record of a per-record lookup) and a Formula measure.
 **Kind**: global constant  
 **Default**: <code>[...]</code>  
 
+### MEASURES_REPLACED_MESSAGE
+
+The error of a Chart config still carrying the single aggregate of the old Bar widget (retired).
+
+**Kind**: global constant  
+**Default**: <code>'aggregateFunction and valueFieldApiName were replaced by the Measures list.'</code>  
+
 ### FORMULA_TOKEN
 
 String literals (skipped) or identifiers not called as a function.
@@ -142,6 +149,15 @@ Number input value → number, or null when empty / not numeric.
 
 **Kind**: global function  
 
+### containInnerChanges(component)
+
+Keeps the `change` events of the base components inside `component` from reaching its host. `lightning-input`,
+`lightning-combobox` and the like fire `change` bubbling and composed, so a keystroke inside an editor would
+otherwise also arrive at the parent's `onchange` on the editor, looking like the editor's own `change` with the
+wrong detail. Call from `connectedCallback`; the component's own `change`, fired on its host, is not affected.
+
+**Kind**: global function  
+
 ### moveItem(items, index, offset)
 
 Moves `items[index]` by `offset`, returning a new array (or the same array when out of range).
@@ -182,6 +198,12 @@ Extra row classes: the dragged row is dimmed; the hovered row shows a marker on 
 ### loadQueryableObjects()
 
 `BoardSchemaService.getQueryableObjects` (slow on a cold cache, so shared by every picker).
+
+**Kind**: global function  
+
+### loadScreenFlows()
+
+`BoardSchemaService.getScreenFlows`: the org's active Screen Flows (`[{ apiName, label }]`), shared by pickers.
 
 **Kind**: global function  
 
@@ -291,6 +313,14 @@ Board-level Bucket fields (of the Board's Filter widget) a `bucket:<id>` referen
 
 **Kind**: global function  
 
+### otherBarProblem(config)
+
+Why the Chart's Measures can't have an "Other" bar, or null when they can. "Other" merges the rolled-up rows (AVG,
+MIN, MAX, Average per record and Formula measures included, hidden ones too), except distinct counts, which never
+merge; Small multiples panels can only sum their "Other". The Display step offers "Other" by the same rule.
+
+**Kind**: global function  
+
 ### bucketReferenceErrors(config, key, label, [context])
 
 A group or series field `bucket:<id>` must name one of the Widget's Bucket fields or the Board's.
@@ -311,6 +341,13 @@ up to a total; percent of category needs a series (Stack by) field or several Me
 
 **Kind**: global constant  
 **Default**: <code>[...]</code>  
+
+### DEFAULT_MEASURE_SUMMARY
+
+Measures step summary of a Widget without Measures: it counts records, the default.
+
+**Kind**: global constant  
+**Default**: <code>'Count of records (default)'</code>  
 
 ### chartMeasures(config)
 
@@ -355,6 +392,23 @@ Keeps Formula measures pointing at the same Measures after the list is reordered
 
 **Kind**: global function  
 
+### MEASURE_POSITION_KEYS
+
+Config keys holding a Measure's 0-based list position (besides Formula slots and the Gauge's).
+
+**Kind**: global constant  
+**Default**: <code>['panelHeadlineMeasure', 'panelSortMeasure']</code>  
+
+### remapMeasureRefs(config, measures, mapping)
+
+The patch that keeps every position-based Measure reference of `config` on the same Measure after its Measures list
+became `measures` (reordered, or a Measure removed). `mapping[oldIndex]` is the Measure's new position, or -1 when
+it was removed. Covers Formula slots (a removed slot is left as typed: the Formula reports it), the Gauge's
+`minMeasure` / `maxMeasure` / `targetMeasure` and the Chart's `panelHeadlineMeasure` / `panelSortMeasure`; a
+reference to a removed Measure is cleared, so the step's validation asks for a new one where one is required.
+
+**Kind**: global function  
+
 ### formulaMeasureErrors(measures, index)
 
 The Measure-reference errors of Formula measure `index` (the formula text itself is checked by the server).
@@ -374,15 +428,15 @@ then must name one of them. Without it every column is a field path.
 
 **Kind**: global function  
 
-### validateTableConfig(config)
+### validateTableConfig(config, [context])
 
 Table widget design-time errors: columns, page size, and the and a leftover childRelationship (removed).
 
 **Kind**: global function  
 
-### bucketGroupErrors(config)
+### bucketGroupErrors(config, bucketFields)
 
-A Bucket field as group field (`bucket:<id>`): Detail rows off only, as the only group field, and defined.
+A Bucket field group (`bucket:<id>`): Detail rows off only, the only group field, the Widget's or the Board's.
 
 **Kind**: global function  
 
@@ -425,11 +479,26 @@ Lower-cased path prefix of fields reached through a lookup group field (`Account
 
 **Kind**: global function  
 
-### detailRowsErrors(config)
+### isDateGroup(entry, objectFields)
+
+True when a group entry groups by a date: it has a granularity, or (Day, the default, is left out of the config)
+its direct field is a Date or DateTime in the object's field describes (`objectFields`, when loaded).
+
+**Kind**: global function  
+
+### isConstantPerGroup(lowerPath, entry, objectFields)
+
+True when `lowerPath` has one value per group of a group entry: the group field itself (not a date: its groups are
+date buckets) or a field through a lookup group field.
+
+**Kind**: global function  
+
+### detailRowsErrors(config, objectFields)
 
 Detail rows (Row grouping): off makes the Table an aggregated table, so it needs a group field and every column
-must have one value per group (the group field, a field through the lookup group field, or a column with
-summaries). Ordering groups by a summary (`orderBySummary`) needs Detail rows off and a summary the Table shows.
+must have one value per group of one of the (up to two) group fields: a group field, a field through a lookup
+group field, or a column with summaries. Ordering groups by a summary (`orderBySummary`) needs Detail rows off and
+a summary the Table shows.
 
 **Kind**: global function  
 
@@ -480,7 +549,8 @@ Row actions: a list of `view` / `edit` / `create` / `flow` actions, each with a 
 
 ### WIDGET_SPECS
 
-Per widget type: data widget (object, bindings, base filters), dual-written top-level keys, widget rules.
+Per widget type: data widget (object, bindings, base filters), Widget-level Data provider, dual-written top-level
+keys, widget rules.
 
 **Kind**: global constant  
 **Default**: <code>{...}</code>  
@@ -592,6 +662,20 @@ Config JSON. `references` holds top-level keys bound to Flow resources (they sat
 
 **Kind**: global function  
 
+### APEX_CLASS_NAME
+
+An Apex class name, optionally namespaced (`ns.ClassName`).
+
+**Kind**: global constant  
+**Default**: <code>/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)?$/</code>  
+
+### dataProviderErrors(dataProvider)
+
+The Widget-level Data provider (Chart and Metric): an Apex class name. Whether the class exists and implements
+`BoardDataProvider` is checked by the server at query time; its message shows in the Widget (and the preview).
+
+**Kind**: global function  
+
 ### validateConfigText(widgetType, text, [references]) ⇒ <code>{ config: object</code> \| <code>null, errors: string[] }</code>
 
 Parses pasted `configJson` text and checks it with the same rules as `validate()` (`configErrors`).
@@ -656,13 +740,6 @@ The open state after a `c-board-cpe-section` `toggle` event (`detail: { name, op
 
 Header state of each Config section, keyed by name: `{ name, open, hasError, summary }`. The values are lazy, so a
 template binding only computes what it reads. `errors()` returns the `validate()`-style errors the sections check.
-
-**Kind**: global function  
-
-### widgetSectionStates(widgetType, sections, cpe)
-
-`sectionStates` of a widget Config editor (`cpe` with `sectionOpen`, `config`, and `configLoaded`). Errors wait for
-the shell's first `configchange` (`configLoaded`), so the placeholder config never flashes errors on first render.
 
 **Kind**: global function  
 

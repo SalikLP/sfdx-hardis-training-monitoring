@@ -30,17 +30,6 @@
                 value={titleValue}
                 onchange={handleTitleChange}
             ></lightning-input>
-            <template lwc:if={showObject}>
-                <div class="slds-m-top_x-small">
-                    <c-board-cpe-object-field-picker
-                        class="c-cpe-object"
-                        mode="object"
-                        label="Object"
-                        value={objectApiNameValue}
-                        onchange={handleObjectChange}
-                    ></c-board-cpe-object-field-picker>
-                </div>
-            </template>
             <template lwc:if={isDataWidget}>
                 <lightning-input
                     class="c-cpe-wait-for-filter slds-m-top_x-small"
@@ -53,17 +42,6 @@
                     onchange={handleWaitForFilterWidgetChange}
                 ></lightning-input>
             </template>
-            <template lwc:if={showOrientation}>
-                <lightning-radio-group
-                    class="c-cpe-orientation slds-m-top_x-small"
-                    name="orientation"
-                    label="Orientation"
-                    type="button"
-                    options={orientationOptions}
-                    value={orientationValue}
-                    onchange={handleOrientationChange}
-                ></lightning-radio-group>
-            </template>
             <template lwc:if={hasReferenceNotes}>
                 <ul class="slds-m-top_x-small slds-text-body_small slds-text-color_weak">
                     <template for:each={referenceNotes} for:item="note">
@@ -73,7 +51,7 @@
             </template>
         </c-board-cpe-section>
 
-        <template lwc:if={setupDialog}>
+        <template lwc:if={hasSetupSteps}>
             <div class="c-cpe-setup slds-m-vertical_x-small">
                 <h3 class="slds-text-title_caps slds-m-bottom_xx-small">Setup</h3>
                 <ul class="c-cpe-steps">
@@ -113,29 +91,6 @@
                     </template>
                 </ul>
             </div>
-        </template>
-
-        <template lwc:if={isDataWidget}>
-            <template lwc:if={showBindings}>
-                <c-board-cpe-section
-                    class="c-cpe-bindings"
-                    name={sections.bindings.name}
-                    label="Filter bindings"
-                    summary={sections.bindings.summary}
-                    open={sections.bindings.open}
-                    has-error={sections.bindings.hasError}
-                    ontoggle={handleSectionToggle}
-                >
-                    <c-board-cpe-filter-bindings
-                        class="c-cpe-filter-bindings"
-                        config={config}
-                        builder-context={builderContext}
-                        element-info={elementInfo}
-                        onchange={handleBindingsChange}
-                        onbindingstate={handleBindingState}
-                    ></c-board-cpe-filter-bindings>
-                </c-board-cpe-section>
-            </template>
         </template>
 
         <c-board-cpe-section

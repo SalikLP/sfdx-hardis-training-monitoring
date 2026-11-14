@@ -1,6 +1,7 @@
 /**
  * Row grouping by a Bucket field (`groupBy: [{ fieldPath: 'bucket:<id>' }]`, see `BoardBucketField`): with Detail rows
- * off only, an aggregated table with one Group row per bucket. Detail rows on, a second group field, an order field
+ * off only, an aggregated table with one Group row per bucket (one level: a second group field is a config error, as
+ * the per-bucket rule predicates would have to be crossed with it). Detail rows on, an order field
  * and any column other than the Bucket field itself or a column with summaries are config errors.
  *
  * Like the Chart widget grouped by a Bucket field: in the SOQL tier one aggregate per bucket,
@@ -50,7 +51,7 @@ public with sharing class BoardTableBucketGroup {
         }
         List<Object> groupBy = BoardQueryService.getList(request, 'groupBy');
         if (groupBy.size() > 1) {
-            throw configError('With Detail rows off a Table groups by one field.');
+            throw configError('A Table grouped by a Bucket field has no second group field.');
         }
         Map<String, Object> entry = BoardQueryService.asMap(groupBy[0]);
         if (String.isNotBlank(BoardQueryService.getString(entry, 'orderBy'))) {

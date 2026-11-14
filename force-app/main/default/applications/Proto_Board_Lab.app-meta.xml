@@ -31,7 +31,6 @@
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>Proto Board Lab</label>
     <navType>Standard</navType>
-    <tabs>Proto_Table_Widget_Lab</tabs>
     <tabs>Proto_Board_App_Page</tabs>
     <tabs>standard-Case</tabs>
     <tabs>standard-Account</tabs>

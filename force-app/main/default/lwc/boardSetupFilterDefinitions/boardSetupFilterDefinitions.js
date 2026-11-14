@@ -30,7 +30,8 @@ import {
     parseNumber,
     recordContextErrors,
     toCamelCase,
-    uniqueId
+    uniqueId,
+    containInnerChanges
 } from 'c/boardCpeUtils';
 
 const SELECTION_OPTIONS = [
@@ -156,6 +157,7 @@ export default class BoardSetupFilterDefinitions extends LightningElement {
     }
 
     connectedCallback() {
+        containInnerChanges(this);
         Promise.resolve(getCurrencyOptions())
             .then((options) => {
                 this.currencyOptions = options || null;
@@ -183,6 +185,15 @@ export default class BoardSetupFilterDefinitions extends LightningElement {
     /** At most one Currency picker per Filter widget, and none in a single-currency org. */
     get isAddCurrencyPickerDisabled() {
         return this.isCurrencyUnavailable || this.filters.some(isCurrencyPickerItem);
+    }
+
+    /** What Add can create: every filter type, a Filter section, and the Currency picker while one can be added. */
+    get newItemOptions() {
+        const options = [...FILTER_TYPE_OPTIONS, { label: FILTER_TYPE_LABELS.section, value: 'section' }];
+        if (!this.isAddCurrencyPickerDisabled) {
+            options.push({ label: FILTER_TYPE_LABELS[CURRENCY_PICKER_ITEM], value: CURRENCY_PICKER_ITEM });
+        }
+        return options;
     }
 
     get currencyPickerMeta() {
@@ -523,8 +534,20 @@ export default class BoardSetupFilterDefinitions extends LightningElement {
         this.newFilterType = event.detail.value;
     }
 
-    handleAddFilter() {
+    handleAddItem() {
         const type = this.newFilterType;
+        if (type === 'section') {
+            this.addItem({ type: 'section', label: 'Section', startCollapsed: false });
+            return;
+        }
+        if (type === CURRENCY_PICKER_ITEM) {
+            if (!this.isAddCurrencyPickerDisabled) {
+                this.addItem({ type: CURRENCY_PICKER_ITEM });
+            }
+            // Only one can exist: the option is gone now, so the picker falls back to a filter type.
+            this.newFilterType = 'PICKLIST';
+            return;
+        }
         const label = FILTER_TYPE_LABELS[type];
         const filter = {
             filterId: uniqueId(
@@ -538,16 +561,6 @@ export default class BoardSetupFilterDefinitions extends LightningElement {
             filter.optionsSource = 'FIELD_DESCRIBE';
         }
         this.addItem(filter);
-    }
-
-    handleAddSection() {
-        this.addItem({ type: 'section', label: 'Section', startCollapsed: false });
-    }
-
-    handleAddCurrencyPicker() {
-        if (!this.isAddCurrencyPickerDisabled) {
-            this.addItem({ type: CURRENCY_PICKER_ITEM });
-        }
     }
 
     handleCurrencyPickerLabel(event) {

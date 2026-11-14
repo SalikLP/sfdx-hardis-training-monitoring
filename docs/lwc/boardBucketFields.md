@@ -42,6 +42,13 @@ Combobox options of the Bucket fields: label (or id) and `bucket:<id>`.
 
 **Kind**: global function  
 
+### ownAndBoardBucketFieldOptions(bucketFields, boardBucketFields)
+
+Combobox options of a Widget's own Bucket fields, then the Board's (labelled `(Board)`) not shadowed by an own one
+with the same id.
+
+**Kind**: global function  
+
 ### referencedBucketFields(config, keys)
 
 The Bucket fields that the config's `keys` (e.g. `groupByField`, `stackByField`) reference, once each.

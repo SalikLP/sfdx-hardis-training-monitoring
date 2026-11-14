@@ -39,6 +39,14 @@ The Widget's Bucket fields, offered as columns (`fieldPath: 'bucket:<id>'`).
 **Decorators**: <code>@api</code>  
 **Default**: <code>[]</code>  
 
+#### boardBucketFields
+
+The Board's Bucket fields (of its Filter widget), offered too unless an own one has the same id.
+
+**Kind**: instance property of <code>BoardCpeColumnList</code>  
+**Decorators**: <code>@api</code>  
+**Default**: <code>[]</code>  
+
 #### drag
 
 Drag-to-reorder state (see the drag helpers in c/boardCpeUtils).
@@ -58,6 +66,12 @@ Leaf field `dataType` per `object::path` (null when unknown), resolved lazily to
 "Display as" options; Data bar only for number, currency and percent fields (or when already chosen).
 
 **Kind**: instance method of <code>BoardCpeColumnList</code>  
+
+#### bucketOptions
+
+The Widget's own Bucket fields, then the Board's not shadowed by an own one with the same id.
+
+**Kind**: instance property (getter) of <code>BoardCpeColumnList</code>  
 
 #### bucketLabelOf(column)
 

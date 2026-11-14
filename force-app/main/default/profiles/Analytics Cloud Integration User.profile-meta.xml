@@ -7524,10 +7524,6 @@
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>
-        <tab>Proto_Table_Widget_Lab</tab>
-        <visibility>Hidden</visibility>
-    </tabVisibilities>
-    <tabVisibilities>
         <tab>Proto_Tabs_Filter_Context</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>

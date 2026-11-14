@@ -209,6 +209,31 @@ public with sharing class BoardSchemaService {
     }
 
     /**
+     * Lists the org's active Screen Flows the running user can see, sorted by label, for the Table Row action
+     * editor's flow picker. Autolaunched and other non-screen flow types are left out: a Row action opens its flow
+     * on screen.
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<FlowInfo> getScreenFlows(Integer refreshToken) {
+        try {
+            List<FlowInfo> flows = new List<FlowInfo>();
+            for (FlowDefinitionView flow : [
+                SELECT ApiName, Label
+                FROM FlowDefinitionView
+                WHERE ProcessType = 'Flow' AND IsActive = TRUE
+                WITH USER_MODE
+                ORDER BY Label, ApiName
+                LIMIT 2000
+            ]) {
+                flows.add(new FlowInfo(flow.ApiName, flow.Label));
+            }
+            return flows;
+        } catch (Exception failure) {
+            throw BoardErrors.toAuraException(failure);
+        }
+    }
+
+    /**
      * Searches active Users (and optionally Queues) by name in User Mode. A blank term returns the first
      * alphabetical matches. Results are sorted by label.
      */
@@ -360,6 +385,18 @@ public with sharing class BoardSchemaService {
     // ---------------------------------------------------------------------------------------------------------
     // DTOs
     // ---------------------------------------------------------------------------------------------------------
+
+    public class FlowInfo {
+        @AuraEnabled
+        public String apiName;
+        @AuraEnabled
+        public String label;
+
+        FlowInfo(String apiName, String label) {
+            this.apiName = apiName;
+            this.label = String.isBlank(label) ? apiName : label;
+        }
+    }
 
     public class ObjectInfo implements Comparable {
         @AuraEnabled

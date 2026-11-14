@@ -155,14 +155,15 @@
                         ></lightning-button>
                     </template>
                     <template lwc:if={row.isFlow}>
-                        <lightning-input
+                        <c-board-cpe-object-field-picker
                             class="c-row-action-flow slds-m-top_xx-small"
-                            label="Flow API name"
+                            mode="screenFlow"
+                            label="Screen Flow"
+                            field-level-help="The active Screen Flow this action opens. Search by label or API name; the API name is saved."
                             value={row.flowApiName}
                             data-index={row.index}
-                            data-name="flowApiName"
-                            onchange={handleText}
-                        ></lightning-input>
+                            onchange={handleFlow}
+                        ></c-board-cpe-object-field-picker>
                         <template for:each={row.inputs} for:item="entry">
                             <div key={entry.key} class="slds-m-top_xx-small">
                                 <lightning-input

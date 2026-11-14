@@ -20,33 +20,20 @@
             onitemmove={handleItemMove}
             onitemremove={handleItemRemove}
         >
-            <div slot="actions">
+            <div slot="actions" class="c-filter-add-row">
                 <lightning-combobox
                     class="c-filter-new-type"
-                    field-level-help="The type of the next filter Add filter creates."
-                    label="New filter type"
-                    options={typeOptions}
+                    field-level-help="What Add creates: a filter of this type, a Filter section, or the Currency picker (one per Filter widget, multi-currency orgs only)."
+                    label="New item"
+                    options={newItemOptions}
                     value={newFilterType}
                     onchange={handleNewType}
                 ></lightning-combobox>
                 <lightning-button
-                    class="c-filter-add slds-m-top_x-small"
-                    label="Add filter"
+                    class="c-filter-add"
+                    label="Add"
                     icon-name="utility:add"
-                    onclick={handleAddFilter}
-                ></lightning-button>
-                <lightning-button
-                    class="c-filter-add-section slds-m-top_x-small slds-m-left_x-small"
-                    label="Add section"
-                    icon-name="utility:add"
-                    onclick={handleAddSection}
-                ></lightning-button>
-                <lightning-button
-                    class="c-filter-add-currency-picker slds-m-top_x-small slds-m-left_x-small"
-                    label="Add currency picker"
-                    icon-name="utility:add"
-                    disabled={isAddCurrencyPickerDisabled}
-                    onclick={handleAddCurrencyPicker}
+                    onclick={handleAddItem}
                 ></lightning-button>
             </div>
             <template lwc:if={row}>

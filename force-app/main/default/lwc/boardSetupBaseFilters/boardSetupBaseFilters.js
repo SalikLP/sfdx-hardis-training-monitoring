@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import { baseFiltersFromTree, baseFiltersToTree } from 'c/boardCpeUtils';
+import { baseFiltersFromTree, baseFiltersToTree, containInnerChanges } from 'c/boardCpeUtils';
 
 const ID_PREFIX = 'bf';
 
@@ -17,6 +17,10 @@ const ID_PREFIX = 'bf';
  * OR group entry (`baseFiltersFromTree`); the first edit gives entries with a missing or duplicate id a fresh one.
  */
 export default class BoardSetupBaseFilters extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     /** Object the field pickers start from. */
     @api objectApiName;
 

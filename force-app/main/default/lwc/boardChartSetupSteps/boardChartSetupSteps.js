@@ -1,4 +1,5 @@
 import { LightningElement, api } from 'lwc';
+import { SetupStepContent } from 'c/boardSetupStepContent';
 import {
     BAR_SORT_OPTIONS,
     DATE_FIELD_TYPES,
@@ -6,11 +7,12 @@ import {
     MAX_CHART_MEASURES,
     ORIENTATION_OPTIONS,
     PICKLIST_FIELD_TYPES,
-    ROLLUP_FUNCTIONS,
     chartMeasures,
     isPlainObject,
     parseNumber,
-    resolveFieldDescribe
+    resolveFieldDescribe,
+    otherBarProblem,
+    remapMeasureRefs
 } from 'c/boardCpeUtils';
 import { bucketFieldOptions, bucketIdOf, findBucketField } from 'c/boardBucketFields';
 import {
@@ -73,7 +75,7 @@ const CHRONOLOGICAL_SORTS = ['CHRONOLOGICAL_ASC', 'CHRONOLOGICAL_DESC'];
  * `context`: `boardBucketFields` (the Board's Bucket fields, usable by id), `builderContext` and `elementInfo`
  * (Filter widget discovery for the Filter bindings).
  */
-export default class BoardChartSetupSteps extends LightningElement {
+export default class BoardChartSetupSteps extends SetupStepContent(LightningElement) {
     @api step;
 
     _config = {};
@@ -137,22 +139,6 @@ export default class BoardChartSetupSteps extends LightningElement {
         return Array.isArray(this._context.boardBucketFields) ? this._context.boardBucketFields : [];
     }
 
-    get builderContext() {
-        return this._context.builderContext || {};
-    }
-
-    get elementInfo() {
-        return this._context.elementInfo || {};
-    }
-
-    update(patch) {
-        this.dispatchEvent(new CustomEvent('change', { detail: { patch } }));
-    }
-
-    reportErrors(step, errors) {
-        this.dispatchEvent(new CustomEvent('steperrors', { detail: { step, errors } }));
-    }
-
     /** FormulaEval build errors of the Formula measures, checked on the server by the Measures list. */
     handleFormulaCheck(event) {
         event.stopPropagation();
@@ -187,49 +173,9 @@ export default class BoardChartSetupSteps extends LightningElement {
             });
     }
 
-    get objectApiName() {
-        return this.config.objectApiName || null;
-    }
-
     /** The Panel field (Small multiples): a Cross-object measure maps a field of its source object to it too. */
     get panelField() {
         return this.config.panelField || null;
-    }
-
-    // ---- Data ----------------------------------------------------------------------------------------------------
-
-    get objectPickerValue() {
-        return this.objectApiName || '';
-    }
-
-    handleObject(event) {
-        const value = event.detail.value;
-        this.update({ objectApiName: value && String(value).trim() ? value : null });
-    }
-
-    get baseFilters() {
-        return this.config.baseFilters || null;
-    }
-
-    handleBaseFilters(event) {
-        event.stopPropagation();
-        const baseFilters = event.detail.baseFilters || [];
-        this.update({ baseFilters: baseFilters.length ? baseFilters : null });
-    }
-
-    // ---- Filter bindings -----------------------------------------------------------------------------------------
-
-    handleBindingsChange(event) {
-        event.stopPropagation();
-        this.update({ filterBindings: event.detail.filterBindings || null });
-    }
-
-    handleBindingState(event) {
-        event.stopPropagation();
-        this.reportErrors(
-            'filterBindings',
-            (event.detail.errors || []).map((item) => item.errorString)
-        );
     }
 
     // ---- Orientation ---------------------------------------------------------------------------------------------
@@ -328,16 +274,16 @@ export default class BoardChartSetupSteps extends LightningElement {
         return chartTypeHasSetting(this.chartType, 'waterfallColors');
     }
 
-    get waterfallIncreaseColor() {
-        return this.config.waterfallIncreaseColor || WATERFALL_DEFAULT_COLORS.increase;
+    get waterfallIncreaseColour() {
+        return this.config.waterfallIncreaseColour || WATERFALL_DEFAULT_COLORS.increase;
     }
 
-    get waterfallDecreaseColor() {
-        return this.config.waterfallDecreaseColor || WATERFALL_DEFAULT_COLORS.decrease;
+    get waterfallDecreaseColour() {
+        return this.config.waterfallDecreaseColour || WATERFALL_DEFAULT_COLORS.decrease;
     }
 
-    get waterfallTotalColor() {
-        return this.config.waterfallTotalColor || WATERFALL_DEFAULT_COLORS.total;
+    get waterfallTotalColour() {
+        return this.config.waterfallTotalColour || WATERFALL_DEFAULT_COLORS.total;
     }
 
     /** A colour equal to its default is not stored, so the default keeps following the code. */
@@ -551,12 +497,12 @@ export default class BoardChartSetupSteps extends LightningElement {
         this.update({ maxSeries: parseNumber(event.detail.value) });
     }
 
-    get colorByCategory() {
-        return this.config.colorByCategory === true;
+    get colourByCategory() {
+        return this.config.colourByCategory === true;
     }
 
     handleColorByCategory(event) {
-        this.update({ colorByCategory: event.detail.checked ? true : null });
+        this.update({ colourByCategory: event.detail.checked ? true : null });
     }
 
     handleIncludeNull(event) {
@@ -590,18 +536,19 @@ export default class BoardChartSetupSteps extends LightningElement {
         return !this.isSingleMeasureType && (this.hasStack || this.measures.length > 1);
     }
 
-    /** Writes the Measures list; turning a Measure non-additive turns an "Other" bar into truncation. */
-    updateMeasures(measures) {
-        const patch = { measures };
-        const additive = measures.every((measure) => ROLLUP_FUNCTIONS.includes(measure.aggregateFunction || 'COUNT'));
-        if (!additive && this.config.overflowMode === 'OTHER') {
+    /** Writes the Measures list; Measures that can't merge into "Other" (`otherBarProblem`) turn it into truncation. */
+    updateMeasures(measures, refs = {}) {
+        const patch = { measures, ...refs };
+        if (this.config.overflowMode === 'OTHER' && otherBarProblem({ ...this.config, ...patch })) {
             patch.overflowMode = 'TRUNCATE';
         }
         this.update(patch);
     }
 
+    /** A reorder or removal (`mapping`) keeps Formula slots and the Panel headline / sort on the same Measures. */
     handleMeasuresChange(event) {
-        this.updateMeasures(event.detail.measures);
+        const { measures, mapping } = event.detail;
+        this.updateMeasures(measures, mapping ? remapMeasureRefs(this.config, measures, mapping) : {});
     }
 
     // ---- Display -------------------------------------------------------------------------------------------------
@@ -634,17 +581,14 @@ export default class BoardChartSetupSteps extends LightningElement {
         return this.config.maxBars ?? '';
     }
 
-    /** The first Measure that can't be summed into "Other" (not COUNT or SUM), or null. */
-    get nonAdditiveFunction() {
-        const fn = this.measures
-            .map((measure) => measure.aggregateFunction || 'COUNT')
-            .find((aggregateFunction) => !ROLLUP_FUNCTIONS.includes(aggregateFunction));
-        return fn || null;
+    /** Why the Measures can't have an "Other" bar (`otherBarProblem`), or null. */
+    get otherProblem() {
+        return otherBarProblem(this.config);
     }
 
     get overflowOptions() {
         const options = [{ label: 'Hide extra bars', value: 'TRUNCATE', illustration: 'overflowTruncate' }];
-        if (!this.nonAdditiveFunction && !this.showGranularity) {
+        if (!this.otherProblem && !this.showGranularity) {
             options.push({ label: 'Combine into "Other"', value: 'OTHER', illustration: 'overflowOther' });
         }
         return options;
@@ -658,10 +602,10 @@ export default class BoardChartSetupSteps extends LightningElement {
         if (this.showGranularity) {
             return 'A date axis hides the bars beyond the maximum (earliest first when ascending, latest first when descending); there is no "Other" bar.';
         }
-        const fn = this.nonAdditiveFunction;
-        return fn
-            ? `An "Other" bar is only available for COUNT and SUM Measures; ${fn} hides extra bars.`
-            : 'Bars beyond the maximum are hidden or summed into one "Other" bar.';
+        const problem = this.otherProblem;
+        return problem
+            ? `${problem} Extra bars are hidden.`
+            : 'Bars beyond the maximum are hidden or combined into one "Other" bar.';
     }
 
     get legendPosition() {
@@ -670,10 +614,6 @@ export default class BoardChartSetupSteps extends LightningElement {
 
     get showDataLabels() {
         return this.config.showDataLabels === true;
-    }
-
-    get subtitle() {
-        return this.config.subtitle || '';
     }
 
     handleSortBy(event) {
@@ -705,10 +645,5 @@ export default class BoardChartSetupSteps extends LightningElement {
     handleFixedColours(event) {
         const fixedColours = event.detail.value;
         this.update({ fixedColours: fixedColours && fixedColours.length ? fixedColours : null });
-    }
-
-    handleSubtitle(event) {
-        const value = event.detail.value;
-        this.update({ subtitle: value && value.trim() ? value : null });
     }
 }

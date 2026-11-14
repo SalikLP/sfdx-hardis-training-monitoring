@@ -909,7 +909,7 @@
     ]
   },
   {
-    "text": "Class Accesses (110)",
+    "text": "Class Accesses (111)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -2296,29 +2296,6 @@
         ]
       },
       {
-        "text": "BoardQueryServiceChildRowsTest",
-        "icon": "fa-solid fa-circle-check icon-success",
-        "a_attr": {
-          "href": null
-        },
-        "children": [
-          {
-            "text": "Apex Class: BoardQueryServiceChildRowsTest",
-            "icon": "",
-            "a_attr": {
-              "href": null
-            }
-          },
-          {
-            "text": "Enabled: true",
-            "icon": "fa-solid fa-circle-check icon-success",
-            "a_attr": {
-              "href": null
-            }
-          }
-        ]
-      },
-      {
         "text": "BoardQueryServiceCurrencyTest",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
@@ -2871,6 +2848,29 @@
         ]
       },
       {
+        "text": "BoardTableAggregateEngineLevelsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Apex Class: BoardTableAggregateEngineLevelsTest",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Enabled: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
         "text": "BoardTableAggregateEngineTest",
         "icon": "fa-solid fa-circle-check icon-success",
         "a_attr": {
@@ -2879,6 +2879,29 @@
         "children": [
           {
             "text": "Apex Class: BoardTableAggregateEngineTest",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Enabled: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "BoardTableAggregateLevelsTest",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Apex Class: BoardTableAggregateLevelsTest",
             "icon": "",
             "a_attr": {
               "href": null
@@ -3017,6 +3040,29 @@
         "children": [
           {
             "text": "Apex Class: BoardTableGroupBarScales",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Enabled: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "BoardTableGroupLevel",
+        "icon": "fa-solid fa-circle-check icon-success",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Apex Class: BoardTableGroupLevel",
             "icon": "",
             "a_attr": {
               "href": null
@@ -3316,29 +3362,6 @@
         "children": [
           {
             "text": "Apex Class: InstallationSchedulerTest",
-            "icon": "",
-            "a_attr": {
-              "href": null
-            }
-          },
-          {
-            "text": "Enabled: true",
-            "icon": "fa-solid fa-circle-check icon-success",
-            "a_attr": {
-              "href": null
-            }
-          }
-        ]
-      },
-      {
-        "text": "ProtoTableQueryService",
-        "icon": "fa-solid fa-circle-check icon-success",
-        "a_attr": {
-          "href": null
-        },
-        "children": [
-          {
-            "text": "Apex Class: ProtoTableQueryService",
             "icon": "",
             "a_attr": {
               "href": null
@@ -29207,7 +29230,7 @@
     ]
   },
   {
-    "text": "Object Permissions (471)",
+    "text": "Object Permissions (472)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -38943,6 +38966,64 @@
           {
             "text": "View All Fields: false",
             "icon": "fa-solid fa-circle-xmark icon-error",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "View All Records: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          }
+        ]
+      },
+      {
+        "text": "DataKitPackageActivation",
+        "icon": "fa-solid fa-web-awesome icon-success",
+        "a_attr": {
+          "href": null
+        },
+        "children": [
+          {
+            "text": "Object: DataKitPackageActivation",
+            "icon": "",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Allow Create: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Allow Delete: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Allow Edit: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Allow Read: true",
+            "icon": "fa-solid fa-circle-check icon-success",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
+            "text": "Modify All Records: true",
+            "icon": "fa-solid fa-circle-check icon-success",
             "a_attr": {
               "href": null
             }
@@ -59803,7 +59884,7 @@
     ]
   },
   {
-    "text": "Tab Visibilities (261)",
+    "text": "Tab Visibilities (260)",
     "icon": "fa-solid fa-folder icon-blue",
     "a_attr": {
       "href": null
@@ -59887,29 +59968,6 @@
         "children": [
           {
             "text": "Tab: Proto_Board_App_Page",
-            "icon": "",
-            "a_attr": {
-              "href": null
-            }
-          },
-          {
-            "text": "Visibility: Hidden",
-            "icon": "fa-solid fa-eye-slash icon-error",
-            "a_attr": {
-              "href": null
-            }
-          }
-        ]
-      },
-      {
-        "text": "Proto_Table_Widget_Lab",
-        "icon": "fa-solid fa-eye-slash icon-error",
-        "a_attr": {
-          "href": null
-        },
-        "children": [
-          {
-            "text": "Tab: Proto_Table_Widget_Lab",
             "icon": "",
             "a_attr": {
               "href": null

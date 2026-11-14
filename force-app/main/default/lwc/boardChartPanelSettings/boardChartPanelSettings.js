@@ -1,5 +1,11 @@
 import { LightningElement, api } from 'lwc';
-import { DATE_FIELD_TYPES, DATE_GRANULARITY_OPTIONS, parseNumber, resolveFieldDescribe } from 'c/boardCpeUtils';
+import {
+    DATE_FIELD_TYPES,
+    DATE_GRANULARITY_OPTIONS,
+    parseNumber,
+    resolveFieldDescribe,
+    containInnerChanges
+} from 'c/boardCpeUtils';
 import { bucketIdOf } from 'c/boardBucketFields';
 import {
     DEFAULT_MAX_PANELS,
@@ -22,6 +28,10 @@ const PANEL_SORT_OPTIONS = [
  * scales and the Panel headline (one of the Measures, hidden from the chart and shown as a number in each Panel header). Reads the Widget config and fires `change` with `detail.patch`, the config keys to update.
  */
 export default class BoardChartPanelSettings extends LightningElement {
+    connectedCallback() {
+        containInnerChanges(this);
+    }
+
     @api objectApiName;
     /** Labels of the Chart widget's Measures, in Measure order. */
     @api measureLabels = [];
