@@ -39029,6 +39029,13 @@
             }
           },
           {
+            "text": "View All Fields: false",
+            "icon": "fa-solid fa-circle-xmark icon-error",
+            "a_attr": {
+              "href": null
+            }
+          },
+          {
             "text": "View All Records: true",
             "icon": "fa-solid fa-circle-check icon-success",
             "a_attr": {
