@@ -2,5 +2,3 @@ File,ChangeType,FileHuman,WorkingDir,PrevName,severity,severityIcon
 cleanDataServices/DataCloudGeoLocation.cleanDataService-meta.xml," ",CleanDataService DataCloudGeoLocation,M,,log,📰
 lwc/protoSetupPreviewDialog/protoSetupPreviewDialog.html," ",LightningComponentBundle protoSetupPreviewDialog/protoSetupPreviewDialog.html,M,,log,📰
 lwc/protoSetupPreviewDialog/protoSetupPreviewDialog.js," ",LightningComponentBundle protoSetupPreviewDialog/protoSetupPreviewDialog.js,M,,log,📰
-profiles/Admin.profile-meta.xml," ",Profile Admin,M,,log,📰
-profiles/Analytics Cloud Integration User.profile-meta.xml," ",Profile Analytics Cloud Integration User,M,,log,📰
