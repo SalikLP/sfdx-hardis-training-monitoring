@@ -321,7 +321,7 @@ Errors:
 - The days a class or a message appears in the error reports: `{source="sfdx-hardis", orgIdentifier="acme", type="APEX_ERROR"} |= "InvoiceService" | json t="_title" | line_format "{{.t}}" | keep type`, then read the `_logElements` of one of these days for the stack traces.
 - Everything that went wrong recently: `{source="sfdx-hardis", orgIdentifier="acme", severity=~"error|critical"} | json t="_title" | line_format "{{.t}}" | keep type`
 
-Latest report of a check, with its rows: `{source="sfdx-hardis", orgIdentifier="acme", type="UNUSED_USERS"} | json t="_title", e="_logElements" | line_format "{{.t}} {{.e}}" | keep type` with `limit=1`. It works for every type: `LICENSES`, `ORG_HEALTH_CHECK`, `AUDIT_TRAIL`, `UNSECURED_CONNECTED_APPS`, `RELEASE_UPDATES`... For inactive users, `UNUSED_USERS` covers every license, `UNUSED_USERS_CRM_6_MONTHS` and `UNUSED_USERS_EXPERIENCE_6_MONTHS` split internal and Experience Cloud users. A report cut at 500 rows cannot be compared row by row with another one: compare their counts.
+Latest report of a check, with its rows: `{source="sfdx-hardis", orgIdentifier="acme", type="UNUSED_USERS"} | json t="_title", e="_logElements" | line_format "{{.t}} {{.e}}" | keep type` with `limit=1`. It works for every type: `LICENSES`, `ORG_HEALTH_CHECK`, `AUDIT_TRAIL`, `UNSECURED_CONNECTED_APPS`, `WHAT_WILL_BREAK`... `WHAT_WILL_BREAK` answers "what will break after a dated Salesforce change, when, and what to do": one row per finding plus one row per check that found nothing; its history before it replaced them is under `LEGACY_API` and `RELEASE_UPDATES`. For inactive users, `UNUSED_USERS` covers every license, `UNUSED_USERS_CRM_6_MONTHS` and `UNUSED_USERS_EXPERIENCE_6_MONTHS` split internal and Experience Cloud users. A report cut at 500 rows cannot be compared row by row with another one: compare their counts.
 
 Scores and trends (other names: list them, see above):
 
@@ -423,11 +423,11 @@ The files in `force-app/main/default/profiles/` are read with the CRUD Metadata 
 | Key | Check | Command | Frequency |
 | --- | ----- | ------- | --------- |
 | `AUDIT_TRAIL` | Detect **suspect setup actions** in major org | `sf hardis:org:diagnose:audittrail` | daily |
-| `LEGACY_API` | Detect calls to **deprecated API versions** | `sf hardis:org:diagnose:legacyapi` | daily |
 | `ORG_LIMITS` | Detect if **org limits** are close to be reached | `sf hardis:org:monitor:limits` | daily |
 | `APEX_FLEX_QUEUE` | Detect **Apex flex queue backlog** | `sf hardis:org:diagnose:flex-queue` | daily |
 | `APEX_FLOW_ERRORS` | Detect **Apex and Flow errors** | `sf hardis:org:monitor:errors` | daily |
 | `AGENT_TESTS` | **Agentforce agent tests** run results | `sf hardis:org:test:agents` | weekly (saturday) |
+| `WHAT_WILL_BREAK` | Detect **what will break** after dated Salesforce changes | `sf hardis:org:diagnose:what-will-break` | daily |
 | `UNSECURED_CONNECTED_APPS` | Detect **unsecured Connected Apps** in an org | `sf hardis:org:diagnose:unsecure-connected-apps` | daily |
 | `MFA_CONFIG` | Detect **MFA configuration gaps** in the org | `sf hardis:org:diagnose:mfa` | weekly (saturday) |
 | `DANGEROUS_PERMISSIONS` | Audit **dangerous permissions** granted through Profiles and Permission Sets | `sf hardis:org:diagnose:unsecure-permissions` | off |
@@ -440,7 +440,6 @@ The files in `force-app/main/default/profiles/` are read with the CRUD Metadata 
 | `UNUSED_USERS_EXPERIENCE_6_MONTHS` | Detect **active users without recent logins** (Experience, 6 months) | `sf hardis:org:diagnose:unusedusers --licensetypes experience --days 180` | weekly (saturday) |
 | `ACTIVE_USERS_CRM_WEEKLY` | Detect **active users with recent logins** (CRM, 1 week) | `sf hardis:org:diagnose:unusedusers --returnactiveusers --licensetypes all-crm --days 7` | weekly (saturday) |
 | `ACTIVE_USERS_EXPERIENCE_MONTHLY` | Detect **active users with recent logins** (Experience, 1 month) | `sf hardis:org:diagnose:unusedusers --returnactiveusers --licensetypes experience --days 30` | weekly (saturday) |
-| `RELEASE_UPDATES` | Gather warnings about **incoming and overdue Release Updates** | `sf hardis:org:diagnose:releaseupdates` | weekly (saturday) |
 | `ORG_INFO` | Get **org info** + SF instance info + next major upgrade date | `sf hardis:org:diagnose:instanceupgrade` | weekly (saturday) |
 | `ORG_HEALTH_CHECK` | Run **Salesforce Security Health Check** | `sf hardis:org:monitor:health-check` | weekly (saturday) |
 | `UNUSED_METADATAS` | Detect **custom labels and custom permissions** that are not in use | `sf hardis:lint:unusedmetadatas` | weekly (saturday) |
