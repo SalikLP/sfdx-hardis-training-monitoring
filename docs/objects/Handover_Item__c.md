@@ -7,10 +7,10 @@
 
 ```mermaid
 graph TD
-Handover_Item__c["Handover Item"]:::mainObject
-click Handover_Item__c "../Handover_Item__c/"
 Installation__c["Installation"]:::customObject
 click Installation__c "../Installation__c/"
+Handover_Item__c["Handover Item"]:::mainObject
+click Handover_Item__c "../Handover_Item__c/"
 
 Handover_Item__c -->|Installation__c| Installation__c
 
